@@ -1,11 +1,11 @@
-m: lib main
-	cc lib_matrix.o main.o -o m && valgrind -s ./m
+m: lib_matrix.o main.o
+	cc ^$ -o m && valgrind -s ./m
 
-main: main.o
-	cc -c main.c
+main.o: main.c
+	cc -c ^$
 
-lib: lib_matrix.o
-	cc -c lib_matrix.c
+lib_matrix.o: lib_matrix.c
+	cc -c ^$
 
-clean: 
+clean:
 	rm m
