@@ -1,4 +1,4 @@
-all: list vec
+all: list.bin vec.bin
 
 #  List implementation.
 
@@ -19,4 +19,4 @@ lib_stack_vec.o: src/lib_stack_vec.c
 #  Auxiliary targets.
 
 clean:
-	rm vec lib_stack_vec.o list lib_stack_list.o
+	rm *.bin *.o
