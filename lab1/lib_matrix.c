@@ -124,7 +124,7 @@ line_t *fill_line (line_t *l, char **input) {
     return l;
 }
 
-void print_matrix (matrix_t *m) {
+void print_matrix (const matrix_t *m) {
     if (m == NULL || (m->lns == NULL)) {
         printf ("Error: can't print uninitialised matrix.\n");
         return;
@@ -140,7 +140,7 @@ void print_matrix (matrix_t *m) {
     printf ("\n");
 }
 
-void print_line (line_t *l) {
+void print_line (const line_t *l) {
     if (l == NULL || (l->nums == NULL)) {
         printf ("Error: can't print uninitialised line.\n");
         return;

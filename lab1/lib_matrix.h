@@ -31,9 +31,9 @@ matrix_t *fill_matrix (matrix_t *m, char **input);
 line_t *fill_line (line_t *l, char **input);
 
 /*  Prints matrix pointed by m.  */
-void print_matrix (matrix_t *m);
+void print_matrix (const matrix_t *m);
 /*  Prints line pointed by l.  */
-void print_line (line_t *l);
+void print_line (const line_t *l);
 
 /*  Frees matrix pointed by m.  */
 void free_matrix (matrix_t *m);
