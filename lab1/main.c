@@ -11,27 +11,10 @@ void vector (const matrix_t *m);
 
 
 int main () {
-    char input [100] = "";
-    char *input_ptr = input;
-    char *input_ptr2 = input_ptr;
 
-    printf ("Enter matrix in following format:                                        \
-      \n<number of rows> <number of elements in each row> <elements of each row>      \
-      \nWarning: separate characters with only one space, otherwise program won't work correctly.\n");                                 
-
-    /*  Read user input to input.  */
-    while (1) {
-        input_ptr = input_ptr2;
-
-        if (fgets (input, sizeof input, stdin) == NULL) {
-            printf ("\nEOF reached\n");
-            return 0;
-        }
-
-        input [strlen (input) - 1] = '\0';
-        
+    while (1) {        
         matrix_t *m = NULL; 
-        m = fill_matrix (m, &input_ptr);
+        m = fill_matrix (m, stdin);
 
         if (m == NULL) {
             continue;
@@ -48,7 +31,8 @@ int main () {
 void vector (const matrix_t *m) {
 
     /*  Create vector.  */ 
-    float *c = calloc (m->lns_cnt, sizeof *c);
+    line_t *c = new_line (m->lns_cnt);
+    //float *c = calloc (m->lns_cnt, sizeof *c);
 
     float max = INT_MIN;
     float min = INT_MAX;
@@ -59,31 +43,42 @@ void vector (const matrix_t *m) {
         line_t *cur_ln = m->lns[i];
 
         for (int j = 0; j < cur_ln->num_cnt; j++) {
-            c[i] += cur_ln->nums[j];
+            //c[i] += cur_ln->nums[j];
+            c->nums[i] += cur_ln->nums[j];
         }
 
-        if (c[i] - max > EPS) {
-            max = c[i];
+        if (c->nums[i] - max > EPS) {
+            //max = c[i];
+            max = c->nums[i];
         }
-        if (min - c[i] > EPS) {
-            min = c[i];
+        if (min - c->nums[i] > EPS) {
+            //min = c[i];
+            min = c->nums[i];
         }
 
     }
 
     /*  Print vector with changed elements.  */
 
+    int err = 0;
+
     printf ("Vector:\n");
+    
     for (int i = 0; i < m->lns_cnt; i++) {
         if ((max - min) < EPS) {
-            printf ("Error creating vector: division by zero\n");
+            printf ("Error creating vector: division by zero");
+            err = 1;
             break;
         }
 
-        c[i] = (float) (c[i] - min) / (float) (max - min);
-        printf ("%f ", c[i]);
+        c->nums[i] = (float) (c->nums[i] - min) / (float) (max - min);
+        //printf ("%f ", c[i]);
+    }
+    
+    if (err == 0) {
+        print_line (c);
     }
 
-    printf ("\n\n");
-    free (c);
+    printf ("\n");
+    free_line (c);
 }

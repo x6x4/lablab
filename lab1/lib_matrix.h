@@ -25,10 +25,10 @@ matrix_t *new_matrix (int cnt);
 /*  Creates line with cnt elements.  */
 line_t *new_line (int cnt);
 
-/*  Fills matrix with input string.  */
-matrix_t *fill_matrix (matrix_t *m, char **input);
-/*  Fills line with input string.  */
-line_t *fill_line (line_t *l, char **input);
+/*  Fills matrix from file.  */
+matrix_t *fill_matrix (matrix_t *m, FILE* file);
+/*  Fills line from file.  */
+line_t *fill_line (line_t *l, FILE* file);
 
 /*  Prints matrix pointed by m.  */
 void print_matrix (const matrix_t *m);
