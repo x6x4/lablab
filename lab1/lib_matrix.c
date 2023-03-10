@@ -30,52 +30,72 @@ line_t *new_line (int cnt) {
     return l;
 }
 
-matrix_t *fill_matrix (matrix_t *m, FILE *file) {
+
+int get_int (int *num, FILE *file) {
+
+    int chrs_rd = fscanf (file, "%d", num);
+
+    if (chrs_rd == 0) {
+
+        /*  Move fp until newline.  */
+        while ( fgetc (file) != '\n' );
+        
+        return ERRWRG;
+    }
+    if (chrs_rd == EOF) {
+        return ERREOF;
+    }
+    if (*num < 0) {
+        return ERRWRG;
+    }
+
+    return ERRSUC;
+}
+
+int fill_matrix (matrix_t **m, FILE *file) {
  
     assert (file);
 
     int m_size = 0;
-    printf ("Enter number of rows in matrix:\n");
+    printf ("\nEnter number of rows in matrix:\n");
     
-    /*  Prepare for new matrix creation.  */
-    
-    int chrs_rd = fscanf (file, "%d", &m_size);
-
     /*  Test error cases.  */
-    
-    if (chrs_rd == 0) {
-        while ( fgetc (file) != '\n' );
-        printf ("Error: wrong number of rows\n");
-        return NULL;
-    }
-    if (chrs_rd == EOF) {
-        printf ("EOF reached\n");
-        exit (0);
-    }
-    if (m_size < 0) {
-        printf ("Error: wrong number of rows\n");
-        return NULL;
-    }
+
+    switch (get_int (&m_size, file))
+    {
+        case ERRWRG:
+            printf ("Error: wrong number of rows\n");
+            return ERRWRG;
+        case ERREOF:
+            printf ("EOF reached\n");
+            return ERREOF;
+    }    
 
     /*  Create new matrix of size m_size.  */
 
-    m = new_matrix (m_size);
+    *m = new_matrix (m_size);
     
     /*  Fill new matrix.  */
 
-    for (int i = 0; i < m->lns_cnt; i++) {
-        m->lns[i] = fill_line (m->lns[i], file);
-        
-        if (m->lns[i] == NULL) {
-            free_matrix (m);
-            return NULL;
-        }
-    }
+    for (int i = 0; i < (*m)->lns_cnt; i++) {
 
-    return m;
+        switch (fill_line (&(*m)->lns[i], file))
+        {
+            case ERRWRG:
+                free_matrix (*m);
+                return ERRWRG;
+        
+            case ERREOF:
+                free_matrix (*m);
+                return ERREOF;
+        }
+        
+    }
+    
+    return ERRSUC;
 }
 
-line_t *fill_line (line_t *l, FILE* file) {
+int fill_line (line_t **l, FILE* file) {
     
     assert (file);
 
@@ -84,53 +104,47 @@ line_t *fill_line (line_t *l, FILE* file) {
     int l_size = 0;
     printf ("Enter number of elements in row:\n");
 
-    int chrs_rd = fscanf (file, "%d", &l_size);
-
     /*  Test error cases.  */
-    
-    if (chrs_rd == 0) {
-        while ( fgetc (file) != '\n' );
-        printf ("Error: wrong number of elements\n");
-        return NULL;
-    }
-    if (chrs_rd == EOF) {
-        printf ("EOF reached\n");
-        exit (0);
-    }
-    if (l_size < 0) {
-        printf ("Error: wrong number of elements\n");
-        return NULL;
-    }
+
+    switch (get_int (&l_size, file))
+    {
+        case ERRWRG:
+            printf ("Error: wrong number of elements\n");
+            return ERRWRG;
+        case ERREOF:
+            printf ("EOF reached\n");
+            return ERREOF;
+    } 
 
     /*  Create new line of size l_size.  */
     
-    l = new_line (l_size);
+    *l = new_line (l_size);
 
     /*  Fill new line.  */
 
-    printf ("Enter elements of row:\n");
-    for (int i = 0; i < l->num_cnt; i++) {
-        int chrs_rd = fscanf (file, "%d", &l->nums[i]);
-
-        /*  Testing error cases.  */
+    printf ("Enter elements of row (%d):\n", (*l)->num_cnt);
     
-        if (chrs_rd == 0) {
-            printf ("Error: wrong element\n");
-            while ( fgetc (file) != '\n' );
-            free_line (l);
-            return NULL;
-        }
-        if (chrs_rd == EOF) {
-            printf ("EOF reached\n");
-            free_line (l);
-            exit (0);
-        }
+    for (int i = 0; i < (*l)->num_cnt; i++) {
+
+        /*  Test error cases.  */
+    
+        switch (get_int (&(*l)->nums[i], file))
+        {
+            case ERRWRG:
+                printf ("Error: wrong number of elements\n");
+                return ERRWRG;
+            case ERREOF:
+                printf ("EOF reached\n");
+                return ERREOF;
+        } 
+
     }
     
-    return l;
+    return ERRSUC;
 }
 
 void print_matrix (const matrix_t *m) {
+
     if (m == NULL || (m->lns == NULL)) {
         printf ("Error: can't print uninitialised matrix.\n");
         return;
@@ -161,8 +175,9 @@ void print_line (const line_t *l) {
 void free_matrix (matrix_t *m) {
     if (m) {
         for (size_t i = 0; i < m->lns_cnt; i++) {
-            if (m->lns[i])
+            if (m->lns[i]) {
                 free_line (m->lns[i]);
+            }
         }
 
         free (m->lns);
@@ -171,6 +186,11 @@ void free_matrix (matrix_t *m) {
 }
 
 void free_line (line_t *l) {
-    free (l->nums);
-    free (l);
+    if (l) {
+        if (l->nums) {
+            free (l->nums);
+        }
+
+        free (l);
+    }
 }
