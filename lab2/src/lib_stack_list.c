@@ -2,6 +2,11 @@
 #include <stdio.h>
 #include <assert.h>
 
+enum {
+    ERRSUC,
+    ERRPOP
+};
+
 stack_t *new_stack () {
     stack_t *stack = calloc (1, sizeof *stack);
     stack->sz = 0;
@@ -57,19 +62,19 @@ void push_int (int data, stack_t *stack) {
     stack->top->data->num = data;
 }
 
-char pop_char (stack_t *stack) {
+int pop_char (char *data, stack_t *stack) {
     if (is_empty (stack)) {
-        return '\0';
+        return ERRPOP;
     }
 
-    char data = stack->top->data->ch;
+    *data = stack->top->data->ch;
 
     node *prev_top = stack->top;
 
     if (stack->sz-- == 1) {
         free (stack->top->data);
         free (stack->top);
-        return data;
+        return ERRSUC;
     }
 
     stack->top = stack->top->next;
@@ -78,22 +83,22 @@ char pop_char (stack_t *stack) {
     free (prev_top->data);
     free (prev_top);
     
-    return data;
+    return ERRSUC;
 }
 
-int pop_int (stack_t *stack) {
+int pop_int (int *data, stack_t *stack) {
     if (is_empty (stack)) {
-        return ERRVAL;
+        return ERRPOP;
     }
 
-    int data = stack->top->data->num;
+    *data = stack->top->data->num;
 
     node *prev_top = stack->top;
 
     if (stack->sz-- == 1) {
         free (stack->top->data);
         free (stack->top);
-        return data;
+        return ERRSUC;
     }
 
     stack->top = stack->top->next;
@@ -102,7 +107,7 @@ int pop_int (stack_t *stack) {
     free (prev_top->data);
     free (prev_top);
 
-    return data;
+    return ERRSUC;
 }
 
 void print_stack (stack_t *stack) {
@@ -144,8 +149,8 @@ void free_stack (stack_t *stack) {
 }
 
 int is_empty (stack_t *stack) {
+    
     if (stack->sz == 0) {
-        //printf ("Error: stack is empty\n");
         return 1;
     }    
 

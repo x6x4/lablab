@@ -9,28 +9,98 @@
 #include <limits.h>
 
 
-void stack_interface ();
-
 /*  Reads expression and pushes it to the stack.  */
 stack_t *parser (FILE *file);
 /*  Evaluate stack.  */
 int eval (FILE *file);
+/*  Elementary evaluation.  */
+int eval_atomic (const char op, const int elm1, const int elm2, int *result);
 
-int eval_atomic (const char op, const int elm1, const int elm2);
 
 int main () {
-
-
     eval (stdin);
-
-    //stack_interface ();
 }
+
 
 enum retcodes {
     ERREOF = -1,
+    ERRSUC,
     ERRWRG,
-    ERRSUC
+    ERRDIVZERO
 };
+
+
+int eval (FILE *file) {
+
+    stack_t *stack = parser (file);
+
+    int res;
+
+    while (1) {
+        char elm2, elm1;
+        pop_char (&elm2, stack);
+        if (1 == pop_char (&elm1, stack)) {
+            break;
+        }
+
+        char op;
+        pop_char (&op, stack);
+
+        int retcode = eval_atomic (op, elm1 - 48, elm2 - 48, &res);
+    
+        if (ERRDIVZERO == retcode) {
+            printf ("Error: division by zero\n");
+            free_stack (stack);
+            return 1;
+        }
+
+        push_char (res + 48, stack);
+    }
+
+    printf ("res: %d\n", res);
+
+    free_stack (stack);
+
+    return 0;
+}
+
+stack_t *parser (FILE *file) {
+    int num = 0;
+    char ch = '\0';
+
+    stack_t *stack = new_stack ();
+    
+    while (EOF != scanf (" %c ", &ch)) {
+        push_char (ch, stack);
+    }
+
+    return stack;
+}
+
+int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
+
+    if (0 == (op - '+')) {
+        *result = elm1 + elm2;
+    }
+    if (0 == (op - '-')) {
+        *result = elm1 - elm2;
+    }
+    if (0 == (op - '*')) {
+        *result = elm1 * elm2;
+    }
+    if (0 == (op - '/')) {
+        
+        if (0 != elm2) {
+            *result = elm1 / elm2;
+        }
+        else {
+            return ERRDIVZERO;
+        }
+    }
+
+    return ERRSUC;
+    
+}
 
 int get_int (int *num, FILE *file) {
 
@@ -52,137 +122,4 @@ int get_int (int *num, FILE *file) {
     }
 
     return ERRSUC;
-}
-
-
-stack_t *parser (FILE *file) {
-    int num = 0;
-    char ch = '\0';
-
-    stack_t *stack = new_stack ();
-    
-    while (EOF != scanf (" %c ", &ch)) {
-        push_char (ch, stack);
-    }
-
-    return stack;
-}
-
-enum {
-    ERRDIVZERO = INT_MAX
-};
-
-
-int eval (FILE *file) {
-    stack_t *stack = parser (file);
-    
-    //print_stack (stack);
-
-    int res;
-
-    while (1) {
-        int elm2 = pop_char (stack);
-        int elm1 = pop_char (stack);
-        if ('\0' == elm1) {
-            break;
-        }
-        char op = pop_char (stack);
-
-        res = eval_atomic (op, elm1 - 48, elm2 - 48);
-    
-        if (ERRDIVZERO == res) {
-            printf ("Error: division by zero\n");
-            return 1;
-        }
-
-        push_char (res + 48, stack);
-    }
-
-    printf ("res: %d\n", res);
-
-    return 0;
-}
-
-
-
-int eval_atomic (const char op, const int elm1, const int elm2) {
-
-    if (0 == (op - '+')) {
-        return elm1 + elm2;
-    }
-    if (0 == (op - '-')) {
-        return elm1 - elm2;
-    }
-    if (0 == (op - '*')) {
-        return elm1 * elm2;
-    }
-    if (0 == (op - '/')) {
-        
-        if (0 != elm2) {
-            return elm1 / elm2;
-        }
-        else {
-            return ERRDIVZERO;
-        }
-    }
-    
-}
-
-void stack_interface () {
-    stack_t *stack = new_stack ();
-
-    printf ("Stack. List of available commands:\n    \
-    - push                                     \n    \
-    - pop                                      \n    \
-    - print                                    \n    \
-    - exit                                     \n\n");
-
-    while (1)
-    {
-        char input [15] = "";
-        if (fgets (input, sizeof input, stdin) == NULL) {
-            break;
-        }
-
-        else if ( strstr (input, "pushint") ) {
-            int elm;
-            sscanf (input, "pushint %d", &elm);
-            push_int (elm, stack);
-        }
-
-        else if ( strstr (input, "pushchar") ) {
-            char elm;
-            sscanf (input, "pushchar %c", &elm);
-            push_char (elm, stack);
-        }
-
-        else if ( strstr (input, "popint") ) {
-            int elm = pop_int (stack);
-            if (elm != ERRVAL) {
-                printf ("Popped value: %d\n", elm);
-            }
-        }
-
-        else if ( strstr (input, "popchar") ) {
-            char elm = pop_char (stack);
-            if (elm != '\0') {
-                printf ("Popped value: %c\n", elm);
-            }
-        }
-
-        else if ( strstr (input, "print") ) {
-            print_stack (stack);
-        }
-
-        else if ( strstr (input, "exit") ) {
-            free_stack (stack);
-            return;
-        }
-
-        else {
-            printf ("wrong input\n");
-        }
-    }
-
-    free_stack (stack);
 }
