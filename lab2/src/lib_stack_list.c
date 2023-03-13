@@ -145,7 +145,7 @@ void free_stack (stack_t *stack) {
 
 int is_empty (stack_t *stack) {
     if (stack->sz == 0) {
-        printf ("Error: stack is empty\n");
+        //printf ("Error: stack is empty\n");
         return 1;
     }    
 
