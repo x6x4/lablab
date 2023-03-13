@@ -3,7 +3,7 @@
 /*  
 **  Common library.  
 */ 
-
+ 
 #define ERRVAL __INT_MAX__
 
 typedef struct stack stack_t;

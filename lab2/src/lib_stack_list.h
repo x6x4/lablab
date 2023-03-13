@@ -7,10 +7,11 @@ struct list_node
     node *next;
     int data;
 };
-
+ 
 
 struct stack {
     node *top;
+    node *bottom;
     size_t sz;
 };
 

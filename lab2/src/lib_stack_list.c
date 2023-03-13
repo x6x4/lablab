@@ -6,6 +6,7 @@ stack_t *new_stack () {
     stack_t *stack = calloc (1, sizeof *stack);
     stack->sz = 0;
     stack->top = NULL;
+    stack->bottom = NULL;
 }
 
 void push (int data, stack_t *stack) {
@@ -15,14 +16,18 @@ void push (int data, stack_t *stack) {
 
         stack->top->next = stack->top;
         stack->top->data = data;
+
+        stack->bottom = stack->top;
+        
         return;
     }
 
-    node *stack_bottom = stack->top->next;
-    stack->top->next = new_node ();
-    stack->top = stack->top->next;
+    node *new_top = new_node ();
 
-    stack->top->next = stack_bottom;
+    new_top->next = stack->top;
+    stack->bottom->next = new_top;
+
+    stack->top = new_top;  
     stack->top->data = data;
 }
 
