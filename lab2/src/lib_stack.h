@@ -3,7 +3,7 @@
 /*  
 **  Common library.  
 */ 
-
+ 
 #define ERRVAL __INT_MAX__
 
 typedef struct stack stack_t;
@@ -14,10 +14,12 @@ typedef struct stack stack_t;
 stack_t *new_stack ();
 
 /*  push element to stack */
-void push (int data, stack_t *stack);
+void push_char (char data, stack_t *stack);
+void push_int (int data, stack_t *stack);
 
 /*  pop element from stack */
-int pop (stack_t *stack);
+char pop_char (stack_t *stack);
+int pop_int (stack_t *stack);
 
 /*  print stack from top to bottom  */
 void print_stack (stack_t *stack);
