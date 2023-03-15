@@ -8,20 +8,6 @@
 #include <string.h>
 #include <limits.h>
 
-
-/*  Reads expression and pushes it to the stack.  */
-stack_t *parser (FILE *file);
-/*  Evaluate stack.  */
-int eval (FILE *file);
-/*  Elementary evaluation.  */
-int eval_atomic (const char op, const int elm1, const int elm2, int *result);
-
-
-int main () {
-    eval (stdin);
-}
-
-
 enum retcodes {
     ERREOF = -1,
     ERRSUC,
@@ -29,10 +15,36 @@ enum retcodes {
     ERRDIVZERO
 };
 
+/*  Reads expression and pushes it to the stack.  */
+int parser (FILE *file, stack_t *stack);
+/*  Evaluate stack.  */
+int eval (FILE *file);
+/*  Elementary evaluation.  */
+int eval_atomic (const char op, const int elm1, const int elm2, int *result);
+
+
+int main () {
+    while (eval (stdin) != ERREOF);
+    return 0;
+}
+
 
 int eval (FILE *file) {
 
-    stack_t *stack = parser (file);
+    stack_t *stack = new_stack ();
+
+    int retcode = parser (file, stack);
+
+    if (retcode == ERREOF) {
+        free_stack (stack);
+        return ERREOF;
+    }
+
+    if (retcode == ERRWRG) {
+        free_stack (stack);
+        printf ("Wrong input\n");
+        return ERRWRG;
+    }
 
     int res;
 
@@ -46,7 +58,7 @@ int eval (FILE *file) {
         char op;
         pop_char (&op, stack);
 
-        int retcode = eval_atomic (op, elm1 - 48, elm2 - 48, &res);
+        int retcode = eval_atomic (op, elm1 - '0', elm2 - '0', &res);
     
         if (ERRDIVZERO == retcode) {
             printf ("Error: division by zero\n");
@@ -54,7 +66,7 @@ int eval (FILE *file) {
             return 1;
         }
 
-        push_char (res + 48, stack);
+        push_char (res + '0', stack);
     }
 
     printf ("res: %d\n", res);
@@ -64,17 +76,34 @@ int eval (FILE *file) {
     return 0;
 }
 
-stack_t *parser (FILE *file) {
+int parser (FILE *file, stack_t *stack) {
     int num = 0;
     char ch = '\0';
+    int retcode;
 
-    stack_t *stack = new_stack ();
-    
-    while (EOF != scanf (" %c ", &ch)) {
-        push_char (ch, stack);
+    while (1) {
+
+        retcode = scanf ("%c", &ch); 
+        
+        if (retcode == EOF) {
+            return ERREOF;
+        }
+
+        if (retcode == 0) {
+            return ERRWRG;
+        }
+
+        if (ch == '\n') {
+            break;
+        }
+        if (ch != ' ') {
+            push_char (ch, stack);
+        }
     }
 
-    return stack;
+    print_stack (stack);
+
+    return ERRSUC;
 }
 
 int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
