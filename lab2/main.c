@@ -22,11 +22,128 @@ int eval (FILE *file);
 /*  Elementary evaluation.  */
 int eval_atomic (const char op, const int elm1, const int elm2, int *result);
 
+int reverse_string (char *str);
+int get_int (int *num, FILE *file);
 
 int main () {
-    while (eval (stdin) != ERREOF);
+
+    char string[100] = {};
+    char *str = string;
+
+    while (1) {
+        reverse_string (str);
+        puts (str);
+    }
+    
+
+    //while (eval (stdin) != ERREOF);
     return 0;
 }
+
+int reverse_string (char *str) {
+    
+    char ch = {0};
+    int counter = 0;
+
+    while (1) {
+        
+        int retcode = scanf ("%1[ +-/*0-9\n]", &ch); 
+        
+        if (retcode == EOF) {
+            return ERREOF;
+        }
+
+        if (retcode == 0) {
+            //scanf("%*[^\n]%*c");
+            puts ("Wrong symbol");
+            return ERRWRG;
+        }
+
+        if (ch == '\n') {
+            puts ("nl");
+            break;        
+        }
+        
+        //if (ch != ' ') {
+            str[counter] = ch;
+            counter++;
+            //puts (str);
+        //}
+    }
+
+    for (int i = 0; i < counter/2; i++) {
+        char buf = str[i];
+        str[i] = str[(counter - 1) - i];
+        str[(counter - 1) - i] = buf;
+    }
+
+    str[counter] = '\0';
+
+    return ERRSUC;
+
+}
+
+int parse_prefix (FILE *file) {
+
+    stack_t *stack = new_stack ();
+
+    int cur_num, result = 0;
+    char ch = {0};
+
+    while (1) {
+        switch (get_int (&cur_num, file))
+        {
+        case ERRSUC:
+            push_int (cur_num, stack);
+            break;
+        
+        case ERRWRG:
+            scanf ("%c", ch);
+            int elm1 = 0, elm2 = 0;
+            pop_int (&elm1, stack);
+            pop_int (&elm1, stack);
+            eval_atomic (ch, elm1, elm2, &result);
+            push_int (result, stack);
+
+        default:
+            print_stack (stack);
+            return ERREOF;
+        }
+    }
+
+   
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 int eval (FILE *file) {
