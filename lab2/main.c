@@ -23,7 +23,8 @@ int eval (FILE *file);
 int eval_atomic (const char op, const int elm1, const int elm2, int *result);
 
 int reverse_string (char *str);
-int get_int (int *num, FILE *file);
+int get_int (int *num, char **str);
+int parse_prefix (char *str);
 
 int main () {
 
@@ -31,8 +32,12 @@ int main () {
     char *str = string;
 
     while (1) {
-        reverse_string (str);
+        if (reverse_string (str) == EOF) {
+            break;
+        }
+
         puts (str);
+        parse_prefix (str);
     }
     
 
@@ -54,21 +59,19 @@ int reverse_string (char *str) {
         }
 
         if (retcode == 0) {
-            //scanf("%*[^\n]%*c");
+            scanf("%*[^\n]%*c");
             puts ("Wrong symbol");
+            str[counter] = '\0';
             return ERRWRG;
         }
 
         if (ch == '\n') {
-            puts ("nl");
+            //puts ("nl");
             break;        
         }
         
-        //if (ch != ' ') {
-            str[counter] = ch;
-            counter++;
-            //puts (str);
-        //}
+        str[counter] = ch;
+        counter++;
     }
 
     for (int i = 0; i < counter/2; i++) {
@@ -83,36 +86,66 @@ int reverse_string (char *str) {
 
 }
 
-int parse_prefix (FILE *file) {
+int parse_prefix (char *str) {
 
     stack_t *stack = new_stack ();
 
     int cur_num, result = 0;
     char ch = {0};
 
-    while (1) {
-        switch (get_int (&cur_num, file))
+    for (int i = 0; i < 8; i++) {
+        
+        switch (get_int (&cur_num, &str))
         {
         case ERRSUC:
+            //printf ("Cur_num: %d\n", cur_num);
             push_int (cur_num, stack);
+            //print_stack (stack);
             break;
         
         case ERRWRG:
-            scanf ("%c", ch);
+            //puts (str);
+            sscanf (str, " %c", &ch);
+            str++;
+            //printf ("Echo:%c\n");
             int elm1 = 0, elm2 = 0;
             pop_int (&elm1, stack);
-            pop_int (&elm1, stack);
+            pop_int (&elm2, stack);
             eval_atomic (ch, elm1, elm2, &result);
             push_int (result, stack);
+            print_stack (stack);
+            break;
 
         default:
-            print_stack (stack);
+            //print_stack (stack);
+            free_stack (stack);
             return ERREOF;
         }
+
+        //strtok(str, " ");
+        //strtok(NULL," ");
     }
 
-   
+}
 
+int get_int (int *num, char **str) {
+
+    int chrs_rd = sscanf (*str, "%d", num);
+
+    if (chrs_rd == 0) {
+        //sscanf(*str, "%*[^\n]%*c");
+        //puts ("something wrong");
+        return ERRWRG;
+    }
+    if (chrs_rd == EOF) {
+        return ERREOF;
+    }
+
+    /*  Remove whitespaces.  */
+    *str += chrs_rd + 1;
+    //printf ("It's a string %s\n", *str);
+
+    return ERRSUC;
 }
 
 
@@ -228,44 +261,29 @@ int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
     if (0 == (op - '+')) {
         *result = elm1 + elm2;
     }
-    if (0 == (op - '-')) {
+    else if (0 == (op - '-')) {
         *result = elm1 - elm2;
     }
-    if (0 == (op - '*')) {
+    else if (0 == (op - '*')) {
         *result = elm1 * elm2;
     }
-    if (0 == (op - '/')) {
+    else if (0 == (op - '/')) {
         
         if (0 != elm2) {
             *result = elm1 / elm2;
         }
         else {
+            printf ("Division by zero!");
             return ERRDIVZERO;
         }
+    }
+
+    else {
+        printf ("Wrong op!");
+        return ERRWRG;
     }
 
     return ERRSUC;
     
 }
 
-int get_int (int *num, FILE *file) {
-
-    int chrs_rd = fscanf (file, "%d", num);
-
-    if (chrs_rd == 0) {
-
-        /*  Move fp until newline.  */
-        while ( fgetc (file) != '\n' );
-        /*fscanf("%*[^\n]", file);
-        fscanf("%*c", file);*/
-        return ERRWRG;
-    }
-    if (chrs_rd == EOF) {
-        return ERREOF;
-    }
-    if (*num < 0) {
-        return ERRWRG;
-    }
-
-    return ERRSUC;
-}
