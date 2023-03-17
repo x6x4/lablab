@@ -3,7 +3,9 @@ all: list.bin vec.bin
 #  List implementation.
 
 list.bin: lib_stack_list.o main.c
-	cc $^ -o $@ && valgrind -s ./list.bin
+	cc $^ -o $@ &&  ./list.bin
+
+#  valgrind -s
 
 lib_stack_list.o: src/lib_stack_list.c
 	cc -c $^

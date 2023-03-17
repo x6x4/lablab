@@ -134,6 +134,7 @@ void print_stack (stack_t *stack) {
     printf ("\n");
 }
 
+
 void free_stack (stack_t *stack) {
     node *cur_node = stack->top;
     if (cur_node) {
@@ -145,7 +146,7 @@ void free_stack (stack_t *stack) {
         };
     }
 
-    free (stack);
+    //free (stack);
 }
 
 int is_empty (stack_t *stack) {
