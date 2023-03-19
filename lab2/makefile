@@ -1,14 +1,19 @@
 all: list.bin vec.bin
 
+CC = cc -g
+
 #  List implementation.
 
-list.bin: lib_stack_list.o main.c
-	cc $^ -o $@ &&  ./list.bin
+list.bin: lib_stack_list.o main.o
+	$(CC) $^ -o $@ &&  ./list.bin
 
 #  valgrind -s
 
 lib_stack_list.o: src/lib_stack_list.c
-	cc -c $^
+	$(CC) -c $^
+
+main.o: main.c
+	$(CC) -c $^
 
 #  Vector implementation.
 

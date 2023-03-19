@@ -6,81 +6,77 @@
 
 #include <stdio.h>
 
-int eval (stack_t stack);
+#define INIT_CHAR 0
 
-int main () {
-    //  * / -30 + 2 3 7
-    //  * 8 9
-    
-    stack_t stack = {NULL, NULL, 0};
-    //while (1) {
-        //stack_t stack = {NULL, NULL, 0};
-        eval (stack);
-        printf ("%d\n", eval (stack));
-    //}
 
-}
+int eval (stack_t *stack, int *errcode);
 
 int eval_atomic (const char op, const int elm1, const int elm2, int *result);
 
 
-
-int eval (stack_t stack) {
-
-    static int is_first = 0;
+int main () {
+    
+    stack_t stack = {NULL, NULL, 0};
+    int errcode = 0;
 
     while (1) {
-        int cur_num = 0, elm1, elm2, res;
-        char ch = 0;
+        printf ("result: %d\n", eval (&stack, &errcode));
+        
+        if (errcode == EOF) {
+            printf ("\nexit\n");
+            break;
+        }
+    }
 
-        //int ret = scanf ("%[ -]%d", &ch, &cur_num);
-        int ret = scanf ("%[ ]%d", &ch, &cur_num);
-        printf ("ret: %d\n", ret);
-        //printf ("ch:%ca\n", ch);
-        //printf ("num: %d\n", cur_num);
-        //if (ch == '-') {
-            //cur_num = -cur_num;
-        //}
+}
 
-        if (ret == 2) {
-            if (is_first) {
-                pop_char (&ch, &stack);
-                print_stack (&stack);
-                is_first = 0;
-                eval_atomic (ch, cur_num, eval (stack), &res);
-                printf ("1st res: %d\n", res);
-                goto end;
+
+int eval (stack_t *stack, int *errcode) {
+
+    while (1) {
+        //  + - 4 5 6
+        //  * 4 -5
+
+        int cur_num = 0, res = 0;
+        char ch = INIT_CHAR;
+
+        switch (scanf (" %1[+-/*]%d", &ch, &cur_num)) {
+        
+        case 2:
+
+            eval_atomic (ch, cur_num, eval (stack, errcode), &res);
+            
+            if (pop_char (&ch, stack) == 0) {
+                eval_atomic (ch, res, eval (stack, errcode), &res);
             }
+
+            printf ("res: %d\n", res);
+            return res;
+        
+        case 1:
+
+            if (ch != INIT_CHAR) {
+                push_char (ch, stack);
+                continue;
+            }
+
             else {
                 res = cur_num;
-                printf ("2nd res: %d\n", res);
                 return res;
             }
-        }
 
-        if (ret == 0 || ret == 1) {
-            ret = scanf ("%1[+-/*]", &ch);
-            if (ret == 0) {
-                if (ch == '\0') {
-                    return res;
-                }
-                printf ("Wrong symbol\n");
-                break;
-            }
-            push_char (ch, &stack);
-            //print_stack (&stack);
-            is_first = 1;
-            continue;
-        }
+        case 0:
+            scanf ("%d", &cur_num);
+            return cur_num;
 
-        end:
-            if (pop_char (&ch, &stack) == 0) {
-                eval_atomic (ch, res, eval (stack), &res);
-            }
-            printf ("res: %d\n", res);
-        return res;
+        default:
+            *errcode = EOF;
+            return res;
+        }
+            
     }
 }
+
 
 int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
 
@@ -100,15 +96,12 @@ int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
         }
         else {
             printf ("Division by zero!");
-            //return ERRDIVZERO;
         }
     }
 
     else {
         printf ("Wrong op!");
-        //return ERRWRG;
     }
 
-    //return ERRSUC;
     return 0;
 }
