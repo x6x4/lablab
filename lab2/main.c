@@ -9,20 +9,16 @@
 #define INIT_CHAR 0
 
 
-int eval (stack_t *stack, int *errcode);
+int eval ();
 
 int eval_atomic (const char op, const int elm1, const int elm2, int *result);
 
 
 int main () {
-    
-    stack_t stack = {NULL, NULL, 0};
-    int errcode = 0;
 
     while (1) {
-        printf ("result: %d\n", eval (&stack, &errcode));
         
-        if (errcode == EOF) {
+        if (eval () == EOF) {
             printf ("\nexit\n");
             break;
         }
@@ -31,65 +27,60 @@ int main () {
 }
 
 
-int eval (stack_t *stack, int *errcode) {
+int eval () {
+
+    stack_t stack_int = {NULL, NULL, 0};
+    stack_t stack_char = {NULL, NULL, 0};
+
+    int num = 0; char ch = 0;
 
     while (1) {
-        //  + - 4 5 6
-        //  * 4 -5
 
-        int cur_num = 0, res = 0;
-        char ch = INIT_CHAR;
-
-        switch (scanf (" %1[+-/*]%d", &ch, &cur_num)) {
-        
-        case 2:
-
-            eval_atomic (ch, cur_num, eval (stack, errcode), &res);
+        switch (scanf ("%1[+-/*]", &ch)) {
             
-            if (pop_char (&ch, stack) == 0) {
-                eval_atomic (ch, res, eval (stack, errcode), &res);
-            }
+            case 1:
+                push_char (ch, &stack_char);
+                break;
 
-            printf ("res: %d\n", res);
-            return res;
-        
-        case 1:
+            case 0:
+                scanf ("%c", &ch);
+                if (ch == '\n') {
+                    print_stack (&stack_char);
+                    print_stack (&stack_int);
+                    return 1;
+                }
+                if (ch == ' ') {
+                    break;
+                }
+                ungetc (ch, stdin);
 
-            if (ch != INIT_CHAR) {
-                push_char (ch, stack);
-                continue;
-            }
+                scanf ("%d", &num);
+                push_int (num, &stack_int);
+                break;
 
-            else {
-                res = cur_num;
-                return res;
-            }
-
-        case 0:
-            scanf ("%d", &cur_num);
-            return cur_num;
-
-        default:
-            *errcode = EOF;
-            return res;
+            case -1:
+                print_stack (&stack_char);
+                print_stack (&stack_int);
+                return EOF;    
         }
             
     }
+
 }
 
 
 int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
 
-    if (0 == (op - '+')) {
+    if      (op =='+') {
         *result = elm1 + elm2;
     }
-    else if (0 == (op - '-')) {
+    else if (op == '-') {
         *result = elm1 - elm2;
     }
-    else if (0 == (op - '*')) {
+    else if (op == '*') {
         *result = elm1 * elm2;
     }
-    else if (0 == (op - '/')) {
+    else if (op == '/') {
         
         if (0 != elm2) {
             *result = elm1 / elm2;

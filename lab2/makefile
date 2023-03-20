@@ -5,7 +5,7 @@ CC = cc -g
 #  List implementation.
 
 list.bin: lib_stack_list.o main.o
-	$(CC) $^ -o $@ &&  ./list.bin
+	$(CC) $^ -o $@
 
 #  valgrind -s
 

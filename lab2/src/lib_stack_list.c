@@ -113,7 +113,7 @@ int pop_int (int *data, stack_t *stack) {
 void print_stack (stack_t *stack) {
 
     if (stack->sz == 0) {
-        printf ("Stack is empty\n");
+        printf ("' '\n");
         return;
     }
 
