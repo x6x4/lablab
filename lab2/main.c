@@ -6,7 +6,8 @@
 
 #include <stdio.h>
 
-#define INIT_CHAR 0
+
+/*  Various error codes.  */
 
 enum {
     ERREOF = -1, 
@@ -15,25 +16,35 @@ enum {
     ERRDIVZ
 };
 
-int get_int (int *num);
 
+/*  Functions.  */
+
+/*  Takes user input and transforms it to a stack of tokens.  */
 int parse (stack_t *stack);
 
+/*  Calculates the value of ariphmetic expression 
+given in form of the stack of tokens and puts it in `result_num`.  */
 int eval (stack_t *stack, int *result_num);
 
-int eval_atomic (const char op, const int elm1, const int elm2, int *result);
+/*  Takes operator and two operands and puts 
+result of the binary operation in `result`.  */
+int eval_atomic (const char op, const int elm1, const int elm2, \
+                 int *result);
+
+/*  Reads integer and returns error code.  */
+int get_int (int *num);
+
 
 
 int main () {
-
     
-    int result_num;
+    int result_num = 0;
+
+    stack_t *stack = new_stack ();
 
     while (1) {
 
-        stack_t stack = {};
-
-        switch (parse (&stack)) {
+        switch (parse (stack)) {
 
             case ERRWRG:
                 continue;
@@ -45,7 +56,7 @@ int main () {
                 break;
         }
 
-        switch (eval (&stack, &result_num)) {
+        switch (eval (stack, &result_num)) {
 
             case ERRWRG:
                 continue;
@@ -59,9 +70,11 @@ int main () {
     }
 
     end:
+        free_stack (stack);
         printf ("\nexit\n");
         return 0;
 }
+
 
 
 int parse (stack_t *stack) {
@@ -118,8 +131,9 @@ int parse (stack_t *stack) {
 
 int eval (stack_t *stack, int *result_num) {
 
-    stack_t stack_num = {};
-    token_t token = {};
+    stack_t *stack_num = new_stack ();
+
+    token_t token = {OPER, '+'}; 
     token_t num1 = {}, num2 = {};
     token_t result = {NUM, 0};
 
@@ -127,15 +141,15 @@ int eval (stack_t *stack, int *result_num) {
 
         /*  If token is operand.  */
         if (token.type == NUM) {
-            push_tok (token, &stack_num);
+            push_tok (token, stack_num);
         } 
 
         /*  Otherwise it is operator.  */
         else {
         
             /*  Fetch operands.  */
-            pop_tok (&num1, &stack_num);
-            pop_tok (&num2, &stack_num);
+            pop_tok (&num1, stack_num);
+            pop_tok (&num2, stack_num);
 
             /*  Do atomic evaluation.  */
             switch (eval_atomic (token.val.ch, num1.val.num, num2.val.num, \
@@ -150,10 +164,12 @@ int eval (stack_t *stack, int *result_num) {
             }
 
             /*  Push result back to stack.  */
-            push_tok (result, &stack_num);
+            push_tok (result, stack_num);
             
         }
     }
+
+    free_stack (stack_num);
 
     *result_num = result.val.num;
     
@@ -177,13 +193,13 @@ int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
             *result = elm1 / elm2;
         }
         else {
-            printf ("Division by zero!\n");
+            printf ("error: division by zero!\n");
             return ERRDIVZ;
         }
     }
 
     else {
-        printf ("Wrong op!\n");
+        printf ("error: wrong op!\n");
         return ERRWRG;
     }
 
@@ -196,7 +212,7 @@ int get_int (int *num) {
 
     if (chrs_rd == 0) {
 
-        /*  Move fp until newline.  */
+        /*  Scan symbols until newline.  */
         scanf ("%*[^\n]%*c");
         return ERRWRG;
     }

@@ -1,27 +1,28 @@
 all: list.bin vec.bin
 
-CC = cc -g
+CC = cc 
 
 #  List implementation.
 
-list.bin: lib_stack_list.o main.o
+list.bin: lib_stack_list.o main_list.o
 	$(CC) $^ -o $@
-
-#  valgrind -s
 
 lib_stack_list.o: src/lib_stack_list.c
 	$(CC) -c $^
 
-main.o: main.c
-	$(CC) -c $^
+main_list.o: main.c
+	$(CC) -c $^ -o $@
 
 #  Vector implementation.
 
-vec.bin: lib_stack_vec.o main.c
-	cc -DVEC $^ -o $@ && valgrind -s ./vec.bin
+vec.bin: lib_stack_vec.o main_vec.o
+	$(CC) -DVEC $^ -o $@ 
 
 lib_stack_vec.o: src/lib_stack_vec.c
-	cc -c $^
+	$(CC) -DVEC -c $^
+
+main_vec.o: main.c
+	$(CC) -DVEC  -c $^ -o $@
 
 #  Auxiliary targets.
 

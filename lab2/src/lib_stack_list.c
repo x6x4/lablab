@@ -2,10 +2,14 @@
 #include <stdio.h>
 #include <assert.h>
 
+
 enum {
     ERRSUC,
     ERRPOP
 }; 
+
+
+/*  List implementation.  */
 
 stack_t *new_stack () {
     stack_t *stack = calloc (1, sizeof *stack);
@@ -85,6 +89,7 @@ void print_stack (stack_t *stack) {
 
 
 void free_stack (stack_t *stack) {
+    
     node *cur_node = stack->top;
     if (cur_node) {
         while (stack->sz--) {
@@ -94,6 +99,7 @@ void free_stack (stack_t *stack) {
         };
     }
 
+    free (stack);
 }
 
 int is_empty (stack_t *stack) {

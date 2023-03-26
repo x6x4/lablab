@@ -18,7 +18,6 @@ union value {
     char ch;
 };
 
-
 typedef struct token token_t;
 
 struct token {
@@ -26,12 +25,15 @@ struct token {
     val_t val;    
 };
 
-
 typedef struct stack stack_t;
+
 
 /*  General functions.  */
 
-/*  create empty stack  */
+/*  initialize empty stack statically */
+stack_t init_stack ();
+
+/*  create empty stack dynamically  */
 stack_t *new_stack ();
 
 /*  push element to stack */

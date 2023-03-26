@@ -2,13 +2,15 @@
 #include <stdio.h>
 #include <assert.h>
 
+
 enum {
     ERRSUC,
     ERRPOP
 };
 
-/*  Vector implementation.  */
 
+/*  Vector implementation.  */
+ 
 stack_t *new_stack () {
     stack_t *stack = calloc (1, sizeof *stack);
     stack->capacity = STACK_SZ;
@@ -17,28 +19,30 @@ stack_t *new_stack () {
 }
 
 void push_tok (token_t token, stack_t *stack) {
+
     if (!is_full (stack)) {
         stack->tokens[stack->sz++] = token;
     }
 }
 
 int pop_tok (token_t *token, stack_t *stack) {
+
     if (is_empty (stack)) {
         return ERRPOP;
     }
 
-    token_t elm = stack->tokens[--stack->sz];
+    *token = stack->tokens[--stack->sz];
+
     return ERRSUC;
 }
 
 void print_stack (stack_t *stack) {
+
     if (stack->sz == 0) {
         printf ("' '\n");
         return;
     }
-
-    
-    
+   
     for (size_t i = 0; i < stack->sz; i++) {
         
         if (stack->tokens[i].type == NUM) {
@@ -55,6 +59,7 @@ void print_stack (stack_t *stack) {
 }
 
 void free_stack (stack_t *stack) {
+
     if (stack == NULL) {
         printf ("Error: NULL pointer\n");
         return;
@@ -64,6 +69,7 @@ void free_stack (stack_t *stack) {
 }
 
 int is_full (stack_t *stack) {
+
     if (stack->sz == stack->capacity) {
         printf ("Error: stack is full\n");
         return 1;
@@ -73,8 +79,8 @@ int is_full (stack_t *stack) {
 }
 
 int is_empty (stack_t *stack) {
+
     if (stack->sz == 0) {
-        printf ("Error: stack is empty\n");
         return 1;
     }    
 
