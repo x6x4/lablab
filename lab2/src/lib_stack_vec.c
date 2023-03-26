@@ -1,5 +1,11 @@
 #include "lib_stack_vec.h"
 #include <stdio.h>
+#include <assert.h>
+
+enum {
+    ERRSUC,
+    ERRPOP
+};
 
 /*  Vector implementation.  */
 
@@ -10,29 +16,39 @@ stack_t *new_stack () {
     return stack;
 }
 
-void push (int elm, stack_t *stack) {
+void push_tok (token_t token, stack_t *stack) {
     if (!is_full (stack)) {
-        stack->data[stack->sz++] = elm;
+        stack->tokens[stack->sz++] = token;
     }
 }
 
-int pop (stack_t *stack) {
+int pop_tok (token_t *token, stack_t *stack) {
     if (is_empty (stack)) {
-        return ERRVAL;
+        return ERRPOP;
     }
-        
-    int elm = stack->data[--stack->sz];
-    return elm;
+
+    token_t elm = stack->tokens[--stack->sz];
+    return ERRSUC;
 }
 
 void print_stack (stack_t *stack) {
     if (stack->sz == 0) {
-        printf ("\n");
+        printf ("' '\n");
         return;
     }
+
+    
     
     for (size_t i = 0; i < stack->sz; i++) {
-        printf ("%d ", stack->data[i]);
+        
+        if (stack->tokens[i].type == NUM) {
+            printf ("%d ", stack->tokens[i].val.num);
+        }
+
+        if (stack->tokens[i].type == OPER) {
+            printf ("%c ", stack->tokens[i].val.ch);
+        }
+
     }
 
     printf ("\n");

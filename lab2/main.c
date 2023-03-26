@@ -8,59 +8,107 @@
 
 #define INIT_CHAR 0
 
+enum {
+    ERREOF = -1, 
+    ERRSUC, 
+    ERRWRG,
+    ERRDIVZ
+};
 
-int eval ();
+int get_int (int *num);
+
+int parse (stack_t *stack);
+
+int eval (stack_t *stack, int *result_num);
 
 int eval_atomic (const char op, const int elm1, const int elm2, int *result);
 
 
 int main () {
 
+    
+    int result_num;
+
     while (1) {
-        
-        if (eval () == EOF) {
-            printf ("\nexit\n");
-            break;
+
+        stack_t stack = {};
+
+        switch (parse (&stack)) {
+
+            case ERRWRG:
+                continue;
+
+            case ERREOF:
+                goto end;
+            
+            default:
+                break;
         }
+
+        switch (eval (&stack, &result_num)) {
+
+            case ERRWRG:
+                continue;
+            
+            default:
+                break;
+        }
+
+        printf ("Result: %d\n", result_num);
+    
     }
 
+    end:
+        printf ("\nexit\n");
+        return 0;
 }
 
 
-int eval () {
+int parse (stack_t *stack) {
 
-    stack_t stack_int = {NULL, NULL, 0};
-    stack_t stack_char = {NULL, NULL, 0};
-
-    int num = 0; char ch = 0;
+    int num = 0; char ch = 0; token_t token = {};
 
     while (1) {
 
         switch (scanf ("%1[+-/*]", &ch)) {
             
             case 1:
-                push_char (ch, &stack_char);
+                token.type = OPER;
+                token.val.ch = ch;
+                push_tok (token, stack);
                 break;
 
             case 0:
                 scanf ("%c", &ch);
                 if (ch == '\n') {
-                    print_stack (&stack_char);
-                    print_stack (&stack_int);
-                    return 1;
+                    if (stack->sz < 3) {
+                        printf ("error: wrong input\n");
+                        return 1;
+                    }
+
+                    return 0;
                 }
                 if (ch == ' ') {
                     break;
                 }
                 ungetc (ch, stdin);
 
-                scanf ("%d", &num);
-                push_int (num, &stack_int);
+                switch (get_int (&num)) {
+                    case ERREOF: 
+                        return EOF;
+                    case ERRWRG:
+                        printf ("error: wrong symbol\n");
+                        return 1;
+                    default:
+                        break;
+                }
+                
+                token.type = NUM;
+                token.val.num = num;
+                push_tok (token, stack);
                 break;
 
             case -1:
-                print_stack (&stack_char);
-                print_stack (&stack_int);
                 return EOF;    
         }
             
@@ -68,6 +116,49 @@ int eval () {
 
 }
 
+int eval (stack_t *stack, int *result_num) {
+
+    stack_t stack_num = {};
+    token_t token = {};
+    token_t num1 = {}, num2 = {};
+    token_t result = {NUM, 0};
+
+    while (!pop_tok (&token, stack)) {
+
+        /*  If token is operand.  */
+        if (token.type == NUM) {
+            push_tok (token, &stack_num);
+        } 
+
+        /*  Otherwise it is operator.  */
+        else {
+        
+            /*  Fetch operands.  */
+            pop_tok (&num1, &stack_num);
+            pop_tok (&num2, &stack_num);
+
+            /*  Do atomic evaluation.  */
+            switch (eval_atomic (token.val.ch, num1.val.num, num2.val.num, \
+                &result.val.num)) {
+                
+                case ERRDIVZ:
+                case ERRWRG:
+                    return 1;
+            
+                default:
+                    break;
+            }
+
+            /*  Push result back to stack.  */
+            push_tok (result, &stack_num);
+            
+        }
+    }
+
+    *result_num = result.val.num;
+    
+    return 0;
+}
 
 int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
 
@@ -86,13 +177,35 @@ int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
             *result = elm1 / elm2;
         }
         else {
-            printf ("Division by zero!");
+            printf ("Division by zero!\n");
+            return ERRDIVZ;
         }
     }
 
     else {
-        printf ("Wrong op!");
+        printf ("Wrong op!\n");
+        return ERRWRG;
     }
 
-    return 0;
+    return ERRSUC;
+}
+
+int get_int (int *num) {
+
+    int chrs_rd = scanf ("%d", num);
+
+    if (chrs_rd == 0) {
+
+        /*  Move fp until newline.  */
+        scanf ("%*[^\n]%*c");
+        return ERRWRG;
+    }
+    if (chrs_rd == EOF) {
+        return ERREOF;
+    }
+    if (*num < 0) {
+        return ERRWRG;
+    }
+
+    return ERRSUC;
 }

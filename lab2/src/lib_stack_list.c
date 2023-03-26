@@ -5,7 +5,7 @@
 enum {
     ERRSUC,
     ERRPOP
-};
+}; 
 
 stack_t *new_stack () {
     stack_t *stack = calloc (1, sizeof *stack);
@@ -14,14 +14,13 @@ stack_t *new_stack () {
     stack->bottom = NULL;
 }
 
-void push_char (char data, stack_t *stack) {
+void push_tok (token_t token, stack_t *stack) {
     
     if (stack->sz++ == 0) {
         stack->top = new_node ();
 
         stack->top->next = stack->top;
-        stack->top->data->is_char = 1;
-        stack->top->data->ch = data;
+        stack->top->token = token;
 
         stack->bottom = stack->top;
         
@@ -34,45 +33,20 @@ void push_char (char data, stack_t *stack) {
     stack->bottom->next = new_top;
 
     stack->top = new_top;  
-    stack->top->data->is_char = 1;
-    stack->top->data->ch = data;
+    stack->top->token = token;
 }
 
-void push_int (int data, stack_t *stack) {
-    
-    if (stack->sz++ == 0) {
-        stack->top = new_node ();
+int pop_tok (token_t *token, stack_t *stack) {
 
-        stack->top->next = stack->top;
-        stack->top->data->is_char = 0;
-        stack->top->data->num = data;
-
-        stack->bottom = stack->top;
-        
-        return;
-    }
-
-    node *new_top = new_node ();
-
-    new_top->next = stack->top;
-    stack->bottom->next = new_top;
-
-    stack->top = new_top;  
-    stack->top->data->is_char = 0;
-    stack->top->data->num = data;
-}
-
-int pop_char (char *data, stack_t *stack) {
     if (is_empty (stack)) {
         return ERRPOP;
     }
 
-    *data = stack->top->data->ch;
+    *token = stack->top->token;
 
     node *prev_top = stack->top;
 
     if (stack->sz-- == 1) {
-        free (stack->top->data);
         free (stack->top);
         return ERRSUC;
     }
@@ -80,33 +54,8 @@ int pop_char (char *data, stack_t *stack) {
     stack->top = stack->top->next;
     stack->bottom->next = stack->top;
 
-    free (prev_top->data);
     free (prev_top);
     
-    return ERRSUC;
-}
-
-int pop_int (int *data, stack_t *stack) {
-    if (is_empty (stack)) {
-        return ERRPOP;
-    }
-
-    *data = stack->top->data->num;
-
-    node *prev_top = stack->top;
-
-    if (stack->sz-- == 1) {
-        free (stack->top->data);
-        free (stack->top);
-        return ERRSUC;
-    }
-
-    stack->top = stack->top->next;
-    stack->bottom->next = stack->top;
-
-    free (prev_top->data);
-    free (prev_top);
-
     return ERRSUC;
 }
 
@@ -120,11 +69,11 @@ void print_stack (stack_t *stack) {
     node *cur_node = stack->top;
 
     do {
-        if (0 == cur_node->data->is_char) {
-            printf ("%d ", cur_node->data->num);
+        if (cur_node->token.type == NUM) {
+            printf ("%d ", cur_node->token.val.num);
         }
-        if (1 == cur_node->data->is_char) {
-            printf ("%c ", cur_node->data->ch);
+        if (cur_node->token.type == OPER) {
+            printf ("%c ", cur_node->token.val.ch);
         }
 
         cur_node = cur_node->next;
@@ -141,12 +90,10 @@ void free_stack (stack_t *stack) {
         while (stack->sz--) {
             node *buf = cur_node;
             cur_node = cur_node->next;
-            free (buf->data);
             free (buf);
         };
     }
 
-    //free (stack);
 }
 
 int is_empty (stack_t *stack) {
@@ -161,8 +108,5 @@ int is_empty (stack_t *stack) {
 node *new_node () {
     node *node = calloc (1, sizeof *node);
     assert (node);
-    node->data = calloc (1, sizeof *node->data);
-    node->data->ch = '\0';
-    node->data->num = 0;
     return node;
 }

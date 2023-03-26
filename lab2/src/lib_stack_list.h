@@ -2,19 +2,10 @@
 
 typedef struct list_node node;
 
-typedef struct data_t data_t;
-
 struct list_node {
     node *next;
-    data_t *data;
+    token_t token;
 };
-
-struct data_t {
-    int is_char;
-    char ch;
-    int num;
-};
- 
 
 struct stack {
     node *top;
