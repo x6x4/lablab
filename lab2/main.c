@@ -40,16 +40,20 @@ int main () {
     
     int result_num = 0;
 
-    stack_t *stack = new_stack ();
+    printf ("Enter expression in prefix notation:\n");
 
     while (1) {
+
+        stack_t *stack = new_stack ();
 
         switch (parse (stack)) {
 
             case ERRWRG:
+                free_stack (stack);
                 continue;
 
             case ERREOF:
+                free_stack (stack);
                 goto end;
             
             default:
@@ -59,18 +63,20 @@ int main () {
         switch (eval (stack, &result_num)) {
 
             case ERRWRG:
+                free_stack (stack);
                 continue;
             
             default:
                 break;
         }
 
+        free_stack (stack);
         printf ("Result: %d\n", result_num);
     
     }
 
     end:
-        free_stack (stack);
+        //free_stack (stack);
         printf ("\nexit\n");
         return 0;
 }
@@ -95,7 +101,15 @@ int parse (stack_t *stack) {
                 scanf ("%c", &ch);
                 if (ch == '\n') {
                     if (stack->sz < 3) {
-                        printf ("error: wrong input\n");
+                        if (stack->sz) {
+                            if (stack->sz == 1 && token.type == NUM) {
+                                printf ("Result: %d\n", token.val.num);
+                            }
+                            else {
+                                printf ("error: wrong input\n");
+                            }
+                        }
+
                         return 1;
                     }
 
@@ -148,8 +162,11 @@ int eval (stack_t *stack, int *result_num) {
         else {
         
             /*  Fetch operands.  */
-            pop_tok (&num1, stack_num);
-            pop_tok (&num2, stack_num);
+            if (pop_tok (&num1, stack_num) != 0 || pop_tok (&num2, stack_num) != 0) {
+                printf ("wrong input\n");
+                free_stack (stack_num);
+                return 1;
+            }
 
             /*  Do atomic evaluation.  */
             switch (eval_atomic (token.val.ch, num1.val.num, num2.val.num, \
@@ -168,6 +185,12 @@ int eval (stack_t *stack, int *result_num) {
             
         }
     }
+    
+    if (stack_num->sz > 1) {
+        printf ("Error: extra operand.\n");
+        free_stack (stack_num);
+        return 1;
+    }
 
     free_stack (stack_num);
 
@@ -177,6 +200,8 @@ int eval (stack_t *stack, int *result_num) {
 }
 
 int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
+
+    printf ("Action: %d %c %d = ", elm1, op, elm2);
 
     if      (op =='+') {
         *result = elm1 + elm2;
@@ -203,6 +228,7 @@ int eval_atomic (const char op, const int elm1, const int elm2, int *result) {
         return ERRWRG;
     }
 
+    printf ("%d\n", *result);
     return ERRSUC;
 }
 

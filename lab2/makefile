@@ -1,6 +1,6 @@
 all: list.bin vec.bin
 
-CC = cc 
+CC = cc -g
 
 #  List implementation.
 
