@@ -1,9 +1,16 @@
 #include "lib_table.h"
+#include <stdio.h>
 
 /*  Base functions.  */
 
-/*  Inits a table with list of keyspaces.*/
-table_t *init_table (size_t max_sz, size_t klist_max_sz);
+/*  Writes a table with list of keyspaces.*/
+
+int write_table_descriptor (table_t *table, FILE *file);
+
+int read_table_descriptor (table_t *table, FILE *file);
+
+table_t *init_table (size_t max_sz, size_t kslist_max_sz);
+
 
 /*  Inserts a key-value entry into the table.  */
 int insert_table (table_t *table, char *key, int val);

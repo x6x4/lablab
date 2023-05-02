@@ -1,4 +1,0 @@
-enum {
-	ERRSUC,
-	ERRWRG
-};

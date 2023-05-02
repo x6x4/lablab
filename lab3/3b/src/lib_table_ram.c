@@ -1,5 +1,4 @@
-#include "../lib/auxlib.h"
-#include "lib_table_ram.h"
+#include "lib_table.h"
 
 #include <stdio.h>
 #include <string.h>
