@@ -148,8 +148,8 @@ table_t *nodes_by_key (table_t *table, char *key) {
 ks_t *new_keyspace (table_t *table, char *key) {
 
     ks_t *new_ks = &(table->kslist[table->kslist_sz]);
-    new_ks->key = calloc (1, sizeof (key));
-    strcpy (new_ks->key, key);
+    new_ks->key = calloc (1, strlen (key) + 1);
+    strncpy (new_ks->key, key, strlen (key) + 1);
     new_ks->tail = NULL;
     new_ks->ks_sz = 0;
     new_ks->num = ++table->kslist_sz;

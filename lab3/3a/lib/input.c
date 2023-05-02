@@ -22,10 +22,10 @@ int input_file (FILE *file, table_t *table) {
 
 
         switch (get_int_file (&option, file)) {
-                    case ERREOF: return ERREOF;
-                    case ERRSUC: break;
-                    case ERRWRG: printf ("Bad input\n");
-                                 continue;
+            case ERREOF: return ERREOF;
+            case ERRSUC: break;
+            case ERRWRG: printf ("Bad input\n");
+                            continue;
         }
 
         switch (option) {
@@ -70,9 +70,10 @@ int input_file (FILE *file, table_t *table) {
                 table_t *key_table = nodes_by_key (table, key);
                 if (!key_table) 
                     printf ("Key not found.\n");
-                else 
+                else {
                     print_table (key_table);
                     free_table (key_table);
+                }
                 break;
 
         case 4: printf ("\nEnter key of item to search: ");
@@ -87,9 +88,10 @@ int input_file (FILE *file, table_t *table) {
                 key_table = node_by_key_ver (table, key, ver);
                 if (!key_table) 
                     printf ("Item not found.\n");
-                else 
+                else {
                     print_table (key_table);
                     free_table (key_table);
+                }
                 break;
 
         case 5: printf ("Table:\n");
@@ -105,6 +107,11 @@ int input_file (FILE *file, table_t *table) {
                 scanf ("%50s", filename);
                 
                 FILE *file = fopen (filename, "r");
+
+                if (!file) {
+                    printf ("Error: bad file\n");
+                    continue;
+                }
 
                 if (input_file (file, table) == -1) {
                     fclose (file);
