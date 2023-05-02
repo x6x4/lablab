@@ -3,7 +3,7 @@
 /*  Base functions.  */
 
 /*  Inits a table with list of keyspaces.*/
-table_t *init_table (size_t max_sz, size_t klist_max_sz);
+table_t *init_table (size_t klist_max_sz);
 
 /*  Inserts a key-value entry into the table.  */
 int insert_table (table_t *table, char *key, int val);

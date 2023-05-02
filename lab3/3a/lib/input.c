@@ -1,6 +1,8 @@
 #include  "../lib/auxlib.h"
 #include "input.h"
 
+//  TODO: new dialog
+
 int input_file (FILE *file, table_t *table) {
 
     int option = 0;

@@ -8,7 +8,6 @@ typedef struct node node_t;
 
 /*  Main structure.  */
 struct table {
-    size_t max_sz;
     size_t sz;
 
     ks_t *kslist;
