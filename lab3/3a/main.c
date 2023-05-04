@@ -34,7 +34,6 @@ int main () {
         return 0;
     }
 
-
     size_t fn_num = 0;
 
     while (fn_num = option_choice (msgs, msgc, file)) {
@@ -42,7 +41,6 @@ int main () {
         if (!fptr[fn_num](table, file))
             break;
     }
-
 
     free_table (table);
     puts ("quit");
