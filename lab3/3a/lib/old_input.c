@@ -1,7 +1,5 @@
 #include  "../lib/auxlib.h"
-#include "input.h"
-
-//  TODO: new dialog
+#include "old_input.h"
 
 int input_file (FILE *file, table_t *table) {
 

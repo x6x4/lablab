@@ -17,7 +17,7 @@ void print_table (table_t *table);
 /*  Returns number of keyspace with given key.  */
 ks_t *ks_by_key (table_t *table, char *key);
 /*  Returns nodes with given key and version, NULL if key not found.  */
-table_t *node_by_key_ver (table_t *table, char *key, int ver);
+table_t *node_by_key_ver (table_t *table, char *key, size_t ver);
 /*  Returns table of all nodes with given key, NULL if key not found.  */
 table_t *nodes_by_key (table_t *table, char *key);
 

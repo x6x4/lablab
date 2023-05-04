@@ -15,7 +15,7 @@ lib_table_ram.o: src/lib_table_ram.c
 main_ram.o: main.c
 	$(CC) -c $^ -o $@
 
-input.o: lib/input.c
+input.o: ../../input/input.c
 	$(CC) -c $^ -o $@
 
 #auxlib.o: lib/auxlib.c \

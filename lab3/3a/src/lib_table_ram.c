@@ -20,7 +20,6 @@ table_t *init_table (size_t klist_max_sz) {
 
 int insert_table (table_t *table, char *key, int val) {
 
-
     ks_t *ks = ks_by_key (table, key);
 
     if (!ks) {
@@ -53,33 +52,27 @@ void print_table (table_t *table) {
     if (!table) {
         return;
     }
-    
-    printf ("Ver:  Next:      Value:     Key:\n");
 
-    for (int i = 0; i < table->kslist_sz; i++) {
+    for (size_t i = 0; i < table->kslist_sz; i++) {
 
-        if (table->kslist[i].key != NULL) {
+        printf ("Key %lu: %s\n", i+1, table->kslist[i].key);
 
             node_t *cur_node = table->kslist[i].tail->next;
 
             for (size_t j = 0; j < table->kslist[i].ks_sz; j++) {
 
-                printf ("%-5d ", cur_node->ver);
+                printf ("(v%d) %d ", cur_node->ver, cur_node->info->val);
 
                 if (cur_node->ver) {
-                    printf ("%-10d ", cur_node->next->info->val);
+                    printf ("-> %d\n", cur_node->next->info->val);
                 }
                 else {
                     printf ("           ");
                 }
 
-                printf ("%-10d %s\n", cur_node->info->val, cur_node->info->key);
-
                 cur_node = cur_node->next;
             }
         }
-    }
-
 }
 
 
@@ -93,7 +86,7 @@ ks_t *ks_by_key (table_t *table, char *key) {
     return NULL;
 }
 
-table_t *node_by_key_ver (table_t *table, char *key, int ver) {
+table_t *node_by_key_ver (table_t *table, char *key, size_t ver) {
 
     ks_t *ks = ks_by_key (table, key);
 
@@ -126,11 +119,11 @@ table_t *nodes_by_key (table_t *table, char *key) {
         return NULL;
     }
 
-    table_t *key_table = init_table (ks->ks_sz);
+    table_t *key_table = init_table (1);
 
     node_t *node = ks->tail->next;
 
-    for (int i = 0; i < key_table->sz; i++) {
+    for (int i = 0; i < ks->ks_sz; i++) {
         insert_table (key_table, key, node->info->val);
         node = node->next;
     }
@@ -152,7 +145,6 @@ ks_t *new_keyspace (table_t *table, char *key) {
 }
 
 void new_node (table_t *table, ks_t *ks, int val) {
-    //  TODO: left versions unchanged
     
     node_t *node = calloc (1, sizeof *node);
 
@@ -260,9 +252,6 @@ int erase_from_table_by_key_ver (table_t *table, char *key, size_t ver) {
 
             ks->ks_sz--;
         } 
-        if (prev_node->ver > ver) {
-            prev_node->ver--;
-        }
 
         prev_node = prev_node->next;
 
