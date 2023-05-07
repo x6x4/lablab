@@ -3,53 +3,27 @@
 
 /*  Base functions.  */
 
-/*  Writes a table with list of keyspaces.*/
-
-int write_table_descriptor (table_t *table, FILE *file);
-
-int read_table_descriptor (table_t *table, FILE *file);
-
-table_t *init_table (size_t max_sz, size_t kslist_max_sz);
 
 
-/*  Inserts a key-value entry into the table.  */
-int insert_table (table_t *table, char *key, int val);
+int insert_table (table_ram *table, char *key, int val, FILE *file);
 
-/*  Prints a table.  */
-void print_table (table_t *table);
+void print_table (table_ram *table, FILE *table_disk);
 
+void free_table (table_ram *table);
 
-/*  Search functions.  */
-
-/*  Returns keyspace with given key.  */
-ks_t *ks_by_key (table_t *table, char *key);
-/*  Returns nodes with given key and version, NULL if key not found.  */
-table_t *node_by_key_ver (table_t *table, char *key, int ver);
-/*  Returns table of all nodes with given key, NULL if key not found.  */
-table_t *nodes_by_key (table_t *table, char *key);
+ks_t *ks_by_key (table_ram *table, char *key);
 
 
 /*  Constructors.  */
-
-/*  Allocates keyspace with given key.  */
-ks_t *new_keyspace (table_t *table, char *key);
-/*  Adds a new node to keyspace.  */
-void new_node (table_t *table, ks_t *ks, int val);
-/*  Allocates info with given key and val.  */
-info_t *new_info (char *key, int val);
+table_ram *init_table (size_t kslist_max_sz);
+ks_t *new_keyspace (table_ram *table, char *key);
+void new_node (table_ram *table, ks_t *ks, int val, FILE *file);
+int read_node (node_d *new_node, offset_t node_offset, table_ram *table, FILE *file);
 
 
-/*  Destructors.  */
+/*  IO functions.  */
 
-/*  Flushes a table.  */
-void free_table (table_t *table);
-
-/*  Erases a key-value entry from the table.  */
-int erase_from_table_by_key_ver (table_t *table, char *key, size_t ver);
-
-/*  Erases a keyspace with given key.  */
-int erase_from_table_by_key (table_t *table, char *key);
-
-/*  Erases a keyspace entry from the table.  */
-int erase_ks_from_table (table_t *table, ks_t *ks);
-
+/*  Writes a table with list of keyspaces.*/
+int write_table_descriptor (table_ram *table, FILE *file, char *filename);
+/*  Reads a table with list of keyspaces.*/
+int read_table_descriptor (table_ram *table, FILE *file);

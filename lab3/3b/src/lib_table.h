@@ -1,62 +1,47 @@
 #include <stdlib.h>
 
-enum {
-	ERREOF = -1,
-	ERRSUC,
-	ERRWRG
-};
+#define KSLIST_MAX_SZ 2
 
-#define ks_offset(i) BEGIN+TABLE+KS*i
+/*  To init last_node_offset in table creation.  */
+#define ks_offset(i) BEGIN+TABLE+KS*(i-1)
+/*  For new node creation.  */
+#define ks_key_offset(i) ks_offset(i) + 2*sizeof (size_t)
 
-#define BEGIN 0
-#define TABLE 40
-#define KS 64
-#define NODE 12
-#define INFO 56
+#define BEGIN 0x10
+#define TABLE 0x20
+#define KS 0x40
+#define NODE 0x20
 
-typedef struct table table_t;
+typedef struct table_ram table_ram;
 typedef struct keyspace ks_t;
-typedef struct ks_d ks_d;
-typedef struct info info_t;
-typedef struct node node_t;
+typedef struct node_d node_d;
 
 typedef size_t offset_t;
 
-struct ks_d {
-    size_t num;
-    size_t ks_sz;
-    offset_t tail;
-    offset_t key;
-};
-
-/*  Main structure.  */
-struct table {
-    size_t max_sz;
+/*  Table descriptor in ram.  */
+struct table_ram {
     size_t sz;
-    size_t kslist_max_sz;
     size_t kslist_sz;
-    offset_t kslist;
+    size_t kslist_max_sz;
+    offset_t last_node_offset;
+
+    ks_t *kslist;
 };
 
-/*  Linked list of items with same key.  */
+/*  Keyspace descriptor.  */
 struct keyspace {
     size_t num;
-    offset_t key;
     size_t ks_sz;
+    char key [40];
     offset_t tail;
 };
 
 /*  Linked list node.  */
-struct node
+struct node_d
 {
     size_t ver;
-    info_t *info;
-    node_t *next;
-};
-
-/*  Node payload.  */
-struct info {
+    offset_t next;
+    offset_t key;
     size_t val;
-    char *key;
 };
 
