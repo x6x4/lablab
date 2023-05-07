@@ -13,9 +13,9 @@ int find_by_key (table_ram *table, FILE *file);
 int find_by_key_ver (table_ram *table, FILE *file);
 int print (table_ram *table, FILE *file);
 
-const char *msgs [] = {"\n0 - quit\n", "1 - insert\n", "2 - delete by key\n",
-                    "3 - delete by key + version\n", "4 - find by key\n",
-                    "5 - find by key + ver\n", "6 - print\n"};
+const char *msgs [] = {"\n0 - quit", "1 - insert", "2 - delete by key",
+                    "3 - delete by key + version", "4 - find by key",
+                    "5 - find by key + ver", "6 - print"};
 
 const size_t msgc = sizeof msgs / sizeof msgs[0];
 
@@ -26,7 +26,7 @@ int (*fptr[]) (table_ram*, FILE *file) =
 
 static FILE *table_disk;
 
-#define MAX_KS_SIZE 2
+#define MAX_KS_SIZE 3
 
 
 int main () {
@@ -173,14 +173,7 @@ int find_by_key (table_ram *table, FILE *file) {
     if (!fscanf (file, "%50s", key)) 
         return 0;
 
-    /*table_ram *key_table = nodes_by_key (table, key);
-    if (!key_table) 
-        printf ("Key not found.\n");
-    else {
-        print_table (key_table);
-        free_table (key_table);
-    }*/
-
+    print_by_key (table, key, table_disk);
     return 1; 
 }
 
@@ -206,13 +199,7 @@ int find_by_key_ver (table_ram *table, FILE *file) {
     
     } while (status == ERRWRG);
 
-    /*table_ram *key_table = node_by_key_ver (table, key, ver);
-    if (!key_table) 
-        printf ("Key not found.\n");
-    else {
-        print_table (key_table);
-        free_table (key_table);
-    }*/
+    print_by_key_ver (table, key, ver, table_disk);
 
     return 1; 
 }

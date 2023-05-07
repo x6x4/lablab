@@ -3,13 +3,18 @@
 
 /*  Base functions.  */
 
-
-
 int insert_table (table_ram *table, char *key, int val, FILE *file);
 
-void print_table (table_ram *table, FILE *table_disk);
+void print_table (table_ram *table, FILE *file);
 
 void free_table (table_ram *table);
+
+/*  
+    How to return a table, if table is a file in its essence?
+    I decided to print all appropriate nodes.  
+*/
+void print_by_key (table_ram *table, char *key, FILE *file);
+void print_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file);
 
 ks_t *ks_by_key (table_ram *table, char *key);
 

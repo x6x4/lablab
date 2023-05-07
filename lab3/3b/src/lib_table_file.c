@@ -8,38 +8,82 @@ enum {
 	ERRWRG
 };
 
-
-void print_table (table_ram *table, FILE *table_disk) {
+void print_table (table_ram *table, FILE *file) {
 
     if (!table) {
         return;
     }
 
     for (size_t i = 0; i < table->kslist_sz; i++) {
-
         printf ("Key %lu: %s\n", i+1, table->kslist[i].key);
+        print_by_key (table, table->kslist[i].key, file);
+    }
+}
 
-        offset_t cur_offset = table->kslist[i].tail;
-        node_d cur_node = {};
-        read_node (&cur_node, cur_offset, table, table_disk);
+void print_by_key (table_ram *table, char *key, FILE *file) {
+
+    ks_t *ks = ks_by_key (table, key);
+
+    if (!ks) {
+        printf ("Key not found.\n");
+        return;
+    }
+
+    offset_t cur_offset = ks->tail;
+    node_d cur_node = {};
+    read_node (&cur_node, cur_offset, table, file);
+    cur_offset = cur_node.next;
+
+    for (int i = 0; i < ks->ks_sz; i++) {
+        read_node (&cur_node, cur_offset, table, file);
+        
+        printf ("(v%d) %d ", cur_node.ver, cur_node.val);
+        if (ks->ks_sz > 1) {
+            node_d next_node = {};
+            read_node (&next_node, cur_node.next, table, file);
+            printf ("-> %d", next_node.val);
+        }
+        printf ("\n");
+
         cur_offset = cur_node.next;
+    }
+}
 
-        for (size_t j = 0; j < table->kslist[i].ks_sz; j++) {
+void print_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file) {
 
-            read_node (&cur_node, cur_offset, table, table_disk);
+    ks_t *ks = ks_by_key (table, key);
 
-            printf ("(v%d) %d ", cur_node.ver, cur_node.val);
+    if (!ks) {
+        printf ("Key not found.\n");
+        return;
+    }
 
-            if (table->kslist[i].ks_sz > 1) {
+    offset_t cur_offset = ks->tail;
+    node_d cur_node = {};
+    read_node (&cur_node, cur_offset, table, file);
+    cur_offset = cur_node.next;
+
+    for (int i = 0; i < ks->ks_sz; i++) {
+        read_node (&cur_node, cur_offset, table, file);
+        
+        if (cur_node.ver == ver) {
+            printf ("%d ", cur_node.val);
+
+            if (ks->ks_sz > 1) {
                 node_d next_node = {};
-                read_node (&next_node, cur_node.next, table, table_disk);
+                read_node (&next_node, cur_node.next, table, file);
                 printf ("-> %d", next_node.val);
             }
-            printf ("\n");
 
-            cur_offset = cur_node.next;
+            printf ("\n");
+            return;
         }
+
+        cur_offset = cur_node.next;
     }
+
+    printf ("Item not found.\n");
+    return;
 }
 
 ks_t *ks_by_key (table_ram *table, char *key) {
@@ -64,6 +108,23 @@ int insert_table (table_ram *table, char *key, int val, FILE *file) {
 
         ks = new_keyspace (table, key);
         table->kslist[table->kslist_sz - 1] = *ks;
+    } 
+    else {
+        offset_t cur_offset = ks->tail;
+        node_d cur_node = {};
+        read_node (&cur_node, cur_offset, table, file);
+        cur_offset = cur_node.next;
+
+        for (int i = 0; i < ks->ks_sz; i++) {
+            read_node (&cur_node, cur_offset, table, file);
+            
+            if (cur_node.val == val) {
+                puts ("Error: repeated value.");
+                return ERRWRG;
+            }
+
+            cur_offset = cur_node.next;
+        }
     }
 
     new_node (table, ks, val, file);
@@ -72,6 +133,33 @@ int insert_table (table_ram *table, char *key, int val, FILE *file) {
 
     return ERRSUC;
 }
+
+/*int erase_ks_from_table (table_ram *table, ks_t *ks) {
+    
+    if (!ks) {
+        return ERRWRG;
+    }
+
+    for (size_t i = 0; i < ks->ks_sz; i++) {
+        node_t *tail = ks->tail;
+        free (tail->info);
+        ks->tail = ks->tail->next;
+        free (tail);
+    }
+
+    table->sz -= ks->ks_sz;
+    free (ks->key);
+    size_t num = ks->num;
+    
+    if (num != table->kslist_sz) {
+        memcpy (&(table->kslist[ks->num - 1]),
+        &(table->kslist[--table->kslist_sz]), sizeof (ks_t));
+        ks->num = num;
+    } else 
+        --table->kslist_sz;
+
+    return ERRSUC;
+}*/
 
 void free_table (table_ram *table) {
     free (table->kslist);

@@ -36,7 +36,7 @@ struct keyspace {
     offset_t tail;
 };
 
-/*  Linked list node.  */
+/*  Linked list node with info.  */
 struct node_d
 {
     size_t ver;
