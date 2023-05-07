@@ -25,9 +25,7 @@ int (*fptr[]) (table_ram*, FILE *file) =
 
 
 static FILE *table_disk;
-
-#define MAX_KS_SIZE 3
-
+static char *default_filename = "table.hex";
 
 int main () {
 
@@ -35,11 +33,11 @@ int main () {
     table_ram *table = init_table (KSLIST_MAX_SZ);
 
     char filename [14] = "";
-    puts ("Enter file to work with or type \"n\" to create new file: ");
+    puts ("Enter file to work with or type \"n\" to create new file named \"table.hex\": ");
     scanf ("%14s", filename);
     if (!strcmp (filename, "n")) {
-        table_disk = fopen ("table.bin", "wb+");
-        write_table_descriptor (table, table_disk, "table.bin");
+        table_disk = fopen (default_filename, "wb+");
+        write_table_descriptor (table, table_disk, default_filename);
     } 
     else {
         table_disk = fopen (filename, "rb+");
@@ -50,7 +48,6 @@ int main () {
         
         read_table_descriptor (table, table_disk);
     }
-    //strncpy (filename, "table.bin", sizeof "table.bin");
 
     FILE *file = user_file ();
     if (!file) {
@@ -69,7 +66,7 @@ int main () {
     }
 
     fclose (file);
-    write_table_descriptor (table, table_disk, "table.bin");
+    write_table_descriptor (table, table_disk, default_filename);
     free_table (table);
     fclose (table_disk);
     puts ("quit");
@@ -129,11 +126,11 @@ int delete_by_key (table_ram *table, FILE *file) {
     if (!fscanf (file, "%50s", key)) 
         return 0;
 
-    /*if (erase_from_table_by_key (table, key) == ERRSUC) 
+    if (erase_from_table_by_key (table, key) == ERRSUC) 
         printf ("Keyspace deleted successfully.");
     else 
         printf ("Keyspace not found.\n");
-    */
+
     return 1; 
 }
 
@@ -159,11 +156,9 @@ int delete_by_key_ver (table_ram *table, FILE *file) {
     
     } while (status == ERRWRG);
 
-    /*if (erase_from_table_by_key_ver (table, key, ver) == ERRSUC) 
-        printf ("Item deleted successfully.");
-    else 
-        printf ("Item not found.\n");
-    */
+    if (erase_from_table_by_key_ver (table, key, ver, table_disk) == ERRSUC)
+        puts ("Item deleted successfully");
+
     return 1; 
 }
 

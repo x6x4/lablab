@@ -1,14 +1,14 @@
 #include <stdlib.h>
 
-#define KSLIST_MAX_SZ 2
+#define KSLIST_MAX_SZ 3
+#define ANCIENT_EVIL_AWAKEN 10
 
 /*  To init last_node_offset in table creation.  */
-#define ks_offset(i) BEGIN+TABLE+KS*(i-1)
+#define ks_offset(i) TABLE+KS*(i-1)
 /*  For new node creation.  */
 #define ks_key_offset(i) ks_offset(i) + 2*sizeof (size_t)
 
-#define BEGIN 0x10
-#define TABLE 0x20
+#define TABLE 0x30
 #define KS 0x40
 #define NODE 0x20
 

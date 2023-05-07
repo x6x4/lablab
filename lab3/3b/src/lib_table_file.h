@@ -4,9 +4,9 @@
 /*  Base functions.  */
 
 int insert_table (table_ram *table, char *key, int val, FILE *file);
-
 void print_table (table_ram *table, FILE *file);
-
+int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file);
+int erase_from_table_by_key (table_ram *table, char *key);
 void free_table (table_ram *table);
 
 /*  
@@ -17,6 +17,9 @@ void print_by_key (table_ram *table, char *key, FILE *file);
 void print_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file);
 
 ks_t *ks_by_key (table_ram *table, char *key);
+
+/*  Great and terrible, appears with each 10th item.  */
+void garbage_collector (table_ram *table, FILE *file);
 
 
 /*  Constructors.  */
