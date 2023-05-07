@@ -32,7 +32,7 @@ int option_choice (const char *msgs[], size_t msgc, FILE *file) {
     do {
         puts (errmsg);
         errmsg = "Bad input";
-        status = get_int_file (&option_num, file);
+        status = get_int_file (&option_num, file, msgc - 1, 0);
 
         if (status == ERREOF)
             return 0;
@@ -43,7 +43,7 @@ int option_choice (const char *msgs[], size_t msgc, FILE *file) {
 }
 
 
-int get_int_file (int *num, FILE *file) {
+int get_int_file (int *num, FILE *file, int high, int low) {
 
     int chrs_rd = fscanf (file, "%d", num);
 
@@ -57,6 +57,9 @@ int get_int_file (int *num, FILE *file) {
     if (chrs_rd == EOF) {
         return ERREOF;
     }
+
+    if (*num > high || *num < low)
+        return ERRWRG;
 
     return ERRSUC;
 }

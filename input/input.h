@@ -13,6 +13,6 @@ FILE *user_file ();
 int option_choice (const char *msgs[], size_t msgc, FILE *file);
 
 /*  returns read integer in num in success, otherwise returns ERRWRG or ERREOF  */
-int get_int_file (int *num, FILE *file);
+int get_int_file (int *num, FILE *file, int high, int low);
 /*  returns read integer in num in success, otherwise returns ERRWRG or ERREOF  */
 int get_int (int *num);
