@@ -9,7 +9,7 @@ enum {
 };
 
 void garbage_collector (table_ram *table, FILE *file) {
-    
+
     puts ("WARNING: GARBAGE COLLECTION. PLEASE DON'T TAKE ANY ACTION TILL IT'S OVER.");
 
     if (!table) {
@@ -19,42 +19,118 @@ void garbage_collector (table_ram *table, FILE *file) {
     /*  
         First we copy all nodes after last node, 
         then we copy them after last keyspace.  
+
+        ------------------          -----------------        ----------------     
+        table & keyspaces           table & keyspaces        table & keyspaces
+        ------------------    ->    -----------------   ->   ----------------- 
+         **00*0*0*                   **00*0*0*|******        ******
+        |<------->|                 |<-------------->| 
+        initial_nodes_size          total_nodes_size
     */
-    size_t initial_last_node_offset = table->last_node_offset;
-    size_t first_node_offset = ks_offset(KSLIST_MAX_SZ+1);
-    offset_t nodes_shift = initial_last_node_offset - first_node_offset;
+    offset_t initial_last_node_offset = table->last_node_offset;
+    offset_t first_node_offset = ks_offset(KSLIST_MAX_SZ+1);
+    offset_t initial_nodes_size = initial_last_node_offset - first_node_offset;
 
 
     for (size_t i = 0; i < table->kslist_sz; i++) {
         printf ("Key %lu: %s\n", i+1, table->kslist[i].key);
 
+        /*  Start from tail node.  */
         offset_t cur_offset = table->kslist[i].tail;
+        offset_t tail_offset = table->last_node_offset;
         node_d cur_node = {};
-        read_node (&cur_node, cur_offset, table, file);
-        cur_offset = cur_node.next;
 
         for (int j = 0; j < table->kslist[i].ks_sz; j++) {
+            
             read_node (&cur_node, cur_offset, table, file);
             /*  Copy "pointer" to next node.  */
             cur_offset = cur_node.next;
 
             fseek (file, table->last_node_offset, SEEK_SET);
-            cur_node.next = table->last_node_offset - nodes_shift + NODE;
+            if (j == table->kslist[i].ks_sz - 1) {
+                table->kslist[i].tail = tail_offset - initial_nodes_size;
+                cur_node.next = tail_offset - initial_nodes_size;
+            }
+            else 
+                cur_node.next = table->last_node_offset - initial_nodes_size + NODE;
             fwrite (&cur_node, sizeof cur_node, 1, file);
 
             table->last_node_offset += NODE;
         }
     }
 
+    /*  Copy relevant nodes to buf.  */
     node_d *buf = calloc (table->sz, sizeof *buf);
     fseek (file, initial_last_node_offset, SEEK_SET);
     fread (buf, sizeof *buf, table->sz, file);
+    /*  Clean overall nodes area.  */
+    offset_t total_nodes_size = initial_nodes_size + table->sz*NODE;
+    void *clean = calloc (1, total_nodes_size);
+    fseek (file, first_node_offset, SEEK_SET);
+    fwrite (clean, total_nodes_size, 1, file);
+    /*  Write relevant nodes to file.  */
     fseek (file, first_node_offset, SEEK_SET);
     fwrite (buf, sizeof *buf, table->sz, file);
 
+    free (buf);
+    free (clean);
+
+    table->last_node_offset -= initial_nodes_size;
+
     puts ("THAT'S ALL. YOU CAN SAFELY CONTINUE YOUR WORK NOW. THANK YOU.");
+
+    table->time_to_clean += ANCIENT_EVIL_AWAKEN;
 }
 
+int insert_table (table_ram *table, char *key, int val, FILE *file) {
+
+    size_t nodes_number = (table->last_node_offset - (ks_offset(KSLIST_MAX_SZ+1))) \
+                           / (sizeof (node_d));
+    
+    printf ("UNTIL GARBAGE COLLECTION: %lu\n", table->time_to_clean - nodes_number);
+
+    if (nodes_number == table->time_to_clean) {
+        garbage_collector (table, file);
+        return ERRWRG;
+    }
+
+    fseek (file, 0, SEEK_SET);
+
+    ks_t *ks = ks_by_key (table, key);
+
+    if (!ks) {
+        if (table->kslist_sz == table->kslist_max_sz) {
+            printf ("Error: run out of keyspaces\n");
+            return ERRWRG;
+        }
+
+        ks = new_keyspace (table, key);
+        table->kslist[table->kslist_sz - 1] = *ks;
+    } 
+    else {
+        offset_t cur_offset = ks->tail;
+        node_d cur_node = {};
+        read_node (&cur_node, cur_offset, table, file);
+        cur_offset = cur_node.next;
+
+        for (int i = 0; i < ks->ks_sz; i++) {
+            read_node (&cur_node, cur_offset, table, file);
+            
+            if (cur_node.val == val) {
+                puts ("Error: repeated value.");
+                return ERRWRG;
+            }
+
+            cur_offset = cur_node.next;
+        }
+    }
+
+    new_node (table, ks, val, file);
+
+    table->sz++;
+
+    return ERRSUC;
+}
 
 void print_table (table_ram *table, FILE *file) {
 
@@ -141,51 +217,6 @@ ks_t *ks_by_key (table_ram *table, char *key) {
         }
     }
     return NULL;
-}
-
-int insert_table (table_ram *table, char *key, int val, FILE *file) {
-
-    /*if (table->sz == ANCIENT_EVIL_AWAKEN) {
-        garbage_collector (table, file);
-        return ERRWRG;
-    }*/
-
-    fseek (file, 0, SEEK_SET);
-
-    ks_t *ks = ks_by_key (table, key);
-
-    if (!ks) {
-        if (table->kslist_sz == table->kslist_max_sz) {
-            printf ("Error: run out of keyspaces\n");
-            return ERRWRG;
-        }
-
-        ks = new_keyspace (table, key);
-        table->kslist[table->kslist_sz - 1] = *ks;
-    } 
-    else {
-        offset_t cur_offset = ks->tail;
-        node_d cur_node = {};
-        read_node (&cur_node, cur_offset, table, file);
-        cur_offset = cur_node.next;
-
-        for (int i = 0; i < ks->ks_sz; i++) {
-            read_node (&cur_node, cur_offset, table, file);
-            
-            if (cur_node.val == val) {
-                puts ("Error: repeated value.");
-                return ERRWRG;
-            }
-
-            cur_offset = cur_node.next;
-        }
-    }
-
-    new_node (table, ks, val, file);
-
-    table->sz++;
-
-    return ERRSUC;
 }
 
 int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file) {
@@ -284,6 +315,7 @@ table_ram *init_table (size_t kslist_max_sz) {
 
     table->kslist_max_sz = kslist_max_sz;
     table->last_node_offset = ks_offset(KSLIST_MAX_SZ+1);
+    table->time_to_clean = ANCIENT_EVIL_AWAKEN;
     table->kslist = calloc (kslist_max_sz, sizeof *(table->kslist));
 
     return table;
@@ -371,10 +403,8 @@ int write_table_descriptor (table_ram *table, FILE *file, char *filename) {
     fwrite (filename, strlen (filename), 1, file); 
     fseek (file, 16, SEEK_SET);
 
-    /*  Table_d also contains 4 fields, 8 bytes each:
-        sz, kslist_max_sz, kslist_sz, last_node_offset
-    */
-    fwrite (table, sizeof (size_t), 4, file);
+    /*  Skip kslist field.  */
+    fwrite (table, (sizeof *table - sizeof (ks_t*)), 1, file);
 
     /*  Write keyspaces.  */
     for (size_t i = 0; i < table->kslist_sz; i++) {

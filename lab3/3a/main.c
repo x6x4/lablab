@@ -1,6 +1,7 @@
 #include "../../input/input.h"
 #include "src/lib_table_ram.h"
 #include <stdio.h>
+#include <limits.h>
 
 int insert (table_t *table, FILE *file);
 int delete_by_key (table_t *table, FILE *file);
@@ -62,7 +63,7 @@ int insert (table_t *table, FILE *file) {
     do {
         puts (errmsg);
         errmsg = "Bad input";
-        status = get_int_file (&val, file);
+        status = get_int_file (&val, file, INT_MAX, 0);
 
         if (status == ERREOF)
             return 0;
@@ -104,7 +105,7 @@ int delete_by_key_ver (table_t *table, FILE *file) {
     do {
         puts (errmsg);
         errmsg = "Bad input";
-        status = get_int_file (&ver, file);
+        status = get_int_file (&ver, file, INT_MAX, 0);
 
         if (status == ERREOF)
             return 0;
@@ -151,7 +152,7 @@ int find_by_key_ver (table_t *table, FILE *file) {
     do {
         puts (errmsg);
         errmsg = "Bad input";
-        status = get_int_file (&ver, file);
+        status = get_int_file (&ver, file, INT_MAX, 0);
 
         if (status == ERREOF)
             return 0;

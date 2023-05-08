@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #define KSLIST_MAX_SZ 3
-#define ANCIENT_EVIL_AWAKEN 10
+#define ANCIENT_EVIL_AWAKEN 5
 
 /*  To init last_node_offset in table creation.  */
 #define ks_offset(i) TABLE+KS*(i-1)
@@ -24,6 +24,7 @@ struct table_ram {
     size_t kslist_sz;
     size_t kslist_max_sz;
     offset_t last_node_offset;
+    size_t time_to_clean;
 
     ks_t *kslist;
 };

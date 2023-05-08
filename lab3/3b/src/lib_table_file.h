@@ -18,7 +18,7 @@ void print_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file);
 
 ks_t *ks_by_key (table_ram *table, char *key);
 
-/*  Great and terrible, appears with each 10th item.  */
+/*  Great and terrible, appears with each 5th item.  */
 void garbage_collector (table_ram *table, FILE *file);
 
 
