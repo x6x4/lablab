@@ -16,7 +16,7 @@ void free_table (table_ram *table);
 void print_by_key (table_ram *table, char *key, FILE *file);
 void print_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file);
 
-ks_t *ks_by_key (table_ram *table, char *key);
+ks_d *ks_by_key (table_ram *table, char *key);
 
 /*  Great and terrible, appears with each 5th item.  */
 void garbage_collector (table_ram *table, FILE *file);
@@ -24,8 +24,8 @@ void garbage_collector (table_ram *table, FILE *file);
 
 /*  Constructors.  */
 table_ram *init_table (size_t kslist_max_sz);
-ks_t *new_keyspace (table_ram *table, char *key);
-void new_node (table_ram *table, ks_t *ks, int val, FILE *file);
+ks_d *new_keyspace (table_ram *table, char *key);
+void new_node (table_ram *table, ks_d *ks, int val, FILE *file);
 int read_node (node_d *new_node, offset_t node_offset, table_ram *table, FILE *file);
 
 

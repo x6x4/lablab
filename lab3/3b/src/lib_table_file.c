@@ -96,7 +96,7 @@ int insert_table (table_ram *table, char *key, int val, FILE *file) {
 
     fseek (file, 0, SEEK_SET);
 
-    ks_t *ks = ks_by_key (table, key);
+    ks_d *ks = ks_by_key (table, key);
 
     if (!ks) {
         if (table->kslist_sz == table->kslist_max_sz) {
@@ -146,7 +146,7 @@ void print_table (table_ram *table, FILE *file) {
 
 void print_by_key (table_ram *table, char *key, FILE *file) {
 
-    ks_t *ks = ks_by_key (table, key);
+    ks_d *ks = ks_by_key (table, key);
 
     if (!ks) {
         printf ("Key not found.\n");
@@ -175,7 +175,7 @@ void print_by_key (table_ram *table, char *key, FILE *file) {
 
 void print_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file) {
 
-    ks_t *ks = ks_by_key (table, key);
+    ks_d *ks = ks_by_key (table, key);
 
     if (!ks) {
         printf ("Key not found.\n");
@@ -210,7 +210,7 @@ void print_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file) {
     return;
 }
 
-ks_t *ks_by_key (table_ram *table, char *key) {
+ks_d *ks_by_key (table_ram *table, char *key) {
     for (size_t i = 0; i < table->kslist_sz; i++) {
         if (!strcmp (table->kslist[i].key, key)) {
             return &(table->kslist[i]);
@@ -221,7 +221,7 @@ ks_t *ks_by_key (table_ram *table, char *key) {
 
 int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file) {
 
-    ks_t *ks = ks_by_key (table, key);
+    ks_d *ks = ks_by_key (table, key);
 
     if (!ks) {
         puts ("Key not found");
@@ -278,7 +278,7 @@ int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *
 
 int erase_from_table_by_key (table_ram *table, char *key) {
     
-    ks_t *ks = ks_by_key (table, key);
+    ks_d *ks = ks_by_key (table, key);
 
     if (!ks) {
         puts ("Key not found");
@@ -286,12 +286,12 @@ int erase_from_table_by_key (table_ram *table, char *key) {
     }
 
     table->sz -= ks->ks_sz;
-    size_t num = ks->num;
+    size_t num = ks->num_in_table;
     
     if (num != table->kslist_sz) {
-        memcpy (&(table->kslist[ks->num - 1]),
-        &(table->kslist[--table->kslist_sz]), sizeof (ks_t));
-        ks->num = num;
+        memcpy (&(table->kslist[ks->num_in_table - 1]),
+        &(table->kslist[--table->kslist_sz]), sizeof (ks_d));
+        ks->num_in_table = num;
     } else 
         --table->kslist_sz;
 
@@ -321,10 +321,10 @@ table_ram *init_table (size_t kslist_max_sz) {
     return table;
 }
 
-ks_t *new_keyspace (table_ram *table, char *key) {
+ks_d *new_keyspace (table_ram *table, char *key) {
 
-    ks_t *new_ks = &(table->kslist[table->kslist_sz]);
-    new_ks->num = ++table->kslist_sz;
+    ks_d *new_ks = &(table->kslist[table->kslist_sz]);
+    new_ks->num_in_table = ++table->kslist_sz;
     new_ks->ks_sz = 0;
     strncpy (new_ks->key, key, strlen (key));
     new_ks->tail = table->last_node_offset;
@@ -332,12 +332,12 @@ ks_t *new_keyspace (table_ram *table, char *key) {
     return new_ks;
 }
 
-void new_node (table_ram *table, ks_t *ks, int val, FILE *file) {
+void new_node (table_ram *table, ks_d *ks, int val, FILE *file) {
 
     node_d node = {};
     size_t node_offset = table->last_node_offset;
 
-    node.key = ks_key_offset(ks->num);
+    node.key = ks_key_offset(ks->num_in_table);
     node.val = val;
 
     /*  Make a copy of tail node of ks.  */
@@ -404,7 +404,9 @@ int write_table_descriptor (table_ram *table, FILE *file, char *filename) {
     fseek (file, 16, SEEK_SET);
 
     /*  Skip kslist field.  */
-    fwrite (table, (sizeof *table - sizeof (ks_t*)), 1, file);
+    fwrite (table, (sizeof *table - sizeof (ks_d*)), 1, file);
+
+    fseek (file, 8, SEEK_CUR);
 
     /*  Write keyspaces.  */
     for (size_t i = 0; i < table->kslist_sz; i++) {
@@ -424,7 +426,9 @@ int read_table_descriptor (table_ram *table, FILE *file) {
     fseek (file, 0x10, SEEK_SET);
 
     /*  Skip kslist field.  */
-    fread (table, (sizeof *table - sizeof (ks_t*)), 1, file);
+    fread (table, (sizeof *table - sizeof (ks_d*)), 1, file);
+
+    fseek (file, 8, SEEK_CUR);
 
     /*  Read keyspaces.  */
     for (size_t i = 0; i < table->kslist_sz; i++) {

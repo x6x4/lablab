@@ -8,12 +8,13 @@
 /*  For new node creation.  */
 #define ks_key_offset(i) ks_offset(i) + 2*sizeof (size_t)
 
-#define TABLE 0x30
-#define KS 0x40
-#define NODE 0x20
+/*  0x10 bytes - format + filename, 0x28 - 5 fields of size 8  */
+#define TABLE 0x40 
+#define KS (sizeof (ks_d))
+#define NODE (sizeof (node_d))
 
 typedef struct table_ram table_ram;
-typedef struct keyspace ks_t;
+typedef struct keyspace ks_d;
 typedef struct node_d node_d;
 
 typedef size_t offset_t;
@@ -26,12 +27,12 @@ struct table_ram {
     offset_t last_node_offset;
     size_t time_to_clean;
 
-    ks_t *kslist;
+    ks_d *kslist;
 };
 
 /*  Keyspace descriptor.  */
 struct keyspace {
-    size_t num;
+    size_t num_in_table;
     size_t ks_sz;
     char key [40];
     offset_t tail;
