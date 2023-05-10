@@ -8,8 +8,6 @@ enum {
 	ERRWRG
 };
 
-static size_t erased_nodes_number = 0;
-
 void garbage_collector (table_ram *table, FILE *file) {
 
     puts ("WARNING: GARBAGE COLLECTION. PLEASE DON'T TAKE ANY ACTION TILL IT'S OVER.");
@@ -81,7 +79,7 @@ void garbage_collector (table_ram *table, FILE *file) {
 
     puts ("THAT'S ALL. YOU CAN SAFELY CONTINUE YOUR WORK NOW. THANK YOU.");
 
-    table->time_to_clean += ANCIENT_EVIL_AWAKEN;
+    table->erased_nodes_num = 0;
 }
 
 int insert_table (table_ram *table, char *key, int val, FILE *file) {
@@ -241,9 +239,9 @@ ks_d *ks_by_key (table_ram *table, char *key, FILE *file) {
 
 int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file) {
 
-    printf ("UNTIL GARBAGE COLLECTION: %lu\n", table->time_to_clean - erased_nodes_number);
+    printf ("UNTIL GARBAGE COLLECTION: %lu\n", table->erased_nodes_num - ERASED_NODES_THRESHOLD);
 
-    if (erased_nodes_number == table->time_to_clean) {
+    if (table->erased_nodes_num == ERASED_NODES_THRESHOLD) {
         garbage_collector (table, file);
         return ERRWRG;
     }
@@ -295,7 +293,7 @@ int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *
     }
 
     if (done) {
-        erased_nodes_number++;
+        table->erased_nodes_num++;
         return ERRSUC;
     }
     else 
@@ -307,9 +305,9 @@ int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *
 
 int erase_from_table_by_key (table_ram *table, char *key, FILE *file) {
     
-    printf ("UNTIL GARBAGE COLLECTION: %lu\n", table->time_to_clean - erased_nodes_number);
+    printf ("UNTIL GARBAGE COLLECTION: %lu\n", table->erased_nodes_num - ERASED_NODES_THRESHOLD);
 
-    if (erased_nodes_number == table->time_to_clean) {
+    if (table->erased_nodes_num == ERASED_NODES_THRESHOLD) {
         garbage_collector (table, file);
         return ERRWRG;
     }
@@ -331,7 +329,7 @@ int erase_from_table_by_key (table_ram *table, char *key, FILE *file) {
     } else 
         --table->kslist_sz;
 
-    erased_nodes_number+= ks->ks_sz;
+    table->erased_nodes_num+= ks->ks_sz;
     return ERRSUC;
 }
 
@@ -352,7 +350,7 @@ table_ram *init_table (size_t kslist_max_sz) {
 
     table->kslist_max_sz = kslist_max_sz;
     table->last_node_offset = ks_offset(KSLIST_MAX_SZ+1);
-    table->time_to_clean = ANCIENT_EVIL_AWAKEN;
+    table->erased_nodes_num = ERASED_NODES_THRESHOLD;
     table->kslist = calloc (kslist_max_sz, sizeof *(table->kslist));
 
     return table;
