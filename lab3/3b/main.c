@@ -126,7 +126,7 @@ int delete_by_key (table_ram *table, FILE *file) {
     if (!fscanf (file, "%50s", key)) 
         return 0;
 
-    if (erase_from_table_by_key (table, key) == ERRSUC) 
+    if (erase_from_table_by_key (table, key, file) == ERRSUC) 
         printf ("Keyspace deleted successfully.");
     else 
         printf ("Keyspace not found.\n");

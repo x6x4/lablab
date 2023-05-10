@@ -34,7 +34,7 @@ struct table_ram {
 struct keyspace {
     size_t num_in_table;
     size_t ks_sz;
-    char key [40];
+    offset_t key;
     offset_t tail;
 };
 
@@ -47,3 +47,4 @@ struct node_d
     size_t val;
 };
 
+#define KEY_OFFSET_IN_NODE (sizeof(node_d) - sizeof(size_t) - sizeof(offset_t))

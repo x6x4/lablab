@@ -8,6 +8,8 @@ enum {
 	ERRWRG
 };
 
+static size_t erased_nodes_number = 0;
+
 void garbage_collector (table_ram *table, FILE *file) {
 
     puts ("WARNING: GARBAGE COLLECTION. PLEASE DON'T TAKE ANY ACTION TILL IT'S OVER.");
@@ -84,19 +86,9 @@ void garbage_collector (table_ram *table, FILE *file) {
 
 int insert_table (table_ram *table, char *key, int val, FILE *file) {
 
-    size_t nodes_number = (table->last_node_offset - (ks_offset(KSLIST_MAX_SZ+1))) \
-                           / (sizeof (node_d));
-    
-    printf ("UNTIL GARBAGE COLLECTION: %lu\n", table->time_to_clean - nodes_number);
-
-    if (nodes_number == table->time_to_clean) {
-        garbage_collector (table, file);
-        return ERRWRG;
-    }
-
     fseek (file, 0, SEEK_SET);
 
-    ks_d *ks = ks_by_key (table, key);
+    ks_d *ks = ks_by_key (table, key, file);
 
     if (!ks) {
         if (table->kslist_sz == table->kslist_max_sz) {
@@ -104,8 +96,7 @@ int insert_table (table_ram *table, char *key, int val, FILE *file) {
             return ERRWRG;
         }
 
-        ks = new_keyspace (table, key);
-        table->kslist[table->kslist_sz - 1] = *ks;
+        ks = new_keyspace (table, key, file);
     } 
     else {
         offset_t cur_offset = ks->tail;
@@ -132,6 +123,25 @@ int insert_table (table_ram *table, char *key, int val, FILE *file) {
     return ERRSUC;
 }
 
+char *read_string (offset_t str_offset, FILE *file) {
+    char c = 0;
+    size_t strlen = 0;
+
+    fseek (file, str_offset, SEEK_SET);
+    do {
+        fread (&c, sizeof c, 1, file);
+        strlen++;
+    }
+    while (c != 0);
+
+    char *key = calloc (strlen, sizeof *key);
+
+    fseek (file, str_offset, SEEK_SET);
+    fread (key, strlen, 1, file);
+
+    return key;
+} 
+
 void print_table (table_ram *table, FILE *file) {
 
     if (!table) {
@@ -139,14 +149,18 @@ void print_table (table_ram *table, FILE *file) {
     }
 
     for (size_t i = 0; i < table->kslist_sz; i++) {
-        printf ("Key %lu: %s\n", i+1, table->kslist[i].key);
-        print_by_key (table, table->kslist[i].key, file);
+        
+        char *key = read_string (table->kslist[i].key, file);
+
+        printf ("Key %lu: %s\n", i+1, key);
+        print_by_key (table, key, file);
+        free (key);
     }
 }
 
 void print_by_key (table_ram *table, char *key, FILE *file) {
 
-    ks_d *ks = ks_by_key (table, key);
+    ks_d *ks = ks_by_key (table, key, file);
 
     if (!ks) {
         printf ("Key not found.\n");
@@ -175,7 +189,7 @@ void print_by_key (table_ram *table, char *key, FILE *file) {
 
 void print_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file) {
 
-    ks_d *ks = ks_by_key (table, key);
+    ks_d *ks = ks_by_key (table, key, file);
 
     if (!ks) {
         printf ("Key not found.\n");
@@ -210,18 +224,31 @@ void print_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file) {
     return;
 }
 
-ks_d *ks_by_key (table_ram *table, char *key) {
+ks_d *ks_by_key (table_ram *table, char *key, FILE *file) {
     for (size_t i = 0; i < table->kslist_sz; i++) {
-        if (!strcmp (table->kslist[i].key, key)) {
+
+        char *ks_key = read_string (table->kslist[i].key, file);
+
+        if (!strcmp (ks_key, key)) {
+            free (ks_key);
             return &(table->kslist[i]);
         }
+        free (ks_key);
     }
+
     return NULL;
 }
 
 int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file) {
 
-    ks_d *ks = ks_by_key (table, key);
+    printf ("UNTIL GARBAGE COLLECTION: %lu\n", table->time_to_clean - erased_nodes_number);
+
+    if (erased_nodes_number == table->time_to_clean) {
+        garbage_collector (table, file);
+        return ERRWRG;
+    }
+
+    ks_d *ks = ks_by_key (table, key, file);
 
     if (!ks) {
         puts ("Key not found");
@@ -233,7 +260,7 @@ int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *
         node_d cur_node = {};
         read_node (&cur_node, cur_offset, table, file);
         if (cur_node.ver == ver) {
-            return erase_from_table_by_key (table, key);
+            return erase_from_table_by_key (table, key, file);
         }
         else {
             puts ("Item not found");
@@ -267,8 +294,10 @@ int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *
         cur_offset = cur_node.next;
     }
 
-    if (done)
+    if (done) {
+        erased_nodes_number++;
         return ERRSUC;
+    }
     else 
     {
         puts ("Item not found");
@@ -276,9 +305,16 @@ int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *
     }
 }
 
-int erase_from_table_by_key (table_ram *table, char *key) {
+int erase_from_table_by_key (table_ram *table, char *key, FILE *file) {
     
-    ks_d *ks = ks_by_key (table, key);
+    printf ("UNTIL GARBAGE COLLECTION: %lu\n", table->time_to_clean - erased_nodes_number);
+
+    if (erased_nodes_number == table->time_to_clean) {
+        garbage_collector (table, file);
+        return ERRWRG;
+    }
+
+    ks_d *ks = ks_by_key (table, key, file);
 
     if (!ks) {
         puts ("Key not found");
@@ -295,6 +331,7 @@ int erase_from_table_by_key (table_ram *table, char *key) {
     } else 
         --table->kslist_sz;
 
+    erased_nodes_number+= ks->ks_sz;
     return ERRSUC;
 }
 
@@ -321,12 +358,16 @@ table_ram *init_table (size_t kslist_max_sz) {
     return table;
 }
 
-ks_d *new_keyspace (table_ram *table, char *key) {
+ks_d *new_keyspace (table_ram *table, char *key, FILE *file) {
 
     ks_d *new_ks = &(table->kslist[table->kslist_sz]);
     new_ks->num_in_table = ++table->kslist_sz;
     new_ks->ks_sz = 0;
-    strncpy (new_ks->key, key, strlen (key));
+    new_ks->key = table->last_node_offset;
+    fseek (file, new_ks->key, SEEK_SET);
+    fwrite (key, (strlen(key) + 1), 1, file);
+
+    table->last_node_offset += (strlen(key) + 1);
     new_ks->tail = table->last_node_offset;
 
     return new_ks;
@@ -337,7 +378,7 @@ void new_node (table_ram *table, ks_d *ks, int val, FILE *file) {
     node_d node = {};
     size_t node_offset = table->last_node_offset;
 
-    node.key = ks_key_offset(ks->num_in_table);
+    node.key = ks->key;
     node.val = val;
 
     /*  Make a copy of tail node of ks.  */
