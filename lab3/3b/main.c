@@ -128,8 +128,6 @@ int delete_by_key (table_ram *table, FILE *file) {
 
     if (erase_from_table_by_key (table, key, table_disk) == ERRSUC) 
         printf ("Keyspace deleted successfully.");
-    else 
-        printf ("Keyspace not found.\n");
 
     return 1; 
 }

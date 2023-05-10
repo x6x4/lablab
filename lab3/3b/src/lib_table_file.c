@@ -1,6 +1,8 @@
 #include "lib_table_file.h"
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+
 
 enum {
 	ERREOF = -1,
@@ -23,23 +25,33 @@ void garbage_collector (table_ram *table, FILE *file) {
         ------------------          -----------------        ----------------     
         table & keyspaces           table & keyspaces        table & keyspaces
         ------------------    ->    -----------------   ->   ----------------- 
-         **00*0*0*                   **00*0*0*|******        ******
-        |<------->|                 |<-------------->| 
+         k**00*k0*0*                k**00*k0*0*|k***k**      k***k**
+        |<-------->|                |<--------------->| 
         initial_nodes_size          total_nodes_size
     */
     offset_t initial_last_node_offset = table->last_node_offset;
     offset_t first_node_offset = ks_offset(KSLIST_MAX_SZ+1);
     offset_t initial_nodes_size = initial_last_node_offset - first_node_offset;
 
-
+    /*  For each ks write key and linked list after last current node.  */
     for (size_t i = 0; i < table->kslist_sz; i++) {
-        printf ("Key %lu: %s\n", i+1, table->kslist[i].key);
+
+        /*  Print key of each ks.  */
+        char *key = read_string (table->kslist[i].key, file);
+        printf ("Key %lu: %s\n", i+1, key);
+        /*  Write key after current last node.  */
+        offset_t key_offset = table->last_node_offset;
+        fseek (file, key_offset, SEEK_SET);
+        fwrite (key, (strlen (key)+1), 1, file);
+        table->last_node_offset += (strlen (key)+1);
+        free (key);
 
         /*  Start from tail node.  */
         offset_t cur_offset = table->kslist[i].tail;
-        offset_t tail_offset = table->last_node_offset;
+        offset_t cur_tail_offset = table->last_node_offset;
         node_d cur_node = {};
 
+        /*  Iterate through keyspace.  */
         for (int j = 0; j < table->kslist[i].ks_sz; j++) {
             
             read_node (&cur_node, cur_offset, table, file);
@@ -47,12 +59,16 @@ void garbage_collector (table_ram *table, FILE *file) {
             cur_offset = cur_node.next;
 
             fseek (file, table->last_node_offset, SEEK_SET);
-            if (j == table->kslist[i].ks_sz - 1) {
-                table->kslist[i].tail = tail_offset - initial_nodes_size;
-                cur_node.next = tail_offset - initial_nodes_size;
+            /*  If cur_node == tail.  */
+            if (j == (table->kslist[i].ks_sz - 1)) {
+                table->kslist[i].tail = cur_tail_offset - initial_nodes_size;
+                table->kslist[i].key = key_offset - initial_nodes_size;
+                cur_node.next = cur_tail_offset - initial_nodes_size;
             }
             else 
                 cur_node.next = table->last_node_offset - initial_nodes_size + NODE;
+
+            cur_node.key = key_offset - initial_nodes_size;
             fwrite (&cur_node, sizeof cur_node, 1, file);
 
             table->last_node_offset += NODE;
@@ -60,22 +76,18 @@ void garbage_collector (table_ram *table, FILE *file) {
     }
 
     /*  Copy relevant nodes to buf.  */
-    node_d *buf = calloc (table->sz, sizeof *buf);
+    offset_t final_nodes_size = table->last_node_offset - initial_last_node_offset;
+    void *buf = calloc (1, final_nodes_size);
     fseek (file, initial_last_node_offset, SEEK_SET);
-    fread (buf, sizeof *buf, table->sz, file);
-    /*  Clean overall nodes area.  */
-    offset_t total_nodes_size = initial_nodes_size + table->sz*NODE;
-    void *clean = calloc (1, total_nodes_size);
+    fread (buf, final_nodes_size, 1, file);
+    /*  Write only relevant nodes to file.  */
     fseek (file, first_node_offset, SEEK_SET);
-    fwrite (clean, total_nodes_size, 1, file);
-    /*  Write relevant nodes to file.  */
-    fseek (file, first_node_offset, SEEK_SET);
-    fwrite (buf, sizeof *buf, table->sz, file);
+    ftruncate (fileno(file), first_node_offset + final_nodes_size);
+    fwrite (buf, final_nodes_size, 1, file);
 
     free (buf);
-    free (clean);
 
-    table->last_node_offset -= initial_nodes_size;
+    table->last_node_offset = first_node_offset + final_nodes_size;
 
     puts ("THAT'S ALL. YOU CAN SAFELY CONTINUE YOUR WORK NOW. THANK YOU.");
 
@@ -239,9 +251,9 @@ ks_d *ks_by_key (table_ram *table, char *key, FILE *file) {
 
 int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file) {
 
-    printf ("UNTIL GARBAGE COLLECTION: %lu\n", table->erased_nodes_num - ERASED_NODES_THRESHOLD);
+    printf ("UNTIL GARBAGE COLLECTION: %d\n", ERASED_NODES_THRESHOLD - table->erased_nodes_num);
 
-    if (table->erased_nodes_num == ERASED_NODES_THRESHOLD) {
+    if (table->erased_nodes_num >= ERASED_NODES_THRESHOLD) {
         garbage_collector (table, file);
         return ERRWRG;
     }
@@ -305,9 +317,9 @@ int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *
 
 int erase_from_table_by_key (table_ram *table, char *key, FILE *file) {
     
-    printf ("UNTIL GARBAGE COLLECTION: %lu\n", table->erased_nodes_num - ERASED_NODES_THRESHOLD);
+    printf ("UNTIL GARBAGE COLLECTION: %d\n", ERASED_NODES_THRESHOLD - table->erased_nodes_num);
 
-    if (table->erased_nodes_num == ERASED_NODES_THRESHOLD) {
+    if (table->erased_nodes_num >= ERASED_NODES_THRESHOLD) {
         garbage_collector (table, file);
         return ERRWRG;
     }
@@ -350,7 +362,7 @@ table_ram *init_table (size_t kslist_max_sz) {
 
     table->kslist_max_sz = kslist_max_sz;
     table->last_node_offset = ks_offset(KSLIST_MAX_SZ+1);
-    table->erased_nodes_num = ERASED_NODES_THRESHOLD;
+    table->erased_nodes_num = 0;
     table->kslist = calloc (kslist_max_sz, sizeof *(table->kslist));
 
     return table;

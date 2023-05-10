@@ -9,18 +9,14 @@ int erase_from_table_by_key_ver (table_ram *table, char *key, size_t ver, FILE *
 int erase_from_table_by_key (table_ram *table, char *key, FILE *file);
 void free_table (table_ram *table);
 
-/*  
-    How to return a table, if table is a file in its essence?
-    I decided to print all appropriate nodes.  
-*/
+/*  Search and print.  */ 
 void print_by_key (table_ram *table, char *key, FILE *file);
 void print_by_key_ver (table_ram *table, char *key, size_t ver, FILE *file);
-
 ks_d *ks_by_key (table_ram *table, char *key, FILE *file);
 
-/*  Great and terrible, appears with each 5th item.  */
+/*  Helper functions.  */
 void garbage_collector (table_ram *table, FILE *file);
-
+char *read_string (offset_t str_offset, FILE *file);
 
 /*  Constructors.  */
 table_ram *init_table (size_t kslist_max_sz);
