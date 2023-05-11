@@ -14,7 +14,7 @@
 #define NODE (sizeof (node_d))
 
 typedef struct table_ram table_ram;
-typedef struct keyspace ks_d;
+typedef struct keyspace_d ks_d;
 typedef struct node_d node_d;
 
 typedef size_t offset_t;
@@ -31,7 +31,15 @@ struct table_ram {
 };
 
 /*  Keyspace descriptor.  */
-struct keyspace {
+struct keyspace_d {
+    size_t num_in_table;
+    size_t ks_sz;
+    offset_t key;
+    offset_t tail;
+};
+
+/*  Keyspace ram.  */
+struct keyspace_ram {
     size_t num_in_table;
     size_t ks_sz;
     offset_t key;

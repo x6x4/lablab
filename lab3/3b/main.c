@@ -30,7 +30,7 @@ static char *default_filename = "table.hex";
 int main () {
 
     puts ("Table ui. ^D to quit.");
-    table_ram *table = init_table (KSLIST_MAX_SZ);
+    table_ram *table = init_table_file (KSLIST_MAX_SZ);
 
     char filename [14] = "";
     puts ("Enter filename of table file (max 14 symbols) \
@@ -43,7 +43,7 @@ int main () {
     else {
         table_disk = fopen (filename, "rb+");
         if (check_table (table_disk)) {
-            free_table (table);
+            free_table_file (table);
             return 1;
         }
         
@@ -52,7 +52,7 @@ int main () {
 
     FILE *file = user_file ();
     if (!file) {
-        free_table (table);
+        free_table_file (table);
         fclose (table_disk);
         puts ("quit");
         return 0;
@@ -68,7 +68,7 @@ int main () {
 
     fclose (file);
     write_table_descriptor (table, table_disk, default_filename);
-    free_table (table);
+    free_table_file (table);
     fclose (table_disk);
     puts ("quit");
     return 0;
@@ -115,7 +115,7 @@ int insert (table_ram *table, FILE *file) {
     
     } while (status == ERRWRG);
 
-    if (insert_table (table, key, val, table_disk) == ERRSUC) 
+    if (insert_table_file (table, key, val, table_disk) == ERRSUC) 
         printf ("Item inserted successfully.\n");
 
     free (key);
@@ -127,9 +127,10 @@ int delete_by_key (table_ram *table, FILE *file) {
     fscanf (file, "%*c");
     char *key = get_input_string ("\nEnter key of keyspace to delete: ", file);
 
-    if (erase_from_table_by_key (table, key, table_disk) == ERRSUC) 
+    if (erase_from_table_by_key_file (table, key, table_disk) == ERRSUC) 
         printf ("Keyspace deleted successfully.");
 
+    free (key);
     return 1; 
 }
 
@@ -154,7 +155,7 @@ int delete_by_key_ver (table_ram *table, FILE *file) {
     
     } while (status == ERRWRG);
 
-    if (erase_from_table_by_key_ver (table, key, ver, table_disk) == ERRSUC)
+    if (erase_from_table_by_key_ver_file (table, key, ver, table_disk) == ERRSUC)
         puts ("Item deleted successfully");
 
     free (key);
@@ -202,7 +203,7 @@ int find_by_key_ver (table_ram *table, FILE *file) {
 
 int print (table_ram *table, FILE *file) {
     printf ("Table:\n");
-    print_table (table, table_disk);
+    print_table_file (table, table_disk);
     return 1;
 }
 
