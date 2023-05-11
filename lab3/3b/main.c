@@ -33,7 +33,8 @@ int main () {
     table_ram *table = init_table (KSLIST_MAX_SZ);
 
     char filename [14] = "";
-    puts ("Enter file to work with or type \"n\" to create new file named \"table.hex\": ");
+    puts ("Enter filename of table file (max 14 symbols) \
+    \nor type \"n\" to create new file named \"table.hex\": ");
     scanf ("%14s", filename);
     if (!strcmp (filename, "n")) {
         table_disk = fopen (default_filename, "wb+");
@@ -93,11 +94,9 @@ int check_table (FILE *table_disk) {
 }
 
 int insert (table_ram *table, FILE *file) {
-    char key [50] = {};
-    printf ("\nEnter key of item to insert: ");
-
-    if (!fscanf (file, "%50s", key)) 
-        return 0;
+    /*  eat newline after option  */
+    fscanf (file, "%*c");
+    char *key = get_input_string ("\nEnter key of item to insert: ", file);
 
     size_t val = 0;
     printf ("Enter value of item to insert: ");
@@ -109,22 +108,24 @@ int insert (table_ram *table, FILE *file) {
         errmsg = "Bad input";
         status = get_int_file (&val, file, INT_MAX, 0);
 
-        if (status == ERREOF)
+        if (status == ERREOF) {
+            free (key);
             return 0;
+        }
     
     } while (status == ERRWRG);
 
     if (insert_table (table, key, val, table_disk) == ERRSUC) 
         printf ("Item inserted successfully.\n");
 
+    free (key);
     return 1; 
 }
 
 int delete_by_key (table_ram *table, FILE *file) {
-    char key [50] = {};
-    printf ("\nEnter key of keyspace to delete: ");
-    if (!fscanf (file, "%50s", key)) 
-        return 0;
+    /*  eat newline after option  */
+    fscanf (file, "%*c");
+    char *key = get_input_string ("\nEnter key of keyspace to delete: ", file);
 
     if (erase_from_table_by_key (table, key, table_disk) == ERRSUC) 
         printf ("Keyspace deleted successfully.");
@@ -133,12 +134,9 @@ int delete_by_key (table_ram *table, FILE *file) {
 }
 
 int delete_by_key_ver (table_ram *table, FILE *file) {
-    char key [50] = {};
-    printf ("\nEnter key of item to delete: ");
-
-    if (!fscanf (file, "%50s", key)) 
-        return 0;
-
+    /*  eat newline after option  */
+    fscanf (file, "%*c");
+    char *key = get_input_string ("\nEnter key of item to delete: ", file);
     size_t ver = 0;
     printf ("Enter version of item to delete: ");
     char *errmsg = "";
@@ -149,33 +147,35 @@ int delete_by_key_ver (table_ram *table, FILE *file) {
         errmsg = "Bad input";
         status = get_int_file (&ver, file, INT_MAX, 0);
 
-        if (status == ERREOF)
+        if (status == ERREOF) {
+            free (key);
             return 0;
+        }
     
     } while (status == ERRWRG);
 
     if (erase_from_table_by_key_ver (table, key, ver, table_disk) == ERRSUC)
         puts ("Item deleted successfully");
 
+    free (key);
     return 1; 
 }
 
 int find_by_key (table_ram *table, FILE *file) {
-    char key [50] = {};
-    printf ("\nEnter key of keyspace to find: ");
-    if (!fscanf (file, "%50s", key)) 
-        return 0;
+    /*  eat newline after option  */
+    fscanf (file, "%*c");
+    char *key = get_input_string ("\nEnter key of keyspace to find: ", file);
 
     print_by_key (table, key, table_disk);
+    
+    free (key);
     return 1; 
 }
 
 int find_by_key_ver (table_ram *table, FILE *file) {
-    char key [50] = {};
-    printf ("\nEnter key of item to find: ");
-
-    if (!fscanf (file, "%50s", key)) 
-        return 0;
+    /*  eat newline after option  */
+    fscanf (file, "%*c");
+    char *key = get_input_string ("\nEnter key of item to find: ", file);
 
     size_t ver = 0;
     printf ("Enter version of item to find: ");
@@ -187,13 +187,16 @@ int find_by_key_ver (table_ram *table, FILE *file) {
         errmsg = "Bad input";
         status = get_int_file (&ver, file, INT_MAX, 0);
 
-        if (status == ERREOF)
+        if (status == ERREOF) {
+            free (key);
             return 0;
+        }
     
     } while (status == ERRWRG);
 
     print_by_key_ver (table, key, ver, table_disk);
 
+    free (key);
     return 1; 
 }
 
