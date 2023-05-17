@@ -1,0 +1,348 @@
+Table ui. ^D to quit.
+Enter filename to read from
+or "stdin" to read from stdin
+stdin
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+1
+
+Enter key of item to insert: 1
+Enter value of item to insert: 
+1
+Item inserted successfully.
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+1 2 2
+
+Enter key of item to insert: Enter value of item to insert: 
+Item inserted successfully.
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+1 12 12
+
+Enter key of item to insert: Enter value of item to insert: 
+Item inserted successfully.
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+4
+Table:
+Hash 1: 49
+("1", 1)-> ("12", 12)
+Hash 2: 50
+("2", 2)
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+1
+
+Enter key of item to insert: 3
+Enter value of item to insert: 
+3
+Item inserted successfully.
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+4
+Table:
+Hash 1: 49
+("1", 1)-> ("12", 12)
+Hash 2: 50
+("2", 2)
+Hash 3: 51
+("3", 3)
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+1
+
+Enter key of item to insert: 33
+Enter value of item to insert: 
+33
+Item inserted successfully.
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+1
+
+Enter key of item to insert: 32
+Enter value of item to insert: 
+32
+Item inserted successfully.
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+4
+Table:
+Hash 1: 49
+("1", 1)-> ("12", 12)
+Hash 2: 50
+("2", 2)
+Hash 3: 51
+("3", 3)-> ("33", 33)-> ("32", 32)
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+3
+
+Enter key of keyspace to find: 33
+Hash 1: 51
+("33", 33)
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+3
+
+Enter key of keyspace to find: 44
+Key not found.
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+3
+
+Enter key of keyspace to find: 100
+Key not found.
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+3
+
+Enter key of keyspace to find: -100
+Key not found.
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+3
+
+Enter key of keyspace to find: 1
+Hash 1: 49
+("1", 1)
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+2
+
+Enter key of keyspace to delete: 1
+Keyspace deleted successfully.
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+2
+
+Enter key of keyspace to delete: 2
+Keyspace deleted successfully.
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+4
+Table:
+Hash 1: 49
+("12", 12)
+Hash 2: 0
+("2", 94891846089584)
+Hash 3: 51
+("3", 3)-> ("33", 33)-> ("32", 32)
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+2
+
+Enter key of keyspace to delete: 3
+Keyspace deleted successfully.
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+3
+
+Enter key of keyspace to find: 33
+Hash 1: 51
+("33", 33)
+
+0 - quit
+
+1 - insert
+
+2 - delete by key
+
+3 - find by key
+
+4 - print
+
+
+4
+Table:
+Hash 1: 49
+("12", 12)
+Hash 2: 0
+Segmentation fault

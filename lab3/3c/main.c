@@ -8,11 +8,11 @@ int delete_by_key (table_t *table, FILE *file);
 int find_by_key (table_t *table, FILE *file);
 int print (table_t *table, FILE *file);
 
-#define MAX_KS_SIZE 2
+#define MAX_HS_SIZE 3
 
 int main () {
 
-    table_t *table = init_table (MAX_KS_SIZE);
+    table_t *table = init_table (MAX_HS_SIZE);
 
     const char *msgs [] = {"\n0 - quit\n", "1 - insert\n", "2 - delete by key\n",
                            "3 - find by key\n", "4 - print\n"};

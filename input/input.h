@@ -7,6 +7,8 @@ enum {
 	ERRWRG
 };
 
+/*  prints prompt and returns entered string  */
+char *get_input_string (const char *prompt, FILE *file);
 /*  asks user for file to read from, returns NULL if EOF  */
 FILE *user_file ();
 /*  returns number of option chosed or 0 if EOF  */

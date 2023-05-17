@@ -4,6 +4,7 @@ typedef struct table table_t;
 typedef struct keyspace ks_t;
 typedef struct info info_t;
 
+//  TODO : no GC
 
 /*  Main structure.  */
 struct table {
@@ -22,6 +23,7 @@ struct keyspace {
 /*  Node payload.  */
 struct info {
     size_t val;
+    //  todo: delete
     char *key;
 };
 

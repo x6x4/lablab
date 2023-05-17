@@ -14,12 +14,12 @@ size_t hash (char *key) {
 }
 
 int hs_by_hash (table_t *table, char *key) {
-    for (size_t i = 0; i < table->hslist_sz; i++) {
+    size_t i = -1;
+    for (i = 0; i < table->hslist_sz; i++) {
         if (hash(table->hslist[i]->key) == hash(key)) {
             return i;
         }
     }
-
     return -1;
 }
 

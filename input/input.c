@@ -1,23 +1,55 @@
 #include "input.h"
 #include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 FILE *user_file () {
     puts ("Enter filename to read from\nor \"stdin\" to read from stdin");
-    char filename [50] = {};
     char *errmsg = "";
     FILE *file = NULL;
+    char *filename = NULL;
 
     while (!file) {
-        puts (errmsg);
-        errmsg = "Wrong file";
-        if (scanf ("%50s", filename) ==  EOF)
+        printf ("%s", errmsg);
+        errmsg = "Wrong file\n";
+        filename = get_input_string ("", stdin);
+
+        if (!filename) 
             return NULL;
-        if (!strcmp(filename, "stdin"))
+        if (!strcmp(filename, "stdin")) {
+            errmsg = "";
+            free (filename);
             return stdin;
+        }
         file = fopen (filename, "r");
+        free (filename);
     }
-    
+
     return file;
+}
+
+char *get_input_string (const char *prompt, FILE *file) {
+
+    char *str = NULL;
+    size_t input_size = 0;
+    printf ("%s", prompt);
+
+    while (1) {
+        if (getline (&str, &input_size, file) == EOF) {
+            free (str);
+            return NULL;
+        }
+        
+        if (isspace(str[0])) 
+            continue;
+        
+        else 
+            break;
+    }
+    str[strcspn(str, "\n")] = '\0';
+    str[strcspn(str, " ")] = '\0';
+
+    return str;
 }
 
 int option_choice (const char *msgs[], size_t msgc, FILE *file) {
