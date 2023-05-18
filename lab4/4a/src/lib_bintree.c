@@ -2,28 +2,32 @@
 #include "../../../../lablab/new_input/generic.h"
 #include <stdlib.h>
 
-int insert_bintree (BinNodePtr *rooot, size_t key, size_t val) {
-    BinNodePtr new_node = calloc (1, sizeof *new_node);
+size_t insert_bst (BstNodePtr *rooot, size_t key, size_t val) {
+    BstNodePtr new_node = calloc (1, sizeof *new_node);
     
-    new_node->key = key;
+    new_node->key = key; // mb init?
     new_node->val = val;
     new_node->left = NULL;
     new_node->right = NULL;
+    new_node->height = 0;
     
-    if (find_by_key (&(new_node->par), *rooot, key) == ERRWRG) {
+    if (find_by_key (&(new_node->par), *rooot, key) == ERRSUC) {
+        size_t old_val = new_node->par->val;
         new_node->par->val = val;
-        return ERRWRG;
+        free (new_node);
+        return old_val;
     }
     
     if (!(new_node->par)) {
         *rooot = new_node;
         new_node->prev = NULL;
-        new_node->height = 0;
         return ERRSUC;
     }
 
-    new_node->prev = (new_node->par->key < key) ? new_node->par : new_node->par->prev;
     if (new_node->par->key < key) {
+        BstNodePtr next = next_node (*rooot, new_node->par);
+        if (next)
+            next->prev = new_node;
         new_node->par->right = new_node;
         new_node->prev = new_node->par;
     } else {
@@ -31,69 +35,75 @@ int insert_bintree (BinNodePtr *rooot, size_t key, size_t val) {
         new_node->prev = new_node->par->prev;
         new_node->par->prev = new_node;
     }
-    new_node->height = new_node->par->height + 1;
     
     return ERRSUC;
 }
 
-int delete_bintree (BinNodePtr *rooot, size_t key) {
-    BinNodePtr node, buf = *rooot;
+int delete_bst (BstNodePtr *rooot, size_t key) {
+    BstNodePtr node, true_deleted = NULL, next_true_deleted = NULL,
+    true_subtree = NULL, true_par = NULL;
 
-    if (find_by_key (&node, *rooot, key) != ERRWRG) 
+    if (find_by_key (&node, *rooot, key) == ERRWRG) 
         return ERRWRG;
 
-    while (buf->right && (buf->right->key < key)) {
-        buf = buf->right;
+    /*  Ok, we found node with given key.  */
+
+    if ( !(node->left) || !(node->right) ) 
+        true_deleted = node;
+    else {
+        true_deleted = find_min (node->right);
+        next_true_deleted = next_node (*rooot, true_deleted);
     }
 
-    while (buf != NULL)
-    {
-        if (buf->prev == node)
-            break;
+    /*  So in fact we delete node with only 1 child.  */
+    
+    if (true_deleted->left)
+        true_subtree = true_deleted->left;
+    else
+        true_subtree = true_deleted->right;
 
-        buf = buf->prev;
-    }
+    true_par = true_deleted->par;
 
-    buf->prev = node->prev;
+    /*  We set subtree and partree for our node.  */
 
-    if ( (!(node->left)) && (!(node->right)) )  {
+    if (true_subtree)
+        true_subtree->par = true_par;
 
-        if (is_left (node)) {
-            node->par->left = NULL;
-        } else {
-            node->par->right = NULL;
-        }
-
-        free (node);
-        return ERRSUC;
-    }
-
-    if (is_left (node)) 
-        node->par->left = node->prev;
+    if (!true_par) 
+        rooot = &true_subtree;
+    else if (true_deleted == true_par->left) 
+        true_par->left = true_subtree;
     else 
-        node->par->right = node->prev;
+        true_par->right = true_subtree;
+    
+    if (true_deleted != node) {
+        if (next_true_deleted)
+            next_true_deleted->prev = node;
+        
+        node->key = true_deleted->key;
+        node->val = true_deleted->val;
+    }
 
-    if (is_left (node->prev)) 
-        node->prev->par->left = NULL;
-    else 
-        node->prev->par->right = NULL;
-
-    free (node);
+    free (true_deleted);
 
     return ERRSUC;
     
 }
 
-int is_left (BinNodePtr node) {
-    if (node->par->key < node->key) {
-        return 0;
-        
-    } else {
-        return 1;
-    }
-}
+void set_height (BstNodePtr *root) {
+    if ( !(*root) )
+        return;
 
-void print_bintree (BinNodePtr rooot, size_t height) {
+    if ((*root)->left)
+        (*root)->left->height = (*root)->height + 1;
+    if ((*root)->right)
+        (*root)->right->height = (*root)->height + 1;
+
+    set_height (&((*root)->left));
+    set_height (&((*root)->right));
+}  
+
+void print_bst (BstNodePtr rooot, size_t height) {
 
     static size_t two_void_leaves = 0;
 
@@ -110,49 +120,62 @@ void print_bintree (BinNodePtr rooot, size_t height) {
 
     if (height)
         printf ("%*s└── ", 4*height - 4, ""); 
-    printf ("%d", rooot->key);
+    printf ("(%lu, %lu)", rooot->key, rooot->val);
 
     if ( (!(rooot->left)) && (!(rooot->right)) ) 
         two_void_leaves = 1;
     else 
         two_void_leaves = 0;
 
-    print_bintree (rooot->left, height);
+    print_bst (rooot->left, height);
 
     if ( (!(rooot->left)) && (!(rooot->right)) ) 
         two_void_leaves = 1;
     else 
         two_void_leaves = 0;
 
-    print_bintree (rooot->right, height);
+    print_bst (rooot->right, height);
 }
 
-void traverse_bintree (BinNodePtr node, size_t key) {
+void traverse_bst (BstNodePtr root, size_t key) {
 
-    BinNodePtr buf = node;
+    BstNodePtr buf = find_max (root);
 
-    while (buf->right && (buf->right->key < key)) {
-        buf = buf->right;
+    if (key == NO_KEY) {
+        while (buf) {
+            printf ("(%lu, %lu) ", buf->key, buf->val);
+            buf = buf->prev;    
+        }
+    } else {
+        while (buf->key > key) {
+            printf ("(%lu, %lu) ", buf->key, buf->val);
+            buf = buf->prev;
+        }
     }
+}
 
-    if (buf == node) 
-        return;
+BstNodePtr next_node (BstNodePtr root, BstNodePtr node) {
+    BstNodePtr buf = root;
+    if (!buf) 
+        return NULL;
 
-    while (buf) {
-        printf ("%d ", buf->key);
+    buf = find_max (root);
+
+    while (buf && (buf->prev != node))
         buf = buf->prev;
-    }
+
+    return buf;
 }
 
-int find_by_key (BinNodePtr *result, BinNodePtr rooot, size_t key) {
+int find_by_key (BstNodePtr *result, BstNodePtr rooot, size_t key) {
 
-    BinNodePtr par = rooot;
-    BinNodePtr buf = par;
+    BstNodePtr par = rooot;
+    BstNodePtr buf = par;
 
 	while (par){
 		if (par->key == key) {
             *result = par;
-            return ERRWRG;
+            return ERRSUC;
         }
 		
         buf = par;
@@ -161,13 +184,36 @@ int find_by_key (BinNodePtr *result, BinNodePtr rooot, size_t key) {
 
     *result = buf;
 	
-    return ERRSUC;
+    return ERRWRG;
 }
 
-void free_bintree (BinNodePtr root) {
+BstNodePtr find_min (BstNodePtr rooot) {
+    BstNodePtr buf = rooot;
+    if (!buf) 
+        return NULL;
+
+    while (buf->left) 
+        buf = buf->left;
+
+    return buf;
+}
+
+BstNodePtr find_max (BstNodePtr rooot) {
+    BstNodePtr buf = rooot;
+    if (!buf) 
+        return NULL;
+
+    while (buf->right) 
+        buf = buf->right;
+
+    return buf;
+}
+
+
+void free_bst (BstNodePtr root) {
     if (root) {
-        free_bintree (root->left);
-        free_bintree (root->right);
+        free_bst (root->left);
+        free_bst (root->right);
         free (root);
     }
     root = NULL;

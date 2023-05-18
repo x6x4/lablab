@@ -1,28 +1,33 @@
 #include <stdlib.h>
 #include <limits.h>
 
-typedef struct BinNode BinNode;
-typedef struct BinNode *BinNodePtr;
+typedef struct BstNode BstNode;
+typedef struct BstNode *BstNodePtr;
 
-struct BinNode {
+struct BstNode {
     size_t height;
     size_t key;
-    size_t val;
-    BinNodePtr left, right;
-    BinNodePtr par;
-    BinNodePtr prev;
+    size_t val; // todo info
+    BstNodePtr left, right;
+    BstNodePtr par;
+    BstNodePtr prev;
 };
 
-#define NO_KEY INT_MAX
+#define NO_KEY __SIZE_MAX__
 
-int insert_bintree (BinNodePtr *rooot, size_t key, size_t val);
-/*  Returns ERRWRG if key found and node with key in result, otherwise possible parent.  */
-int find_by_key (BinNodePtr *result, BinNodePtr rooot, size_t key);
-void traverse_bintree (BinNodePtr node, size_t key);
-void print_bintree (BinNodePtr rooot, size_t height);
+size_t insert_bst (BstNodePtr *rooot, size_t key, size_t val);
+/*  If key not found puts in result possible parent.  */
+int find_by_key (BstNodePtr *result, BstNodePtr rooot, size_t key);
 
-int is_left (BinNodePtr node);
+BstNodePtr find_min (BstNodePtr rooot);
+BstNodePtr find_max (BstNodePtr rooot);
 
-int delete_bintree (BinNodePtr *rooot, size_t key);
+BstNodePtr next_node (BstNodePtr root, BstNodePtr node);
+void traverse_bst (BstNodePtr node, size_t key);
 
-void free_bintree (BinNodePtr root);
+void print_bst (BstNodePtr rooot, size_t height);
+void set_height (BstNodePtr *root);
+
+int delete_bst (BstNodePtr *rooot, size_t key);
+
+void free_bst (BstNodePtr root);
