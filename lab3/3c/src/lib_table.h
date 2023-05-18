@@ -4,13 +4,10 @@ typedef struct table table_t;
 typedef struct keyspace ks_t;
 typedef struct info info_t;
 
-//  TODO : no GC
-
 /*  Main structure.  */
 struct table {
-    ks_t **hslist;
-    size_t hslist_max_sz;
-    size_t hslist_sz;
+    ks_t **hsvec;
+    size_t hsvec_max_sz;
 };
 
 /*  Linked list node (same hash).  */

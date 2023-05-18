@@ -1,4 +1,4 @@
-#include "../../input/input.h"
+#include "../../new_input/generic.h"
 #include "src/lib_table_hash.h"
 #include <stdio.h>
 #include <limits.h>
@@ -7,30 +7,26 @@ int insert (table_t *table, FILE *file);
 int delete_by_key (table_t *table, FILE *file);
 int find_by_key (table_t *table, FILE *file);
 int print (table_t *table, FILE *file);
+int import (table_t *table, FILE *file);
 
-#define MAX_HS_SIZE 3
+#define MAX_HS_SIZE 5
 
 int main () {
 
     table_t *table = init_table (MAX_HS_SIZE);
 
     const char *msgs [] = {"\n0 - quit\n", "1 - insert\n", "2 - delete by key\n",
-                           "3 - find by key\n", "4 - print\n"};
+                           "3 - find by key\n", "4 - print\n", "5 - import\n"};
 
     const size_t msgc = sizeof msgs / sizeof msgs[0];
 
     int (*fptr[]) (table_t*, FILE *file) = 
         {NULL, insert, delete_by_key, 
-         find_by_key, print};
+         find_by_key, print, import};
 
     puts ("Table ui. ^D to quit.");
 
-    FILE *file = user_file ();
-    if (!file) {
-        free_table (table);
-        puts ("quit");
-        return 0;
-    }
+    FILE *file = stdin;
 
     size_t fn_num = 0;
 
@@ -43,6 +39,21 @@ int main () {
     free_table (table);
     puts ("quit");
     return 0;
+}
+
+int import (table_t *table, FILE *file) {
+    FILE *import = user_file ();
+
+    if (!import) {
+        puts ("quit");
+        return 0;
+    }
+
+    while (insert (table, import) == 1);
+
+    fclose (import);
+
+    return 1;
 }
 
 int insert (table_t *table, FILE *file) {
@@ -60,7 +71,7 @@ int insert (table_t *table, FILE *file) {
     do {
         puts (errmsg);
         errmsg = "Bad input";
-        status = get_int_file (&val, file, INT_MAX, 0);
+        status = get_int_file (file, &val, INT_MAX, 0);
 
         if (status == ERREOF)
             return 0;

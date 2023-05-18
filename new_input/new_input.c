@@ -41,7 +41,7 @@ int get_int_file (FILE *file, int *numptr, int high, int low) {
 
     do {
         printf ("%s", errmsg);
-        errmsg = "Bad integer";
+        errmsg = "Bad integer\n";
         status = fscanf (file, "%d", numptr);
         if (status == EOF) {
             return ERREOF;

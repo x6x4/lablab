@@ -13,7 +13,7 @@ lib_table_hash.o: src/lib_table_hash.c
 main_hash.o: main.c
 	$(CC) -c $^ -o $@
 
-input.o: ../../input/input.c
+input.o: ../../new_input/new_input.c
 	$(CC) -c $^ -o $@
 
 #  Auxiliary targets.

@@ -3,13 +3,15 @@
 /*  Base functions.  */
 
 /*  Simple hash function.  */
-size_t hash (char *key);
+size_t hash_func (char *key, table_t *table);
 
 /*  Inits a table with list of keyspaces.*/
 table_t *init_table (size_t klist_max_sz);
 
 /*  Inserts a key-value entry into the table.  */
 int insert_table (table_t *table, char *key, int val);
+/*  Checks for insert error conditions.  */
+int insert_checks (table_t *table, char *key, int val);
 
 /*  Prints a table.  */
 void print_table (table_t *table);
@@ -17,8 +19,6 @@ void print_table (table_t *table);
 
 /*  Search functions.  */
 
-/*  Returns number of hashspace with given key.  */
-int hs_by_hash (table_t *table, char *key);
 /*  Returns table of all nodes with given key, NULL if key not found.  */
 table_t *nodes_by_key (table_t *table, char *key);
 

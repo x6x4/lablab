@@ -1,5 +1,5 @@
 #include "lib_bintree.h"
-#include "../../../../lablab/new_input/generic.h"
+#include "../../../new_input/generic.h"
 #include <stdlib.h>
 
 BstNodePtr init_node (size_t key, size_t val) {
