@@ -3,8 +3,7 @@
 #include <string.h>
 
 FILE *user_file () {
-    puts ("Enter filename (50 symbols max) to read from\n \
-            or \"stdin\" to read from stdin");
+    puts ("Enter filename (50 symbols max) to read from");
     char filename [50] = {};
     char *errmsg = "";
     FILE *file = NULL;
@@ -14,8 +13,6 @@ FILE *user_file () {
         errmsg = "Wrong file";
         if (scanf ("%50s", filename) ==  EOF)
             return NULL;
-        if (!strcmp(filename, "stdin"))
-            return stdin;
         file = fopen (filename, "r");
     }
     

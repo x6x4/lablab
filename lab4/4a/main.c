@@ -60,10 +60,12 @@ int insert_tree (BstNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;       
 
-    if (insert_bst (root, key, val) == ERRSUC) 
+    size_t ret_val = insert_bst (root, key, val);
+
+    if (ret_val == ERRSUC) 
         printf ("Item inserted successfully.\n");
     else 
-        printf ("Duplicate key btw.\n");
+        printf ("Duplicate key. Old val: %lu\n", ret_val);
 
     return 1; 
 };
@@ -101,7 +103,7 @@ int find_tree (BstNodePtr *root, FILE *file) {
         return 0;
 
     if (find_by_key (&node, *root, key) == ERRSUC) 
-        printf ("(%lu, %lu)\n", node->key, node->val);
+        printf ("(%lu, %lu)\n", node->info->key, node->info->val);
     else 
         printf ("No key\n");
 
@@ -111,7 +113,7 @@ int find_tree (BstNodePtr *root, FILE *file) {
 int findmin_tree (BstNodePtr *root, FILE *file) {
     BstNodePtr node = find_min (*root);
     if (node)
-        printf ("(%lu, %lu)\n", node->key, node->val);
+        printf ("(%lu, %lu)\n", node->info->key, node->info->val);
 
     return 1;
 };
@@ -164,8 +166,10 @@ int print_tree (BstNodePtr *root, FILE *file) {
     return 1;
 };
 
-#define KEYS_TO_FIND_NUM 100000
-#define KEYS_IN_BST 1000
+/*  NO MORE THEN 1e5 !!!!!  SO caught  */
+#define KEYS_TO_FIND_NUM (int) 1e5
+/*  no more then 1e3. all slows down */
+#define KEYS_IN_BST (int) 1e3
 
 int timing_tree (BstNodePtr *root, FILE *file)
 {
@@ -178,9 +182,9 @@ int timing_tree (BstNodePtr *root, FILE *file)
 
     while (epochs-- > 0){
         for (i = 0; i < KEYS_TO_FIND_NUM; ++i)
-            keys_to_find[i] = rand() * rand();
+            keys_to_find[i] = (rand()%1000) * (rand()%1000);
         for (i = 0; i < keys_in_bst; ){
-            rand_key = rand() * rand();
+            rand_key = (rand()%1000) * (rand()%1000);
             if (insert_bst (&temp_root, rand_key, 0) == ERRSUC)
                 ++i;
         }

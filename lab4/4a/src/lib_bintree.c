@@ -2,18 +2,32 @@
 #include "../../../../lablab/new_input/generic.h"
 #include <stdlib.h>
 
-size_t insert_bst (BstNodePtr *rooot, size_t key, size_t val) {
+BstNodePtr init_node (size_t key, size_t val) {
     BstNodePtr new_node = calloc (1, sizeof *new_node);
-    
-    new_node->key = key; // mb init?
-    new_node->val = val;
+    new_node->info = new_info (key, val);
     new_node->left = NULL;
     new_node->right = NULL;
     new_node->height = 0;
+
+    return new_node;
+}
+
+Info new_info (size_t key, size_t val) {
+    Info info = calloc (1, sizeof *info);
+    info->key = key;
+    info->val = val;
+
+    return info;
+}
+
+size_t insert_bst (BstNodePtr *rooot, size_t key, size_t val) {
+
+    BstNodePtr new_node = init_node (key, val);
     
     if (find_by_key (&(new_node->par), *rooot, key) == ERRSUC) {
-        size_t old_val = new_node->par->val;
-        new_node->par->val = val;
+        size_t old_val = new_node->par->info->val;
+        new_node->par->info->val = val;
+        free (new_node->info);
         free (new_node);
         return old_val;
     }
@@ -24,7 +38,7 @@ size_t insert_bst (BstNodePtr *rooot, size_t key, size_t val) {
         return ERRSUC;
     }
 
-    if (new_node->par->key < key) {
+    if (new_node->par->info->key < key) {
         BstNodePtr next = next_node (*rooot, new_node->par);
         if (next)
             next->prev = new_node;
@@ -40,7 +54,7 @@ size_t insert_bst (BstNodePtr *rooot, size_t key, size_t val) {
 }
 
 int delete_bst (BstNodePtr *rooot, size_t key) {
-    BstNodePtr node, true_deleted = NULL, next_true_deleted = NULL,
+    BstNodePtr node, true_deleted = NULL, next_to_true_deleted = NULL,
     true_subtree = NULL, true_par = NULL;
 
     if (find_by_key (&node, *rooot, key) == ERRWRG) 
@@ -52,7 +66,6 @@ int delete_bst (BstNodePtr *rooot, size_t key) {
         true_deleted = node;
     else {
         true_deleted = find_min (node->right);
-        next_true_deleted = next_node (*rooot, true_deleted);
     }
 
     /*  So in fact we delete node with only 1 child.  */
@@ -76,14 +89,22 @@ int delete_bst (BstNodePtr *rooot, size_t key) {
     else 
         true_par->right = true_subtree;
     
+    /*  Update appropriate fields.  */
+
+    next_to_true_deleted = next_node (*rooot, true_deleted);
+
     if (true_deleted != node) {
-        if (next_true_deleted)
-            next_true_deleted->prev = node;
-        
-        node->key = true_deleted->key;
-        node->val = true_deleted->val;
+        if (next_to_true_deleted)
+            next_to_true_deleted->prev = node;
+
+        node->info->key = true_deleted->info->key;
+        node->info->val = true_deleted->info->val;
+    } else {
+        if (next_to_true_deleted)
+            next_to_true_deleted->prev = node->prev;
     }
 
+    free (true_deleted->info);
     free (true_deleted);
 
     return ERRSUC;
@@ -120,7 +141,7 @@ void print_bst (BstNodePtr rooot, size_t height) {
 
     if (height)
         printf ("%*s└── ", 4*height - 4, ""); 
-    printf ("(%lu, %lu)", rooot->key, rooot->val);
+    printf ("(%lu, %lu)", rooot->info->key, rooot->info->val);
 
     if ( (!(rooot->left)) && (!(rooot->right)) ) 
         two_void_leaves = 1;
@@ -143,12 +164,12 @@ void traverse_bst (BstNodePtr root, size_t key) {
 
     if (key == NO_KEY) {
         while (buf) {
-            printf ("(%lu, %lu) ", buf->key, buf->val);
+            printf ("(%lu, %lu) ", buf->info->key, buf->info->val);
             buf = buf->prev;    
         }
     } else {
-        while (buf->key > key) {
-            printf ("(%lu, %lu) ", buf->key, buf->val);
+        while (buf->info->key > key) {
+            printf ("(%lu, %lu) ", buf->info->key, buf->info->val);
             buf = buf->prev;
         }
     }
@@ -173,13 +194,13 @@ int find_by_key (BstNodePtr *result, BstNodePtr rooot, size_t key) {
     BstNodePtr buf = par;
 
 	while (par){
-		if (par->key == key) {
+		if (par->info->key == key) {
             *result = par;
             return ERRSUC;
         }
 		
         buf = par;
-		par = (par->key < key) ? par->right : par->left;
+		par = (par->info->key < key) ? par->right : par->left;
 	}
 
     *result = buf;
@@ -214,6 +235,7 @@ void free_bst (BstNodePtr root) {
     if (root) {
         free_bst (root->left);
         free_bst (root->right);
+        free (root->info);
         free (root);
     }
     root = NULL;
