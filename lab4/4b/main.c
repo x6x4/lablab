@@ -14,7 +14,7 @@ int print_tree (BNodePtr *root, FILE *file);
 int timing_tree (BNodePtr *root, FILE *file);
 
 const char *msgs [] = {"\n0 - quit", "1 - insert", "2 - delete by key",
-                       "3 - find by key", "4 - find min", "5 - traverse", 
+                       "3 - find by key", "4 - find max", "5 - traverse", 
                        "6 - import", "7 - print", "8 - timing tree"};
 const size_t msgc = sizeof msgs / sizeof msgs[0];
 
@@ -26,7 +26,8 @@ int main () {
 
     FILE *file = stdin;
     BNodePtr root = NULL;
-    size_t fn_num = 0;
+    int fn_num = 0;
+    printf ("B23 tree UI.\n");
 
     while ((fn_num = option_choice (msgs, msgc, file))) {
         //  each function returns 0 if EOF
@@ -48,7 +49,7 @@ int insert_tree (BNodePtr *root, FILE *file) {
 
     printf ("%s", s);
     
-    status = scanf ("%50s", key);
+    status = fscanf (file, "%50s", key);
     if (status == ERREOF) 
         return 0;
 
@@ -56,7 +57,7 @@ int insert_tree (BNodePtr *root, FILE *file) {
 
     printf ("%s", s);
 
-    status = scanf ("%50s", val);
+    status = fscanf (file, "%50s", val);
     if (status == ERREOF) 
         return 0;     
 
@@ -157,12 +158,17 @@ int import_tree (BNodePtr *root, FILE *file) {
     return 1;
 }
 
-int print_tree (BNodePtr *root, FILE *file) {/*
+int print_tree (BNodePtr *root, FILE *file) {
     printf ("\nTree:\n");
+    if (!(*root)) {
+        printf ("(void)\n");
+        return 1;
+    }
+
     (*root)->height = 0;
     set_height (root);
-    print_bst (*root, 0);
-    printf ("\n");*/
+    print_bt (*root, 0);
+    printf ("\n");
     return 1;
 };
 

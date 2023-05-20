@@ -31,12 +31,16 @@ Info new_info (char *key, char *val);
     Returns node with key and key position in this node in success.
     Otherwise - place to insert to. 
 
-    Three cases: 
+    Four cases: 
     key found (ERRSUC); 
     there is free place for key (ERRFREE); 
     there is no free place for key (ERRFULL);
+    there is void child for key (ERRNEW)
 */
 int search_bt (BNodePtr rooot, char *key, size_t *pos, BNodePtr *node);
 
 int insert_bt (BNodePtr *rooot, char *key, char *val);
 int cond_insert (BNodePtr *root, char *key, char *val, size_t *pos, BNodePtr *node);
+
+void set_height (BNodePtr *root);
+void print_bt (BNodePtr root, size_t height);
