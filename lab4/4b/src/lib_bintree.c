@@ -1,5 +1,6 @@
 #include "lib_bintree.h"
 #include "../../../new_input/generic.h"
+#include <limits.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,136 +11,142 @@ enum {
     ERRNEW
 };
 
-int search_bt (BNodePtr rooot, char *key, size_t *pos, BNodePtr *node) {
-    /*  start from root  */
-    BNodePtr buf = rooot, par = buf;
-    int i = 0;
-    size_t not_full = 0;
-    
-    while (buf) {
-        par = buf;
-        /*  check all keys in vector  */
-        for (i = 0; i < KEYS_NUM; ++i) {
-
-            /*  void place in the end of node. 
-                if it's here, key obviously need this place  */
-            if (buf->info[i] == NULL) {
-                *pos = i;
-                *node = buf;
-                return ERRFREE;
-            }
-
-            /*  if key matches  */
-            if (strcmp (buf->info[i]->key, key) == 0) {
-                /*  nothing interesting, 
-                    just return found node and key position  */
-                *pos = i;
-                *node = buf;
-                return ERRSUC;
-            } 
-            
-            /*  if i-th key is greater, go to i-th child  */
-            else if (strcmp (key, buf->info[i]->key) < 0) {
-
-                for (size_t i = 0; i < CHILD_NUM; i++) {
-                    if (!(buf->info[KEYS_NUM - 1]))
-                        not_full ++;
-                }
-
-                buf = buf->child[i];
-                /*  If there is threat of */
-                if (buf == NULL && (!not_full)) {
-                    *node = par;
-                    *pos = i;
-                    return ERRNEW;
-                }
-                break;
-            }
-            /*  if key is greater than rightmost node, 
-                go to rightmost child  */ 
-            else if (i == KEYS_NUM - 1) {
-                buf = buf->child[KEYS_NUM];
-                if (buf == NULL) {
-                    *node = par;
-                    *pos = KEYS_NUM;
-                    return ERRNEW;
-                }
-            }
-        }
-    }
-
-    /*  no free space, just suggestion for insertion  */
-    *node = par;
-    /*  suggested number in child node  */
-    if (i == KEYS_NUM)
-        i--;
-    *pos = i;
-
-    return ERRFULL;
-}
+#define LTE(s1,s2) ((-strcmp (s1, s2)) >= 0)
 
 int insert_bt (BNodePtr *root, char *key, char *val) {
 
-    size_t pos = 0; BNodePtr node = NULL;
+    size_t pos = 0;
 
-    Info info = calloc (1, sizeof *info);  
-    info->key = strdup (key);
-    info->val = strdup (val);
-
-    while (node != *root) {
-        
-        switch (cond_insert (root, info->key, info->val, &pos, &node)) {
-            case ERRSUC:
-                return ERRSUC;
-
-            case ERRFULL:
-                break;
-        }
-
-        //  keep new full node info
-        info->key = strdup (node->info[pos]->key);
-        info->val = strdup (node->info[pos]->val);
-        //  update full node
-        node->info[pos] = new_info (key, val);
+    /*  if root is void  */
+    if ( !root ) {
+        *root = init_node (key, val);
+        (*root)->par = NULL;
+        return ERRSUC;
     }
 
-    *root = init_node (info->key, info->val);
-    (*root)->child[0] = node;
+    BNodePtr cnode = *root, par = (*root)->par;
 
-    free (info);
-    
-    return ERRSUC;
-}
+    /*  Keys.  */
 
-int cond_insert (BNodePtr *root, char *key, char *val, size_t *pos, BNodePtr *node) {
+    while (1) {
 
-    /*  Get place for insertion or handle duplication.  */
+        for (int i = 0; i < KEYS_NUM; i++) {
 
-    switch (search_bt (*root, key, pos, node)) {
-        case ERRSUC:
-            printf ("Duplicate key\n");
-            return ERRWRG;
-        
-        case ERRFREE:
-            (*node)->info[*pos] = new_info (key, val);
-            return ERRSUC;
-
-        case ERRFULL: 
-            if ((*node) == NULL) {
-                *root = init_node (key, val);
+            /*  If desired keyplace is free (all prev nodes full).  */
+            if ( cnode->info[i] == NULL ) {
+                cnode->info[i] = new_info (key, val);
+                cnode->par = par;
                 return ERRSUC;
             }
-            else 
-                return ERRFULL;
 
-        case ERRNEW:
-            (*node)->child[*pos] = init_node (key, val);
-            return ERRSUC;
+            /*  Move down or update.  */
+            if ( LTE (key, cnode->info[i]->key) || (i == KEYS_NUM - 1)) {
+                par = cnode;
+                cnode = cnode->child[i];
+                /*  If desired node exists.  */
+                if (cnode)
+                    break;
+                /*  We reached leaf and it is full.  */
+                else {
+                    if (split_leaf(root, cnode, key, val) == ERRSUC)
+                        return ERRSUC;
+                }
 
-        default:
-            printf ("Something wrong, try again\n");
-            return ERRWRG;
+            }
+
+        }
+
     }
+
+}
+
+
+
+int split_leaf (BNodePtr *root, BNodePtr node, char *key, char *val) {
+
+    BNodePtr right_node = calloc (1, sizeof *right_node);
+    InfoPtr mid_info = NULL;
+    BNodePtr mid_node = calloc (1, sizeof *mid_node);
+    BNodePtr par = node->par;
+
+    /*  key lt 1st key  */
+    if (LTE(key, node->info[0]->key)) {
+        /*  Standalone node.  */
+        mid_info = new_info (node->info[0]->key, node->info[0]->val);
+
+        right_node->info[0] = new_info (node->info[1]->key, node->info[1]->val);
+        right_node->child[0] = node->child[1];
+        right_node->child[1] = node->child[2];
+        right_node->child[2] = NULL;
+
+        free_info (node->info[0]);
+        node->info[0] = new_info (key, val);
+    }
+    
+    /*  key lt 2nd key  */
+    else if (LTE(key, node->info[1]->key)) {
+        mid_info = new_info (key, val);
+
+        right_node->info[0] = new_info (node->info[1]->key, node->info[1]->val);
+        right_node->child[0] = node->child[1];
+        right_node->child[1] = node->child[2];
+        right_node->child[2] = NULL;
+       
+        free_info (node->info[1]);
+    }
+
+    /*  key gt 2nd key  */
+    else if (LTE(node->info[1]->key, key)) {
+
+        mid_node->info[0] = new_info (node->info[1]->key, node->info[1]->val);
+        mid_node->child[0] = node->child[1];
+        mid_node->child[1] = node->child[2];
+        mid_node->child[2] = NULL;
+
+        right_node = init_node (key, val);
+        free_info (node->info[1]);
+    }
+
+    /*  par node is empty*/
+    if (node == *root) {
+        *root = mid_node;
+        mid_node->child[0] = node;
+        node->par = mid_node;
+        mid_node->child[1] = right_node;
+        right_node->par = mid_node;
+        return ERRSUC;
+    }
+
+    /*  par node isn't full, 1 key */
+    if (node->par->info[1] == NULL) {
+        if (LTE(node->par->info[0]->key, mid_info->key)) {
+            node->par->info[1] = mid_info;
+            node->par->child[2] = right_node;
+        }
+        else {
+            node->par->info[1] = node->par->info[0];
+            node->par->info[0] = mid_info;
+            node->par->child[2] = node->par->child[1];
+            node->par->child[1] = right_node;
+        }
+
+        return ERRSUC;
+    }
+    /*  par node is full, 2 keys  */
+    else {
+        /*  Fill mid_node.  */
+
+        mid_node = init_node(mid_info->key, mid_info->val);
+        free_info (mid_info);
+        mid_node->child[0] = node;
+        node->par = mid_node;
+        mid_node->child[1] = right_node;
+        right_node->par = mid_node;
+    }
+}
+
+int split_node () {
+
 }
 
 void set_height (BNodePtr *root) {
@@ -201,10 +208,17 @@ BNodePtr init_node (char *key, char *val) {
     return new_node;
 }
 
-Info new_info (char *key, char *val) {
-    Info info = calloc (1, sizeof *info);
+InfoPtr new_info (char *key, char *val) {
+    InfoPtr info = calloc (1, sizeof *info);
     info->key = strdup (key);
     info->val = strdup (val);
 
     return info;
+}
+
+void free_info (InfoPtr info) {
+    free (info->key);
+    free (info->val);
+    free (info);
+    return;
 }

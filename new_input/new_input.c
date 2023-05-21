@@ -4,13 +4,13 @@
 
 FILE *user_file () {
     puts ("Enter filename (50 symbols max) to read from");
-    char filename [50] = {};
+    char filename [51] = {};
     char *errmsg = "";
     FILE *file = NULL;
 
     while (!file) {
-        puts (errmsg);
-        errmsg = "Wrong file";
+        printf ("%s", errmsg);
+        errmsg = "Wrong file\n";
         if (scanf ("%50s", filename) ==  EOF)
             return NULL;
         file = fopen (filename, "r");

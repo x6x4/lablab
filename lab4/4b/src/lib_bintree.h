@@ -3,14 +3,14 @@
 
 typedef struct BNode BNode;
 typedef struct BNode *BNodePtr;
-typedef struct Info *Info;
+typedef struct Info *InfoPtr;
 
 #define KEYS_NUM 2
 #define CHILD_NUM 3
 
 struct BNode {
     size_t height;
-    Info info [KEYS_NUM];
+    InfoPtr info [KEYS_NUM];
     BNodePtr child [CHILD_NUM];
     BNodePtr par;
 };
@@ -25,7 +25,10 @@ struct Info
 #define NO_KEY __SIZE_MAX__
 
 BNodePtr init_node (char *key, char *val);
-Info new_info (char *key, char *val);
+InfoPtr new_info (char *key, char *val);
+void free_info (InfoPtr info);
+
+int split_leaf (BNodePtr *root, BNodePtr node, char *key, char *val);
 
 /*  
     Returns node with key and key position in this node in success.
