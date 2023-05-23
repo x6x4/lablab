@@ -1,15 +1,23 @@
 #include <stdlib.h>
 #include <limits.h>
+#include <string.h>
 
 typedef struct BNode BNode;
 typedef struct BNode *BNodePtr;
 typedef struct Info *InfoPtr;
+typedef char *Key;
+typedef short Bool;
 
 #define KEYS_NUM 3
 #define CHILD_NUM 4
 
+#define LTE(s1,s2) ((strcmp (s1, s2)) <= 0)
+#define GT(s1,s2) ((strcmp (s1, s2)) > 0)
+#define EQ(s1,s2) ((strcmp (s1, s2)) == 0)
+
 struct BNode {
     size_t height;
+    int csize;
     InfoPtr info [KEYS_NUM];
     BNodePtr child [CHILD_NUM];
     BNodePtr par;
@@ -17,33 +25,39 @@ struct BNode {
 
 struct Info
 {
-    char *key;
+    Key key;
     char *val;
 };
 
-
 #define NO_KEY __SIZE_MAX__
 
-BNodePtr init_node (char *key, char *val);
-InfoPtr new_info (char *key, char *val);
-void free_info (InfoPtr info);
 
-int split_leaf (BNodePtr *root, BNodePtr node, char *key, char *val);
 
-/*  
-    Returns node with key and key position in this node in success.
-    Otherwise - place to insert to. 
 
-    Four cases: 
-    key found (ERRSUC); 
-    there is free place for key (ERRFREE); 
-    there is no free place for key (ERRFULL);
-    there is void child for key (ERRNEW)
-*/
-int search_bt (BNodePtr rooot, char *key, size_t *pos, BNodePtr *node);
 
-int insert_bt (BNodePtr *rooot, char *key, char *val);
-int cond_insert (BNodePtr *root, char *key, char *val, size_t *pos, BNodePtr *node);
+/*  NODE  */
 
-void set_height (BNodePtr *root);
-void print_bt (BNodePtr root, size_t height);
+/*  CONSTRUCTORS  */
+BNodePtr new_vertex (Key key, Key val);
+BNodePtr new_linked_vertex (InfoPtr info, BNodePtr children[4], BNodePtr par);
+InfoPtr new_info (Key key, Key val);
+
+/*  SEARCH  */
+int search_in_node (BNodePtr node, char *key, size_t *pos);
+
+/*  REORDER  */
+void swap (InfoPtr *a, InfoPtr *b);
+void asc_sort_2 (InfoPtr *a, InfoPtr *b);
+void asc_sort_3 (InfoPtr *a, InfoPtr *b, InfoPtr *c);
+void sort_node (BNodePtr node);
+
+/*  INSERTION  */ 
+void insert_to_node (BNodePtr node, InfoPtr info);
+
+/*  DELETION  */
+int delete_from_node (BNodePtr node, Key key);
+
+/*  OTHER  */
+void to_2vertex (BNodePtr node, InfoPtr info, BNodePtr node1, BNodePtr node2);
+Bool is_leaf (BNodePtr node);
+
