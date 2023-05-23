@@ -5,8 +5,8 @@ typedef struct BNode BNode;
 typedef struct BNode *BNodePtr;
 typedef struct Info *InfoPtr;
 
-#define KEYS_NUM 2
-#define CHILD_NUM 3
+#define KEYS_NUM 3
+#define CHILD_NUM 4
 
 struct BNode {
     size_t height;
