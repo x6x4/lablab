@@ -1,5 +1,6 @@
 #include "lib_table_hash.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -10,11 +11,13 @@ enum {
 };
 
 size_t hash_func (char *key, table_t *table) {
+    size_t hash = 0;
     if (key) {
-        return (key[0] % (table->hsvec_max_sz) + 1);
+        for (size_t i = 0; i < strlen (key); i++)
+            hash = hash * 37 + key[i];
+        hash = hash % (table->hsvec_max_sz) + 1;
     }
-    else 
-        return 0;
+    return hash;
 }
 
 int insert_checks (table_t *table, char *key, int val) {
