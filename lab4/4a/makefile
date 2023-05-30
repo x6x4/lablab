@@ -1,5 +1,7 @@
 
-CC = cc -Wno-incompatible-pointer-types -g 
+CC = cc -g 
+
+#-Wno-incompatible-pointer-types
 
 #  Ram implementation.
 

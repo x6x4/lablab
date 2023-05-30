@@ -36,7 +36,7 @@ int main () {
     }
 
     fclose (file);
-    //free_bst (root);
+    free_tree (root);
     puts ("quit");
     return 0;
 }
@@ -61,10 +61,11 @@ int insert_tree (BNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;     
 
-    int ret_val = insert_bt (root, key, val);
+    InfoPtr info = new_info (key, val);
 
-    if (ret_val == ERRSUC) 
-        printf ("Item inserted successfully.\n");
+    insert_to_tree (root, *root, info);
+
+    printf ("Item inserted successfully.\n");
 
     return 1; 
 };
@@ -90,7 +91,7 @@ int delete_tree (BNodePtr *root, FILE *file) {
 };
 
 int find_tree (BNodePtr *root, FILE *file) {
-    BNodePtr node = NULL;
+    /*BNodePtr node = NULL;
     size_t pos = 0;
 
     char key [51]= "", val [51] = "";
@@ -107,7 +108,7 @@ int find_tree (BNodePtr *root, FILE *file) {
         printf ("(%s, %s)\n", node->info[pos]->key, node->info[pos]->val);
     else 
         printf ("No key\n");
-    
+    */
     return 1;
 };
 
@@ -166,8 +167,7 @@ int print_tree (BNodePtr *root, FILE *file) {
     }
 
     (*root)->height = 0;
-    set_height (root);
-    print_bt (*root, 0);
+    print_bt (*root);
     printf ("\n");
     return 1;
 };

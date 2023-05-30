@@ -28,7 +28,7 @@ int main () {
     BstNodePtr root = NULL;
     size_t fn_num = 0;
 
-    while (fn_num = option_choice (msgs, msgc, file)) {
+    while ((fn_num = option_choice (msgs, msgc, file))) {
         //  each function returns 0 if EOF
         if (!fptr[fn_num](&root, file))
             break;
@@ -167,41 +167,87 @@ int print_tree (BstNodePtr *root, FILE *file) {
 };
 
 /*  NO MORE THEN 1e5 !!!!!  SO caught  */
-#define KEYS_TO_FIND_NUM (int) 1e5
+#define KEYS_TO_FIND_NUM (int) 1e3
 /*  no more then 1e3. all slows down */
-#define KEYS_IN_BST (int) 1e3
+#define KEYS_IN_BST (int) 1e2
 
 int timing_tree (BstNodePtr *root, FILE *file)
 {
-    BstNodePtr temp_root = NULL;
+    BstNodePtr test_root = NULL;
     BstNodePtr key_root = NULL;
-    int init_epochs = 20, epochs = init_epochs, keys_to_find[KEYS_TO_FIND_NUM], 
-           rand_key, keys_in_bst = KEYS_IN_BST, i, m;
+    int init_bunch = 10, init_epoch = 10, bunch = init_bunch,
+    keys_to_find[KEYS_TO_FIND_NUM], rand_key, keys_in_bst = KEYS_IN_BST, i, m;
     clock_t first, last;
     srand(time(NULL));
 
-    while (epochs-- > 0){
-        for (i = 0; i < KEYS_TO_FIND_NUM; ++i)
-            keys_to_find[i] = (rand()%1000) * (rand()%1000);
-        for (i = 0; i < keys_in_bst; ){
-            rand_key = (rand()%1000) * (rand()%1000);
-            if (insert_bst (&temp_root, rand_key, 0) == ERRSUC)
-                ++i;
-        }
+    while (init_epoch-- > 0) {
+        
+        while (bunch-- > 0){
+            for (i = 0; i < KEYS_TO_FIND_NUM; ++i)
+                keys_to_find[i] = (rand()%100) * (rand()%100);
+            for (i = 0; i < keys_in_bst; ){
+                rand_key = (rand()%100) * (rand()%100);
+                if (insert_bst (&test_root, rand_key, 0) == ERRSUC)
+                    ++i;
+            }
 
-        m = 0;
-        first = clock();
-        for (i = 0; i < KEYS_TO_FIND_NUM; ++i) {
-            if (find_by_key (&key_root, temp_root, keys_to_find[i]) == ERRSUC)
+            /*  SEARCH  */
+            m = 0;
+            first = clock();
+            for (i = 0; i < KEYS_TO_FIND_NUM; ++i) {
+                if (find_by_key (&key_root, test_root, keys_to_find[i]) == ERRSUC)
+                    ++m;
+            }
+            last = clock();
+
+            //printf("%d items was found\n", m);
+            printf("%d NN %d time %ld\n", init_bunch - bunch, 
+            (init_bunch - bunch)*keys_in_bst, last - first);
+
+            /*  INSERTION  */
+            m = 0;
+            first = clock();
+            for (i = 0; i < KEYS_TO_FIND_NUM; ++i) {
+                if (insert_bst (&test_root, keys_to_find[i], 0) == ERRSUC)
+                    ++m;
+            }
+            last = clock();
+
+            //printf("%d items was inserted\n", m);
+            printf("%d NN %d time %ld\n", init_bunch - bunch, 
+            (init_bunch - bunch)*keys_in_bst, last - first);
+
+            /*  DELETION  */
+            m = 0;
+            first = clock();
+            for (i = 0; i < KEYS_TO_FIND_NUM; ++i) {
+                if (delete_bst (&test_root, keys_to_find[i]) == ERRSUC)
+                    ++m;
+            }
+            last = clock();
+
+            //printf("%d items was deleted\n", m);
+            printf("%d NN %d time %ld\n", init_bunch - bunch, 
+            (init_bunch - bunch)*keys_in_bst, last - first);
+
+            /*  TRAVERSAL  */
+            m = 0;
+            first = clock();
+            for (i = 0; i < KEYS_TO_FIND_NUM; ++i) {
+                traverse_bst (test_root, keys_to_find[i]);
                 ++m;
-        }
-        last = clock();
+            }
+            last = clock();
 
-        printf("%d items was found\n", m);
-        printf("test #%d, number of nodes = %d, time = %d\n", init_epochs - epochs, 
-        (init_epochs - epochs)*keys_in_bst, last - first);
+            //printf("%d items was traversed\n", m);
+            printf("%d NN %d time %ld\n", init_bunch - bunch, 
+            (init_bunch - bunch)*keys_in_bst, last - first);
+            
+        }
+        bunch = init_bunch;
         
     }
-    free_bst (temp_root);
+    free_bst (test_root);
+
     return 1;
 }

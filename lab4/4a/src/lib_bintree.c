@@ -164,12 +164,12 @@ void traverse_bst (BstNodePtr root, size_t key) {
 
     if (key == NO_KEY) {
         while (buf) {
-            printf ("(%lu, %lu) ", buf->info->key, buf->info->val);
+            //printf ("(%lu, %lu) ", buf->info->key, buf->info->val);
             buf = buf->prev;    
         }
     } else {
-        while (buf->info->key > key) {
-            printf ("(%lu, %lu) ", buf->info->key, buf->info->val);
+        while (buf && buf->info->key > key) {
+            //printf ("(%lu, %lu) ", buf->info->key, buf->info->val);
             buf = buf->prev;
         }
     }

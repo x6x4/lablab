@@ -15,6 +15,8 @@ typedef short Bool;
 #define GT(s1,s2) ((strcmp (s1, s2)) > 0)
 #define EQ(s1,s2) ((strcmp (s1, s2)) == 0)
 
+#define free_nullify(ptr) free (ptr); ptr = NULL;
+
 struct BNode {
     size_t height;
     int csize;
@@ -32,32 +34,48 @@ struct Info
 #define NO_KEY __SIZE_MAX__
 
 
+/*  TREE  */
 
+/*  INSERTION  */ 
+BNodePtr insert_to_tree (BNodePtr *root, BNodePtr cnode, InfoPtr info);
+BNodePtr split_vertex (BNodePtr *root, BNodePtr node);
+void create_at_split (BNodePtr node, BNodePtr *left, BNodePtr *right);
 
+/*  DESTRUCTORS  */
+void free_tree (BNodePtr root);
 
 /*  NODE  */
 
 /*  CONSTRUCTORS  */
-BNodePtr new_vertex (Key key, Key val);
+BNodePtr new_vertex (InfoPtr info);
 BNodePtr new_linked_vertex (InfoPtr info, BNodePtr children[4], BNodePtr par);
 InfoPtr new_info (Key key, Key val);
 
+/*  PRINT  */
+void print_bt (BNodePtr root);
+void set_height (BNodePtr root);
+void print_bt_lvl (BNodePtr root, size_t height);
+
+/*  DESTRUCTORS  */
+void free_vertex (BNodePtr node);
+void free_info (InfoPtr info);
+
 /*  SEARCH  */
-int search_in_node (BNodePtr node, char *key, size_t *pos);
+int search_in_vertex (BNodePtr node, char *key, size_t *pos);
 
 /*  REORDER  */
 void swap (InfoPtr *a, InfoPtr *b);
 void asc_sort_2 (InfoPtr *a, InfoPtr *b);
 void asc_sort_3 (InfoPtr *a, InfoPtr *b, InfoPtr *c);
-void sort_node (BNodePtr node);
+void sort_vertex (BNodePtr node);
 
 /*  INSERTION  */ 
-void insert_to_node (BNodePtr node, InfoPtr info);
+void insert_to_vertex (BNodePtr node, InfoPtr info);
 
 /*  DELETION  */
-int delete_from_node (BNodePtr node, Key key);
+int delete_from_vertex (BNodePtr node, Key key);
 
 /*  OTHER  */
-void to_2vertex (BNodePtr node, InfoPtr info, BNodePtr node1, BNodePtr node2);
+void node_to_2vertex (BNodePtr node, InfoPtr info, BNodePtr node1, BNodePtr node2);
 Bool is_leaf (BNodePtr node);
 
