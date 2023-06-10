@@ -37,9 +37,19 @@ struct Info
 /*  TREE  */
 
 /*  INSERTION  */ 
-BNodePtr insert_to_tree (BNodePtr *root, BNodePtr cnode, InfoPtr info);
-BNodePtr split_vertex (BNodePtr *root, BNodePtr node);
+
+/*  insertion is always performed to the leaf  */
+void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info);
+void split_vertex (BNodePtr *root, BNodePtr node);
+/*  distribute the node's children equally between the created left and right nodes  */
 void create_at_split (BNodePtr node, BNodePtr *left, BNodePtr *right);
+
+BNodePtr search_bt (BNodePtr root, Key key, size_t *pos);
+
+/*  DELETION  */
+/*  deletion is always performed from the leaf  */
+int delete_bt (BNodePtr *root, BNodePtr cnode, Key key);
+BNodePtr fix_after_del (BNodePtr *root, BNodePtr node);
 
 /*  DESTRUCTORS  */
 void free_tree (BNodePtr root);
@@ -48,7 +58,7 @@ void free_tree (BNodePtr root);
 
 /*  CONSTRUCTORS  */
 BNodePtr new_vertex (InfoPtr info);
-BNodePtr new_linked_vertex (InfoPtr info, BNodePtr children[4], BNodePtr par);
+BNodePtr new_bt_node (InfoPtr info, BNodePtr children[4], BNodePtr par);
 InfoPtr new_info (Key key, Key val);
 
 /*  PRINT  */
@@ -61,7 +71,8 @@ void free_vertex (BNodePtr node);
 void free_info (InfoPtr info);
 
 /*  SEARCH  */
-int search_in_vertex (BNodePtr node, char *key, size_t *pos);
+int find_in_vertex (BNodePtr node, char *key, size_t *pos);
+size_t find_max_in_vertex (BNodePtr root);
 
 /*  REORDER  */
 void swap (InfoPtr *a, InfoPtr *b);
@@ -76,6 +87,6 @@ void insert_to_vertex (BNodePtr node, InfoPtr info);
 int delete_from_vertex (BNodePtr node, Key key);
 
 /*  OTHER  */
-void node_to_2vertex (BNodePtr node, InfoPtr info, BNodePtr node1, BNodePtr node2);
+void fix_root_after_split (BNodePtr node, InfoPtr info, BNodePtr node1, BNodePtr node2);
 Bool is_leaf (BNodePtr node);
 

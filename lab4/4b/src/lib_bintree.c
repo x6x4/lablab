@@ -1,36 +1,40 @@
 #include "lib_bintree.h"
 #include "../../../new_input/generic.h"
+#include <errno.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 
 /*  TREE  */
 
-BNodePtr insert_to_tree (BNodePtr *root, BNodePtr cnode, InfoPtr info) {
+/*  INSERTION  */
+void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info) {
     if (!(*root)) {
         *root = new_vertex (info);
-        return *root;
+        return;
     }
 
     if (is_leaf (cnode)) 
         insert_to_vertex (cnode, info);
 
     else if ( LTE (info->key, cnode->info[0]->key) ) 
-        cnode = insert_to_tree (root, cnode->child[0], info);
+        insert_bt (root, cnode->child[0], info);
 
     else if (cnode->csize == 1 ||
-            cnode->csize == 2 && LTE (info->key, cnode->info[1]->key) ) {
-        cnode = insert_to_tree (root, cnode->child[1], info);
-    }
+            cnode->csize == 2 && LTE (info->key, cnode->info[1]->key) ) 
+        insert_bt (root, cnode->child[1], info);
+    
     else
-        cnode = insert_to_tree (root, cnode->child[2], info);
+        insert_bt (root, cnode->child[2], info);
 
-    return split_vertex (root, cnode);
+    split_vertex (root, cnode);
+    return;
 }
 
-BNodePtr split_vertex (BNodePtr *root, BNodePtr node) {
+void split_vertex (BNodePtr *root, BNodePtr node) {
     if (node->csize < 3)
-        return node;
+        return;
 
     BNodePtr left = NULL, right = NULL;
     create_at_split (node, &left, &right);
@@ -38,12 +42,14 @@ BNodePtr split_vertex (BNodePtr *root, BNodePtr node) {
     if (node == *root) {
         left->par = *root;
         right->par = *root;
-        node_to_2vertex (*root, (*root)->info[1], left, right);
-        return *root;
+        fix_root_after_split (*root, (*root)->info[1], left, right);
+        return;
     }
+
     else {
         insert_to_vertex (node->par, node->info[1]);
         
+        /*  set the space of split node to null  */
         for (size_t i = 0; i < CHILD_NUM - 1; i++) {
             if (node->par->child[i] == node) {
                 node->par->child[i] = NULL;
@@ -53,9 +59,11 @@ BNodePtr split_vertex (BNodePtr *root, BNodePtr node) {
         
         for (size_t i = 0; i < 3; i++) {
             if (!(node->par->child[i])) {
+                /*  move to make room for new children  */
                 node->par->child[3] = node->par->child[2];
                 node->par->child[2] = node->par->child[1];
 
+                /*  fill released space with left and right  */
                 node->par->child[i] = left;
                 node->par->child[i+1] = right;    
                 break;
@@ -64,17 +72,20 @@ BNodePtr split_vertex (BNodePtr *root, BNodePtr node) {
 
         BNodePtr par = node->par;
         free_nullify (node);
-        return par;
+        /*  move up the tree  */
+        split_vertex (root, par);
     }
+
 }
 
 void create_at_split (BNodePtr node, BNodePtr *left, BNodePtr *right) {
     BNodePtr left_children [4] = {node->child[0], node->child[1], NULL, NULL};
-    *left = new_linked_vertex (node->info[0], left_children, node->par);
+    *left = new_bt_node (node->info[0], left_children, node->par);
     
     BNodePtr right_children [4] = {node->child[2], node->child[3], NULL, NULL};
-    *right = new_linked_vertex (node->info[2], right_children, node->par);
+    *right = new_bt_node (node->info[2], right_children, node->par);
 
+    /*  set left and right as parents  */
     for (size_t i = 0; i < 2; i++) {
         if ((*left)->child[i])
             (*left)->child[i]->par = *left;
@@ -82,6 +93,7 @@ void create_at_split (BNodePtr node, BNodePtr *left, BNodePtr *right) {
             (*right)->child[i]->par = *right;
     }
 }
+
 
 /*  PRINT  */
 void print_bt (BNodePtr root) {
@@ -127,6 +139,102 @@ void print_bt_lvl (BNodePtr root, size_t height) {
 }
 
 
+/*  SEARCH  */
+BNodePtr search_bt (BNodePtr root, Key key, size_t *pos) {
+    if (!root)
+        return NULL;
+
+    if (find_in_vertex (root, key, pos) == ERRSUC)
+        return root;
+
+    if (LTE(key, root->info[0]->key))
+        return search_bt (root->child[0], key, pos);
+    if (root->csize == 2 && LTE(key, root->info[1]->key) 
+        || root->csize == 1)
+        return search_bt (root->child[1], key, pos);
+    if (root->csize == 2)
+        return search_bt (root->child[2], key, pos);
+
+    return NULL;
+}
+
+BNodePtr search_max_node (BNodePtr root) {
+    if ( root == NULL || root->child[0] == NULL /*leaf*/ )
+        return root;
+    for (size_t i = 0; i < CHILD_NUM - 1; i++) {
+        if (root->child[i+1] == NULL) 
+            return search_max_node (root->child[i]);
+    }
+    return search_max_node (root->child[CHILD_NUM-1]);
+}
+
+BNodePtr search_max (BNodePtr root, size_t *pos) {
+    BNodePtr max = search_max_node (root);
+    if (max == NULL)
+        return NULL;
+    
+    *pos = find_max_in_vertex (root);
+    return max;
+}
+
+
+/*  DELETE  */
+int delete_bt (BNodePtr *root, BNodePtr cnode, Key key) {
+    size_t pos_node = 0, pos_max = 0;
+    BNodePtr node = search_bt (*root, key, &pos_node);
+    if (!cnode)
+        return ERRWRG;
+    
+    BNodePtr max = NULL;
+    if (EQ(cnode->info[pos_node]->key, key)) 
+        max = search_max (cnode->child[pos_node], &pos_max);
+    
+    if (max) /*skip if leaf*/ {
+        /*  swap with max key of the left key child  */
+        swap (&(max->info[pos_max]), &(cnode->info[pos_node]));
+        cnode = max;
+    }
+
+    /*  delete key in fact  */
+    delete_from_vertex (cnode, key);
+    fix_after_del (root, cnode);
+    return ERRSUC;
+}
+
+BNodePtr fix_after_del (BNodePtr *root, BNodePtr leaf) {
+    /*  the only key in the tree  */
+    if (leaf->csize == 0 && leaf->par == NULL) {
+        free_nullify(leaf);
+        return NULL;
+    }
+
+    /*  vertex with 2 keys  */
+    if (leaf->csize != 0) {
+        if (leaf->par)
+            //return fix_after_del (leaf->par);
+        //else 
+            return leaf;
+    }
+
+    BNodePtr par = leaf->par;
+    if (par->child[0]->csize == 2 || par->child[1]->csize == 2
+        || par->csize == 2) 
+        ;
+        //leaf = redistribute (leaf);
+    else if (par->csize == 2 && par->child[2]->csize == 2)
+        ;//leaf = redistribute (leaf);
+    else 
+        //leaf = merge (leaf);
+
+    return fix_after_del (root, leaf);
+}
+
+
+
+
+
+
+
 /*  DESTRUCTORS  */
 void free_tree (BNodePtr root) {
     if (!root) 
@@ -155,7 +263,7 @@ BNodePtr new_vertex (InfoPtr info) {
     return node;
 }
 
-BNodePtr new_linked_vertex (InfoPtr info, BNodePtr children[4], BNodePtr par) {
+BNodePtr new_bt_node (InfoPtr info, BNodePtr children[4], BNodePtr par) {
     BNodePtr node = calloc (1, sizeof *node);
 
     node->csize = 1;
@@ -193,7 +301,7 @@ void free_info (InfoPtr info) {
 
 /*  SEARCH  */
 
-int search_in_node (BNodePtr node, char *key, size_t *pos) {
+int find_in_vertex (BNodePtr node, char *key, size_t *pos) {
 
     for (int i = 0; node->info[i]; i++) {
         if (EQ(node->info[i]->key, key)) {
@@ -203,6 +311,16 @@ int search_in_node (BNodePtr node, char *key, size_t *pos) {
     }
 
     return ERRWRG;
+}
+
+size_t find_max_in_vertex (BNodePtr root) {
+    if (!root) 
+        return 0;
+    for (size_t i = 0; i < KEYS_NUM - 1; i++) {
+        if (root->info[i+1] == NULL)
+            return i;
+    }
+    return KEYS_NUM - 1;
 }
 
 /*  REORDER  */
@@ -251,34 +369,27 @@ void insert_to_vertex (BNodePtr node, InfoPtr info) {
 }
 
 /*  DELETION  */
-int delete_from_node (BNodePtr node, Key key) {
-    switch (node->csize) {
-        case 0:
-            return ERRWRG;
+int delete_from_vertex (BNodePtr node, Key key) {
+    if (node->csize == 0) 
+        return ERRWRG;
 
-        case 1:
-            if (EQ(node->info[0]->key, key)) {
-                node->info[0] = node->info[1];
-                node->info[1] = node->info[2];
-                node->csize--;
-                return ERRSUC;
-            }
-        break;
+    for (size_t i = 0; i < KEYS_NUM; i++) {
+        if (EQ(node->info[i]->key, key)) {
+            free_info (node->info[i]);
+            /*  Left shift.  */
+            for (size_t j = i; j < KEYS_NUM - 1; j++) 
+                node->info[j] = node->info[j+1];
 
-        case 2:
-            if (EQ(node->info[1]->key, key)) {
-                node->info[1] = node->info[2];
-                node->csize--;
-                return ERRSUC;
-            }
-        break;
+            node->csize--;
+            return ERRSUC;
+        }
     }
 
     return ERRWRG;
 }
 
 /*  OTHER  */
-void node_to_2vertex (BNodePtr node, InfoPtr info, BNodePtr node1, BNodePtr node2) {
+void fix_root_after_split (BNodePtr node, InfoPtr info, BNodePtr node1, BNodePtr node2) {
     node->info[0] = info;
     node->child[0] = node1;
     node->child[1] = node2;

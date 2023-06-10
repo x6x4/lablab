@@ -63,7 +63,7 @@ int insert_tree (BNodePtr *root, FILE *file) {
 
     InfoPtr info = new_info (key, val);
 
-    insert_to_tree (root, *root, info);
+    insert_bt (root, *root, info);
 
     printf ("Item inserted successfully.\n");
 
