@@ -40,7 +40,7 @@ struct Info
 
 /*  insertion is always performed to the leaf  */
 void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info);
-void split_vertex (BNodePtr *root, BNodePtr node);
+void split_from_node (BNodePtr *root, BNodePtr node);
 /*  distribute the node's children equally between the created left and right nodes  */
 void create_at_split (BNodePtr node, BNodePtr *left, BNodePtr *right);
 

@@ -15,24 +15,25 @@ void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info) {
         return;
     }
 
-    if (is_leaf (cnode)) 
+    if (is_leaf (cnode)) {
         insert_to_vertex (cnode, info);
+        split_from_node (root, cnode);
+        return;
+    }
 
-    else if ( LTE (info->key, cnode->info[0]->key) ) 
-        insert_bt (root, cnode->child[0], info);
+    /*  Recursive descent  */
+    for (size_t i = 0; i < cnode->csize; i++) {
+        if ( LTE (info->key, cnode->info[i]->key) ) {
+            insert_bt (root, cnode->child[i], info);
+            return;
+        }
+    }
+    /*  go to rightmost child  */
+    insert_bt (root, cnode->child[cnode->csize], info);
 
-    else if (cnode->csize == 1 ||
-            cnode->csize == 2 && LTE (info->key, cnode->info[1]->key) ) 
-        insert_bt (root, cnode->child[1], info);
-    
-    else
-        insert_bt (root, cnode->child[2], info);
-
-    split_vertex (root, cnode);
-    return;
 }
 
-void split_vertex (BNodePtr *root, BNodePtr node) {
+void split_from_node (BNodePtr *root, BNodePtr node) {
     if (node->csize < 3)
         return;
 
@@ -73,7 +74,7 @@ void split_vertex (BNodePtr *root, BNodePtr node) {
         BNodePtr par = node->par;
         free_nullify (node);
         /*  move up the tree  */
-        split_vertex (root, par);
+        split_from_node (root, par);
     }
 
 }
