@@ -1,6 +1,5 @@
 #include "lib_bintree.h"
 #include "../../../new_input/generic.h"
-#include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -17,7 +16,7 @@ void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info) {
 
     if (is_leaf (cnode)) {
         insert_to_vertex (cnode, info);
-        split_from_node (root, cnode);
+        split_up_from_node (root, cnode);
         return;
     }
 
@@ -33,7 +32,7 @@ void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info) {
 
 }
 
-void split_from_node (BNodePtr *root, BNodePtr node) {
+void split_up_from_node (BNodePtr *root, BNodePtr node) {
     if (node->csize < 3)
         return;
 
@@ -74,7 +73,7 @@ void split_from_node (BNodePtr *root, BNodePtr node) {
         BNodePtr par = node->par;
         free_nullify (node);
         /*  move up the tree  */
-        split_from_node (root, par);
+        split_up_from_node (root, par);
     }
 
 }
@@ -100,6 +99,11 @@ void create_at_split (BNodePtr node, BNodePtr *left, BNodePtr *right) {
 void print_bt (BNodePtr root) {
     set_height (root);
     print_bt_lvl (root, 0);
+}
+
+void colored_print_bt (BNodePtr root, char *key) {
+    set_height (root);
+    colored_print_bt_lvl (root, 0, key);
 }
 
 void set_height (BNodePtr root) {
@@ -139,9 +143,38 @@ void print_bt_lvl (BNodePtr root, size_t height) {
     }
 }
 
+void colored_print_bt_lvl (BNodePtr root, size_t height, char *key) {
+    static size_t null_children = 0;
+    if (!root) {
+        if (!null_children)
+            printf ("\n%*s└── ", 4*(height+1) - 4, ""); 
+        return;
+    }
+    if (root->height != height) {
+        printf ("\n");
+        height = root->height;
+    }
+    if (height) 
+        printf ("%*s└── ", 4*height - 4, ""); 
+    for (size_t i = 0; i < root->csize; i++) {
+        if (EQ(root->info[i]->key, key))
+            printf ("\x1b[31m(%s, %s)\x1b[0m", root->info[i]->key, root->info[i]->val);
+        else 
+            printf ("(%s, %s) ", root->info[i]->key, root->info[i]->val);
+    }
+    for (size_t i = 0; i < CHILD_NUM - 1; i++) {
+        null_children = 1;
+        for (size_t j = 0; j < CHILD_NUM - 1; j++) {
+            if (root->child[j])
+                null_children = 0;
+        }
+        colored_print_bt_lvl (root->child[i], height, key);
+    }
+}
+
 
 /*  SEARCH  */
-BNodePtr search_bt (BNodePtr root, Key key, size_t *pos) {
+BNodePtr find_bt (BNodePtr root, Key key, size_t *pos) {
     if (!root)
         return NULL;
 
@@ -149,56 +182,47 @@ BNodePtr search_bt (BNodePtr root, Key key, size_t *pos) {
         return root;
 
     if (LTE(key, root->info[0]->key))
-        return search_bt (root->child[0], key, pos);
+        return find_bt (root->child[0], key, pos);
     if (root->csize == 2 && LTE(key, root->info[1]->key) 
         || root->csize == 1)
-        return search_bt (root->child[1], key, pos);
+        return find_bt (root->child[1], key, pos);
     if (root->csize == 2)
-        return search_bt (root->child[2], key, pos);
+        return find_bt (root->child[2], key, pos);
 
     return NULL;
 }
 
-BNodePtr search_max_node (BNodePtr root) {
+BNodePtr find_max (BNodePtr root) {
     if ( root == NULL || root->child[0] == NULL /*leaf*/ )
         return root;
     for (size_t i = 0; i < CHILD_NUM - 1; i++) {
         if (root->child[i+1] == NULL) 
-            return search_max_node (root->child[i]);
+            return find_max (root->child[i]);
     }
-    return search_max_node (root->child[CHILD_NUM-1]);
+    return find_max (root->child[CHILD_NUM-1]);
 }
-
-BNodePtr search_max (BNodePtr root, size_t *pos) {
-    BNodePtr max = search_max_node (root);
-    if (max == NULL)
-        return NULL;
-    
-    *pos = find_max_in_vertex (root);
-    return max;
-}
-
 
 /*  DELETE  */
-int delete_bt (BNodePtr *root, BNodePtr cnode, Key key) {
+int delete_bt (BNodePtr *root, Key key) {
     size_t pos_node = 0, pos_max = 0;
-    BNodePtr node = search_bt (*root, key, &pos_node);
-    if (!cnode)
+    BNodePtr max_in_left_subtree = NULL;
+
+    BNodePtr node_to_delete = find_bt (*root, key, &pos_node);
+    if (!node_to_delete)
         return ERRWRG;
+
+    max_in_left_subtree = find_max (node_to_delete->child[pos_node]);
     
-    BNodePtr max = NULL;
-    if (EQ(cnode->info[pos_node]->key, key)) 
-        max = search_max (cnode->child[pos_node], &pos_max);
-    
-    if (max) /*skip if leaf*/ {
-        /*  swap with max key of the left key child  */
-        swap (&(max->info[pos_max]), &(cnode->info[pos_node]));
-        cnode = max;
+    if (max_in_left_subtree) /*skip if leaf*/ {
+        /*  swap key with max key of the left child  */
+        swap (&(max_in_left_subtree->info[max_in_left_subtree->csize - 1]), 
+              &(node_to_delete->info[pos_node]));
+        node_to_delete = max_in_left_subtree;
     }
 
     /*  delete key in fact  */
-    delete_from_vertex (cnode, key);
-    fix_after_del (root, cnode);
+    delete_from_vertex (node_to_delete, key);
+    //fix_after_del (root, node_to_delete);
     return ERRSUC;
 }
 
@@ -211,7 +235,7 @@ BNodePtr fix_after_del (BNodePtr *root, BNodePtr leaf) {
 
     /*  vertex with 2 keys  */
     if (leaf->csize != 0) {
-        if (leaf->par)
+        //if (leaf->par)
             //return fix_after_del (leaf->par);
         //else 
             return leaf;
@@ -304,7 +328,10 @@ void free_info (InfoPtr info) {
 
 int find_in_vertex (BNodePtr node, char *key, size_t *pos) {
 
-    for (int i = 0; node->info[i]; i++) {
+    if (!key)
+        return ERRWRG;
+
+    for (size_t i = 0; i < node->csize; i++) {
         if (EQ(node->info[i]->key, key)) {
             *pos = i;
             return ERRSUC;
@@ -314,15 +341,6 @@ int find_in_vertex (BNodePtr node, char *key, size_t *pos) {
     return ERRWRG;
 }
 
-size_t find_max_in_vertex (BNodePtr root) {
-    if (!root) 
-        return 0;
-    for (size_t i = 0; i < KEYS_NUM - 1; i++) {
-        if (root->info[i+1] == NULL)
-            return i;
-    }
-    return KEYS_NUM - 1;
-}
 
 /*  REORDER  */
 

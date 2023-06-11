@@ -1,8 +1,11 @@
 #include "src/lib_bintree.h"
 #include "../../new_input/generic.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <limits.h>
 #include <time.h>
+
+#define eof 0
 
 int insert_tree (BNodePtr *root, FILE *file);
 int delete_tree (BNodePtr *root, FILE *file);
@@ -30,8 +33,7 @@ int main () {
     printf ("B23 tree UI.\n");
 
     while ((fn_num = option_choice (msgs, msgc, file))) {
-        //  each function returns 0 if EOF
-        if (!fptr[fn_num](&root, file))
+        if (fptr[fn_num](&root, file) == eof)
             break;
     }
 
@@ -45,7 +47,7 @@ int insert_tree (BNodePtr *root, FILE *file) {
     
     char key [51]= "", val [51] = "";
     int status = -1;
-    const char *s = "Enter key of item to insert: \n";
+    const char *s = "Enter key of item to insert (50 symbols max): \n";
 
     printf ("%s", s);
     
@@ -53,7 +55,7 @@ int insert_tree (BNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;
 
-    s = "Enter value of item to insert: \n";
+    s = "Enter value of item to insert (50 symbols max): \n";
 
     printf ("%s", s);
 
@@ -72,26 +74,26 @@ int insert_tree (BNodePtr *root, FILE *file) {
 
 int delete_tree (BNodePtr *root, FILE *file) {
 
-/*   size_t key = 0;
+    char key [51]= "", val [51] = "";
     int status = -1;
-    const char *s = "Enter key of item to delete: \n";
+    const char *s = "Enter key of item to delete (50 symbols max): \n";
 
     printf ("%s", s);
     
-    status = get_int_file (file, &key, INT_MAX, 0);
+    status = fscanf (file, "%50s", key);
     if (status == ERREOF) 
-        return 0;       
+        return 0;
 
-    if (delete_bst (root, key) == ERRSUC) 
+    if (delete_bt (root, key) == ERRSUC) 
         printf ("Item deleted successfully.\n");
     else 
         printf ("Key not found btw.\n");
-*/
+
     return 1; 
 };
 
 int find_tree (BNodePtr *root, FILE *file) {
-    /*BNodePtr node = NULL;
+    BNodePtr node = NULL;
     size_t pos = 0;
 
     char key [51]= "", val [51] = "";
@@ -104,19 +106,26 @@ int find_tree (BNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;
 
-    if (search_bt (*root, key, &pos, &node) == ERRSUC) 
-        printf ("(%s, %s)\n", node->info[pos]->key, node->info[pos]->val);
+    node = find_bt (*root, key, &pos);
+
+    if (node) 
+        colored_print_bt (*root, key);
     else 
-        printf ("No key\n");
-    */
+        printf ("No such key\n");
+    
     return 1;
 };
 
-int findmax_tree (BNodePtr *root, FILE *file) {/*
+int findmax_tree (BNodePtr *root, FILE *file) {
     BNodePtr node = find_max (*root);
-    if (node)
-        printf ("(%lu, %lu)\n", node->info->key, node->info->val);
-*/
+
+    if (node) {
+        size_t pos = node->csize - 1;
+        printf ("(%s, %s)\n", node->info[pos]->key, node->info[pos]->val);
+    }
+    else
+        puts ("Void tree.");
+
     return 1;
 };
 
