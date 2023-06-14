@@ -61,7 +61,7 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, Key key);
 int delete_bt (BNodePtr *root, Key key);
 void fix_after_del (BNodePtr *root, BNodePtr node);
 BNodePtr redistribute (BNodePtr leaf);
-BNodePtr merge (BNodePtr leaf);
+BNodePtr merge (BNodePtr *root, BNodePtr leaf);
 
 /*  Destructors  */
 void free_tree (BNodePtr root);
@@ -75,8 +75,8 @@ BNodePtr new_bt_node (InfoPtr info, BNodePtr children[4], BNodePtr par);
 InfoPtr new_info (Key key, Key val);
 
 /*  Destructors  */
-void free_vertex (BNodePtr node);
-void free_info (InfoPtr info);
+void free_vertex (BNodePtr *node);
+void free_info (InfoPtr *info);
 
 /*  Search  */
 int find_in_vertex (BNodePtr node, char *key, size_t *pos);

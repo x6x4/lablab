@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-
 /*  TREE  */
 
 /*  INSERTION  */
@@ -119,7 +118,7 @@ void set_height (BNodePtr root) {
 
 void print_bt_lvl (BNodePtr root, size_t height) {
     static size_t null_children = 0;
-    if (!root) {
+    if (!root || root->csize == 0) {
         if (!null_children)
             printf ("\n%*s└── ", 4*(height+1) - 4, ""); 
         return;
@@ -130,9 +129,10 @@ void print_bt_lvl (BNodePtr root, size_t height) {
     }
     if (height) 
         printf ("%*s└── ", 4*height - 4, ""); 
-    for (size_t i = 0; i < root->csize; i++) {
-            printf ("(%s, %s) ", root->info[i]->key , root->info[i]->val);
-    }
+    for (size_t i = 0; i < root->csize; i++) 
+        /*  print itself  */
+        printf ("(%s, %s) ", root->info[i]->key , root->info[i]->val);
+    
     for (size_t i = 0; i < CHILD_NUM - 1; i++) {
         null_children = 1;
         for (size_t j = 0; j < CHILD_NUM - 1; j++) {
@@ -158,7 +158,7 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, char *key) {
         printf ("%*s└── ", 4*height - 4, ""); 
     for (size_t i = 0; i < root->csize; i++) {
         if (EQ(root->info[i]->key, key))
-            printf ("\x1b[31m(%s, %s)\x1b[0m", root->info[i]->key, root->info[i]->val);
+            printf (RED("(%s, %s)"), root->info[i]->key, root->info[i]->val);
         else 
             printf ("(%s, %s) ", root->info[i]->key, root->info[i]->val);
     }
@@ -193,7 +193,7 @@ BNodePtr find_bt (BNodePtr root, Key key, size_t *pos) {
 }
 
 BNodePtr find_max (BNodePtr root) {
-    if ( root == NULL || root->child[0] == NULL /*leaf*/ )
+    if (root == NULL || root->child[0] == NULL /*leaf*/ )
         return root;
     for (size_t i = 0; i < CHILD_NUM - 1; i++) {
         if (root->child[i+1] == NULL) 
@@ -206,32 +206,44 @@ BNodePtr find_max (BNodePtr root) {
 int delete_bt (BNodePtr *root, Key key) {
     size_t pos_node = 0, pos_max = 0;
     BNodePtr max_in_lchild = NULL;
-    InfoPtr max_key_in_lchild = NULL;
-    InfoPtr key_to_delete = NULL;
+    InfoPtr *max_key_in_lchild = NULL;
+    InfoPtr *key_to_delete = NULL;
 
-    BNodePtr node_to_delete = find_bt (*root, key, &pos_node);
-    if (!node_to_delete)
+    BNodePtr node_for_deletion = find_bt (*root, key, &pos_node);
+    if (!node_for_deletion)
         return ERRWRG;
 
-    max_in_lchild = find_max (node_to_delete->child[pos_node]);
-    max_key_in_lchild = max_in_lchild->info[max_in_lchild->csize - 1];
-    key_to_delete = node_to_delete->info[pos_node];
+    max_in_lchild = find_max (node_for_deletion->child[pos_node]);
+   
+    key_to_delete = &(node_for_deletion->info[pos_node]);
     
     /*  move key to leaf  */
     if (max_in_lchild) {
-        swap (&max_key_in_lchild, &key_to_delete);
-        node_to_delete = max_in_lchild;
+        max_key_in_lchild = &(max_in_lchild->info[max_in_lchild->csize - 1]);
+        swap (max_key_in_lchild, key_to_delete);
+        node_for_deletion = max_in_lchild;
     }
 
     /*  delete key in leaf  */
-    delete_from_vertex (node_to_delete, key);
+    if (max_key_in_lchild)
+        free_info (max_key_in_lchild);
+    else 
+        free_info (key_to_delete);
+
+    delete_from_vertex (node_for_deletion, key);
+
+    print_bt (*root);
 
     /*  fix bt  */
-    fix_after_del (root, node_to_delete);
+    fix_after_del (root, node_for_deletion);
     return ERRSUC;
 }
 
 void fix_after_del (BNodePtr *root, BNodePtr leaf) {
+
+    if (!leaf)
+        return;
+
     /*  the only key in the tree  */
     if (leaf->csize == 0 && leaf->par == NULL) {
         free_nullify(*root);
@@ -239,13 +251,16 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
     }
 
     /*  leaf with 2 keys  */
-    if (leaf->csize != 0) 
+    if (leaf->csize != 0) {
+        if (leaf->par)
+            fix_after_del (root, leaf->par);
         return;
+    }
 
     /*  emptied child  */
     BNodePtr par = leaf->par;
 
-    for (size_t i = 0; i < CHILD_NUM - 1; i++) {
+    for (size_t i = 0; i < par->csize + 1; i++) {
         if (par->child[i]->csize == 2) {
             leaf = redistribute (leaf);
             break;
@@ -255,7 +270,7 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
     if (par->csize == 2)
         leaf = redistribute (leaf);
     
-    leaf = merge (leaf);
+    leaf = merge (root, leaf);
 
     fix_after_del (root, leaf);
 }
@@ -271,7 +286,7 @@ void insert_parent_key (size_t num, BNodePtr par) {
     }
 }
 
-void left_shift (size_t num, BNodePtr par) {
+void lshift_fill (size_t num, BNodePtr par) {
     switch (num) {
         case 0:
             par->child[0] = par->child[1];
@@ -296,6 +311,8 @@ void clear (size_t num, BNodePtr par, BNodePtr leaf) {
 
 void insert_third_child (size_t num, BNodePtr par, BNodePtr leaf) {
     BNodePtr node_to_insert = NULL;
+    BNodePtr possible_par = NULL;
+
     for (size_t i = 0; i < CHILD_NUM - 2; i++) {
         if (leaf->child[i]) {
             node_to_insert = leaf->child[i];
@@ -316,7 +333,8 @@ void insert_third_child (size_t num, BNodePtr par, BNodePtr leaf) {
             place_to_insert = &(par->child[1]->child[2]);
     }
 
-    BNodePtr possible_par = (*place_to_insert)->par;
+    if (*place_to_insert)
+        possible_par = (*place_to_insert)->par;
 
     *place_to_insert = node_to_insert;
     if (node_to_insert) 
@@ -333,8 +351,11 @@ void rotate_right (size_t src, size_t dest, BNodePtr par) {
     size_t src_sz = par->child[src]->csize;
     /*  change infos  */
     par->child[dest]->info[0] = par->info[src];
+    par->child[dest]->csize = 1;
+
     par->info[src] = par->child[src]->info[src_sz - 1];
     delete_from_vertex (par->child[src], par->child[src]->info[src_sz - 1]->key);
+
     /*  change children  */
     par->child[dest]->child[0] = par->child[src]->child[src_sz];
 
@@ -353,8 +374,11 @@ void rotate_left (size_t src, size_t dest, BNodePtr par) {
     size_t src_sz = par->child[src]->csize;
     /*  change infos  */
     par->child[dest]->info[0] = par->info[src - 1];
-    par->info[src - 1] = par->child[src]->info[src_sz - 1];
-    delete_from_vertex (par->child[src], par->child[src]->info[src_sz - 1]->key);
+    par->child[dest]->csize = 1;
+
+    par->info[src - 1] = par->child[src]->info[0];
+    delete_from_vertex (par->child[src], par->child[src]->info[0]->key);
+
     /*  change children  */
     par->child[dest]->child[1] = par->child[src]->child[0];
     for (size_t i = 0; i < src_sz; i++)
@@ -383,28 +407,31 @@ size_t set_v3_num (BNodePtr par, BNodePtr leaf) {
     return CHILD_NUM - 1;
 }
 
-/*  donor always has csize = 2  */
 BNodePtr redistribute (BNodePtr leaf) {
+
     BNodePtr par = leaf->par;
-    size_t num = set_num (par, leaf);
+    if (!par)
+        return leaf;
+
+    size_t leaf_num = set_num (par, leaf);
     size_t vertex_3_num = set_v3_num (par, leaf);
 
-    if (par->csize == 2 && !vertex_3_num) {
-        left_shift (num, par);
-        insert_parent_key (num, par);
+    if (par->csize == 2 && vertex_3_num == CHILD_NUM - 1) {
+        lshift_fill (leaf_num, par);
+        insert_parent_key (leaf_num, par);
 
         /*  right shift  */
-        if (num == 0) {
+        if (leaf_num == 0) {
             par->child[0]->child[1] = par->child[0]->child[0];
             par->child[0]->child[2] = par->child[0]->child[1];
         }
 
-        insert_third_child (num, par, leaf);
-        clear (num, par, leaf);
+        insert_third_child (leaf_num, par, leaf);
+        clear (leaf_num, par, leaf);
     } 
     else if (par->csize == 2 && vertex_3_num) {
         
-        if (num == 2) {
+        if (leaf_num == 2) {
             if (vertex_3_num == 1) 
                 rotate_right (1, 2, par);
             else if (vertex_3_num == 2) {
@@ -413,13 +440,13 @@ BNodePtr redistribute (BNodePtr leaf) {
                 rotate_right (0, 1, par);
             } 
         }
-        else if (num == 1) {
+        else if (leaf_num == 1) {
             if (vertex_3_num == 2) 
                 rotate_left (2, 1, par);
             else if (vertex_3_num == 2) 
                 rotate_right (0, 1, par);  
         }
-        else if (num == 0) {
+        else if (leaf_num == 0) {
             if (vertex_3_num == 1) 
                 rotate_left (1, 0, par);
             else if (vertex_3_num == 2) {
@@ -429,12 +456,12 @@ BNodePtr redistribute (BNodePtr leaf) {
         }
     }
     else if (par->csize == 1) {
-        if (num == 0 && vertex_3_num == 1) {
+        if (leaf_num == 0 && vertex_3_num == 1) {
             if (leaf->child[0] == NULL) 
                 leaf->child[0] = leaf->child[1];
             rotate_left (1, 0, par);
         } 
-        else if (num == 1 && vertex_3_num == 0) {
+        else if (leaf_num == 1 && vertex_3_num == 0) {
             if (leaf->child[1] == NULL) 
                 leaf->child[1] = leaf->child[0];
             rotate_right (0, 1, par);
@@ -478,14 +505,16 @@ void move_children (size_t num, BNodePtr par, BNodePtr leaf) {
     }
 }
 
-void clear_merge (BNodePtr par, BNodePtr leaf) {
+void clear_merge (BNodePtr par, size_t num) {
     delete_from_vertex (par, par->info[0]->key);
-    free_vertex (leaf);
+    free_vertex (&(par->child[num]));
 }
 
 /*  par has two chidren of size 1  */
-BNodePtr merge (BNodePtr leaf) {
+BNodePtr merge (BNodePtr *root, BNodePtr leaf) {
     BNodePtr par = leaf->par;
+    if (!par)
+        return NULL;
     size_t num = CHILD_NUM - 2;
 
     if (leaf == par->child[0]) 
@@ -495,20 +524,18 @@ BNodePtr merge (BNodePtr leaf) {
 
     move_par_key (num, par);
     move_children (num, par, leaf);
-    clear_merge (par, leaf);
-     
+    clear_merge (par, num);
+    
     if (par->par == NULL) {
         BNodePtr new_root = non_null_child (par);
         new_root->par = NULL;
-        free_vertex (par);
+        free_vertex (&par);
+        *root = new_root;
         return new_root;
     }
 
     return par;
 }
-
-
-
 
 /*  DESTRUCTORS  */
 void free_tree (BNodePtr root) {
@@ -519,7 +546,7 @@ void free_tree (BNodePtr root) {
     free_tree (root->child[1]);
     free_tree (root->child[2]);
     
-    free_vertex (root);
+    free_vertex (&root);
 }
 
 /*  NODE  */
@@ -560,17 +587,19 @@ InfoPtr new_info (Key key, Key val) {
 
 /*  DESTRUCTORS  */
 
-void free_vertex (BNodePtr node) {
-    for (size_t i = 0; i < node->csize; i++) {
-        free_info (node->info[i]);
+void free_vertex (BNodePtr *node) {
+    for (size_t i = 0; i < (*node)->csize; i++) {
+        free_info (&((*node)->info[i]));
     }
-    free_nullify (node);
+    free_nullify (*node);
 }
 
-void free_info (InfoPtr info) {
-    free_nullify (info->key);
-    free_nullify (info->val);
-    free_nullify (info);
+void free_info (InfoPtr *info) {
+    if (!(*info))
+        return;
+    free_nullify ((*info)->key);
+    free_nullify ((*info)->val);
+    free_nullify ((*info));
     return;
 }
 
@@ -642,11 +671,10 @@ int delete_from_vertex (BNodePtr node, Key key) {
     if (node->csize == 0) 
         return ERRWRG;
 
-    for (size_t i = 0; i < KEYS_NUM; i++) {
-        if (EQ(node->info[i]->key, key)) {
-            free_info (node->info[i]);
+    for (size_t i = 0; i < node->csize; i++) {
+        if (node->info[i] == NULL || EQ(node->info[i]->key, key)) {
             /*  Left shift.  */
-            for (size_t j = i; j < KEYS_NUM - 1; j++) 
+            for (size_t j = i; j < node->csize - 1; j++) 
                 node->info[j] = node->info[j+1];
 
             node->csize--;

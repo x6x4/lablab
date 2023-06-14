@@ -84,10 +84,18 @@ int delete_tree (BNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;
 
-    if (delete_bt (root, key) == ERRSUC) 
-        printf ("Item deleted successfully.\n");
-    else 
-        printf ("No such key.\n");
+    switch (delete_bt (root, key)) {
+        case ERRSUC:
+            printf ("\nItem deleted successfully.\n");
+            break;
+        case ERRWRG:
+            printf ("No such key.\n");
+            break;
+        default:
+            printf (RED("Unknown error."));
+    }
+
+    print_tree (root, file);
 
     return 1; 
 };
@@ -170,7 +178,7 @@ int import_tree (BNodePtr *root, FILE *file) {
 
 int print_tree (BNodePtr *root, FILE *file) {
     printf ("\nTree:\n");
-    if (!(*root)) {
+    if (!(*root) || (*root)->csize == 0) {
         printf ("(void)\n");
         return 1;
     }
