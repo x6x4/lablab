@@ -59,7 +59,9 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, Key key);
 /*  Deletion  */
 /*  deletion is always performed from the leaf  */
 int delete_bt (BNodePtr *root, Key key);
-BNodePtr fix_after_del (BNodePtr *root, BNodePtr node);
+void fix_after_del (BNodePtr *root, BNodePtr node);
+BNodePtr redistribute (BNodePtr leaf);
+BNodePtr merge (BNodePtr leaf);
 
 /*  Destructors  */
 void free_tree (BNodePtr root);

@@ -1,5 +1,5 @@
 #include "src/lib_bintree.h"
-#include "../../new_input/generic.h"
+#include "src/generic.h"
 #include <stdio.h>
 #include <limits.h>
 #include <time.h>

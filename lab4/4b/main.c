@@ -87,7 +87,7 @@ int delete_tree (BNodePtr *root, FILE *file) {
     if (delete_bt (root, key) == ERRSUC) 
         printf ("Item deleted successfully.\n");
     else 
-        printf ("Key not found btw.\n");
+        printf ("No such key.\n");
 
     return 1; 
 };
