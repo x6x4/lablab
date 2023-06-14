@@ -232,14 +232,14 @@ int delete_bt (BNodePtr *root, Key key) {
 
     delete_from_vertex (node_for_deletion, key);
 
-    print_bt (*root);
-
     /*  fix bt  */
     fix_after_del (root, node_for_deletion);
     return ERRSUC;
 }
 
 void fix_after_del (BNodePtr *root, BNodePtr leaf) {
+
+    size_t vertex_3_chld = CHILD_NUM - 1;
 
     if (!leaf)
         return;
@@ -263,14 +263,16 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
     for (size_t i = 0; i < par->csize + 1; i++) {
         if (par->child[i]->csize == 2) {
             leaf = redistribute (leaf);
+            vertex_3_chld = i;
             break;
         }
-    }
+    } 
 
-    if (par->csize == 2)
+    if (vertex_3_chld == CHILD_NUM - 1 && par->csize == 2)
         leaf = redistribute (leaf);
     
-    leaf = merge (root, leaf);
+    else if (vertex_3_chld == CHILD_NUM - 1)
+        leaf = merge (root, leaf);
 
     fix_after_del (root, leaf);
 }
@@ -428,6 +430,7 @@ BNodePtr redistribute (BNodePtr leaf) {
 
         insert_third_child (leaf_num, par, leaf);
         clear (leaf_num, par, leaf);
+        print_bt (par);
     } 
     else if (par->csize == 2 && vertex_3_num) {
         
