@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
@@ -17,9 +18,11 @@ typedef short Bool;
 
 #define free_nullify(ptr) free (ptr); ptr = NULL;
 
+#define NODES_TO_FIND 0x10
+
 struct BNode {
     size_t height;
-    int csize;
+    size_t csize;
     InfoPtr info [KEYS_NUM];
     BNodePtr child [CHILD_NUM];
     BNodePtr par;
@@ -29,6 +32,7 @@ struct Info
 {
     Key key;
     char *val;
+    size_t ver;
 };
 
 #define NO_KEY __SIZE_MAX__
@@ -46,7 +50,7 @@ void split_up_from_node (BNodePtr *root, BNodePtr node);
 void create_at_split (BNodePtr node, BNodePtr *left, BNodePtr *right);
 
 /*  Search  */
-BNodePtr find_bt (BNodePtr root, Key key, size_t *pos);
+BNodePtr *find_bt (BNodePtr root, Key key, size_t *pos, size_t ver);
 BNodePtr find_max (BNodePtr root);
 
 /*  Print  */
@@ -58,7 +62,7 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, Key key);
 
 /*  Deletion  */
 /*  deletion is always performed from the leaf  */
-int delete_bt (BNodePtr *root, Key key);
+int delete_bt (BNodePtr *root, Key key, size_t ver);
 void fix_after_del (BNodePtr *root, BNodePtr node);
 BNodePtr redistribute (BNodePtr leaf);
 BNodePtr merge (BNodePtr *root, BNodePtr leaf);

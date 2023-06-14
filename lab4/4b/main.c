@@ -75,6 +75,7 @@ int insert_tree (BNodePtr *root, FILE *file) {
 int delete_tree (BNodePtr *root, FILE *file) {
 
     char key [51]= "", val [51] = "";
+    size_t ver = 0;
     int status = -1;
     const char *s = "Enter key of item to delete (50 symbols max): \n";
 
@@ -84,12 +85,20 @@ int delete_tree (BNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;
 
-    switch (delete_bt (root, key)) {
+    s = "Enter version of item to delete: \n";
+
+    printf ("%s", s);
+    
+    status = get_int_file (file, &ver, INT_MAX, 0);
+    if (status == ERREOF) 
+        return 0;  
+
+    switch (delete_bt (root, key, ver)) {
         case ERRSUC:
             printf ("\nItem deleted successfully.\n");
             break;
         case ERRWRG:
-            printf ("No such key.\n");
+            printf ("No such key or version.\n");
             break;
         default:
             printf (RED("Unknown error."));
@@ -101,7 +110,7 @@ int delete_tree (BNodePtr *root, FILE *file) {
 };
 
 int find_tree (BNodePtr *root, FILE *file) {
-    BNodePtr node = NULL;
+    BNodePtr *node = NULL;
     size_t pos = 0;
 
     char key [51]= "", val [51] = "";
@@ -114,7 +123,7 @@ int find_tree (BNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;
 
-    node = find_bt (*root, key, &pos);
+    node = find_bt (*root, key, &pos, NODES_TO_FIND + 1);
 
     if (node) 
         colored_print_bt (*root, key);

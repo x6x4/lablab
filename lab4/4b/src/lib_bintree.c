@@ -8,6 +8,19 @@
 
 /*  INSERTION  */
 void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info) {
+
+    size_t pos = 0;
+    size_t ver = NODES_TO_FIND + 1;
+    BNodePtr old_node = NULL;
+
+    BNodePtr *nodes = find_bt (*root, info->key, &pos, ver);
+    
+    for (size_t i = 0; (i < NODES_TO_FIND) && nodes[i]; i++) 
+        old_node = nodes[i];
+
+    if (old_node) 
+        info->ver = old_node->info[pos]->ver + 1;
+
     if (!(*root)) {
         *root = new_vertex (info);
         return;
@@ -28,7 +41,6 @@ void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info) {
     }
     /*  go to rightmost child  */
     insert_bt (root, cnode->child[cnode->csize], info);
-
 }
 
 void split_up_from_node (BNodePtr *root, BNodePtr node) {
@@ -131,7 +143,7 @@ void print_bt_lvl (BNodePtr root, size_t height) {
         printf ("%*s└── ", 4*height - 4, ""); 
     for (size_t i = 0; i < root->csize; i++) 
         /*  print itself  */
-        printf ("(%s, %s) ", root->info[i]->key , root->info[i]->val);
+        printf ("(%s, %s, %lu) ", root->info[i]->key , root->info[i]->val, root->info[i]->ver);
     
     for (size_t i = 0; i < CHILD_NUM - 1; i++) {
         null_children = 1;
@@ -158,7 +170,7 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, char *key) {
         printf ("%*s└── ", 4*height - 4, ""); 
     for (size_t i = 0; i < root->csize; i++) {
         if (EQ(root->info[i]->key, key))
-            printf (RED("(%s, %s)"), root->info[i]->key, root->info[i]->val);
+            printf (RED("(%s, %s, %lu)"), root->info[i]->key, root->info[i]->val, root->info[i]->ver);
         else 
             printf ("(%s, %s) ", root->info[i]->key, root->info[i]->val);
     }
@@ -174,22 +186,38 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, char *key) {
 
 
 /*  SEARCH  */
-BNodePtr find_bt (BNodePtr root, Key key, size_t *pos) {
-    if (!root)
-        return NULL;
+BNodePtr *find_bt (BNodePtr root, Key key, size_t *pos, size_t ver) {
+    static BNodePtr nodes [NODES_TO_FIND] = {};
+    static size_t csize = 0;
 
-    if (find_in_vertex (root, key, pos) == ERRSUC)
-        return root;
+    if (!root)
+        return nodes;
+
+    if (find_in_vertex (root, key, pos) == ERRSUC) {
+        
+        if (csize == NODES_TO_FIND) {
+            printf (RED("More than 20 nodes found.\n"));
+            return nodes;
+        }
+        
+        if (ver == NODES_TO_FIND + 1) 
+            nodes[csize++] = root;
+
+        if (root->info[*pos]->ver == ver) {
+            nodes[0] = root;
+            return nodes;
+        } 
+    }
 
     if (LTE(key, root->info[0]->key))
-        return find_bt (root->child[0], key, pos);
+        find_bt (root->child[0], key, pos, ver);
     if (root->csize == 2 && LTE(key, root->info[1]->key) 
         || root->csize == 1)
-        return find_bt (root->child[1], key, pos);
+        find_bt (root->child[1], key, pos, ver);
     if (root->csize == 2)
-        return find_bt (root->child[2], key, pos);
+        find_bt (root->child[2], key, pos, ver);
 
-    return NULL;
+    return nodes;
 }
 
 BNodePtr find_max (BNodePtr root) {
@@ -203,13 +231,13 @@ BNodePtr find_max (BNodePtr root) {
 }
 
 /*  DELETION  */
-int delete_bt (BNodePtr *root, Key key) {
+int delete_bt (BNodePtr *root, Key key, size_t ver) {
     size_t pos_node = 0, pos_max = 0;
     BNodePtr max_in_lchild = NULL;
     InfoPtr *max_key_in_lchild = NULL;
     InfoPtr *key_to_delete = NULL;
 
-    BNodePtr node_for_deletion = find_bt (*root, key, &pos_node);
+    BNodePtr node_for_deletion = find_bt (*root, key, &pos_node, ver)[0];
     if (!node_for_deletion)
         return ERRWRG;
 
@@ -584,6 +612,7 @@ InfoPtr new_info (Key key, Key val) {
     InfoPtr info = calloc (1, sizeof *info);
     info->key = strdup (key);
     info->val = strdup (val);
+    info->ver = 0;
 
     return info;
 }
