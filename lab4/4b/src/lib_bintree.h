@@ -6,6 +6,7 @@
 typedef struct BNode BNode;
 typedef struct BNode *BNodePtr;
 typedef struct Info *InfoPtr;
+typedef struct InfoNode *INode;
 typedef char *Key;
 typedef short Bool;
 
@@ -31,8 +32,13 @@ struct BNode {
 struct Info
 {
     Key key;
+    INode head;
+};
+
+struct InfoNode {
     char *val;
     size_t ver;
+    INode next;
 };
 
 #define NO_KEY __SIZE_MAX__
@@ -49,8 +55,13 @@ void split_up_from_node (BNodePtr *root, BNodePtr node);
 /*  distribute the node's children equally between the created left and right nodes  */
 void create_at_split (BNodePtr node, BNodePtr *left, BNodePtr *right);
 
+int insert_to_ll (INode *head, char *val);
+INode insert_to_ll_end (char *val, INode prev);
+INode find_in_ll_by_val (char *val, INode head, INode *prev);
+INode find_in_ll_by_ver (size_t ver, INode head, INode *prev);
+
 /*  Search  */
-BNodePtr *find_bt (BNodePtr root, Key key, size_t *pos, size_t ver);
+BNodePtr find_bt (BNodePtr root, Key key, size_t *pos);
 BNodePtr find_max (BNodePtr root);
 
 /*  Print  */
@@ -63,6 +74,7 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, Key key);
 /*  Deletion  */
 /*  deletion is always performed from the leaf  */
 int delete_bt (BNodePtr *root, Key key, size_t ver);
+int delete_from_ll (INode *head, size_t ver);
 void fix_after_del (BNodePtr *root, BNodePtr node);
 BNodePtr redistribute (BNodePtr leaf);
 BNodePtr merge (BNodePtr *root, BNodePtr leaf);

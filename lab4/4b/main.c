@@ -1,5 +1,5 @@
 #include "src/lib_bintree.h"
-#include "../../new_input/generic.h"
+#include "src/generic.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <limits.h>
@@ -65,9 +65,16 @@ int insert_tree (BNodePtr *root, FILE *file) {
 
     InfoPtr info = new_info (key, val);
 
-    insert_bt (root, *root, info);
-
-    printf ("Item inserted successfully.\n");
+    switch (insert_bt (root, key)) {
+        case ERRSUC:
+            printf ("\nItem inserted successfully.\n");
+            break;
+        case ERRDUP:
+            printf ("Duplicate key/value.\n");
+            break;
+        default:
+            printf (RED("Unknown error."));
+    }
 
     return 1; 
 };
@@ -80,7 +87,7 @@ int delete_tree (BNodePtr *root, FILE *file) {
     const char *s = "Enter key of item to delete (50 symbols max): \n";
 
     printf ("%s", s);
-    
+     
     status = fscanf (file, "%50s", key);
     if (status == ERREOF) 
         return 0;
