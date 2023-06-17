@@ -167,15 +167,15 @@ int print_tree (BstNodePtr *root, FILE *file) {
 };
 
 /*  NO MORE THEN 1e5 !!!!!  SO caught  */
-#define KEYS_TO_FIND_NUM (int) 1e3
+#define KEYS_TO_FIND_NUM (int) 1e4
 /*  no more then 1e3. all slows down */
-#define KEYS_IN_BST (int) 1e2
+#define KEYS_IN_BST (int) 1e5
 
 int timing_tree (BstNodePtr *root, FILE *file)
 {
     BstNodePtr test_root = NULL;
     BstNodePtr key_root = NULL;
-    int init_bunch = 10, init_epoch = 10, bunch = init_bunch,
+    int init_bunch = 20, init_epoch = 20, bunch = init_bunch,
     keys_to_find[KEYS_TO_FIND_NUM], rand_key, keys_in_bst = KEYS_IN_BST, i, m;
     clock_t first, last;
     srand(time(NULL));
@@ -184,7 +184,7 @@ int timing_tree (BstNodePtr *root, FILE *file)
         
         while (bunch-- > 0){
             for (i = 0; i < KEYS_TO_FIND_NUM; ++i)
-                keys_to_find[i] = (rand()%100) * (rand()%100);
+                keys_to_find[i] = (rand()%10) * (rand()%10);
             for (i = 0; i < keys_in_bst; ){
                 rand_key = (rand()%100) * (rand()%100);
                 if (insert_bst (&test_root, rand_key, 0) == ERRSUC)

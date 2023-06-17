@@ -1,7 +1,5 @@
 
-CC = cc -g 
-
-#-Wno-incompatible-pointer-types
+CC = cc -g -Wno-incompatible-pointer-types
 
 #  Ram implementation.
 
@@ -14,7 +12,10 @@ bin/lib_bintree.o: src/lib_bintree.c
 bin/main_ram.o: main.c
 	$(CC) -c $^ -o $@
 
-bin/input.o: ../../new_input/new_input.c
+#bin/input.o: ../../new_input/new_input.c
+#	$(CC) -c $^ -o $@
+
+bin/input.o: src/new_input.c
 	$(CC) -c $^ -o $@
 
 #  Auxiliary targets.
