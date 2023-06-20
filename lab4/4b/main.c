@@ -63,9 +63,7 @@ int insert_tree (BNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;     
 
-    InfoPtr info = new_info (key, val);
-
-    switch (insert_bt (root, key)) {
+    switch (insert_somewhere (root, key, val)) {
         case ERRSUC:
             printf ("\nItem inserted successfully.\n");
             break;
@@ -117,7 +115,7 @@ int delete_tree (BNodePtr *root, FILE *file) {
 };
 
 int find_tree (BNodePtr *root, FILE *file) {
-    BNodePtr *node = NULL;
+    BNodePtr node = NULL;
     size_t pos = 0;
 
     char key [51]= "", val [51] = "";
@@ -130,7 +128,7 @@ int find_tree (BNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;
 
-    node = find_bt (*root, key, &pos, NODES_TO_FIND + 1);
+    node = find_bt (*root, key, &pos);
 
     if (node) 
         colored_print_bt (*root, key);
@@ -145,7 +143,7 @@ int findmax_tree (BNodePtr *root, FILE *file) {
 
     if (node) {
         size_t pos = node->csize - 1;
-        printf ("(%s, %s)\n", node->info[pos]->key, node->info[pos]->val);
+        printf (" %s (%lu) \n", node->info[pos]->key, node->info[pos]->csize);
     }
     else
         puts ("Void tree.");
@@ -200,10 +198,21 @@ int print_tree (BNodePtr *root, FILE *file) {
     }
 
     (*root)->height = 0;
-    print_bt (*root);
+    colored_print_bt (*root, NULL);
     printf ("\n");
-    return 1;
+
+    int status = -1;
+    const char *s = "\nUnwrap some branch? (y/n): \n";
+    while ((status = user_choice (s)) == ERRSUC) 
+        find_tree (root, file);
+
+    if (status == ERREOF)
+        return 0;
+    else 
+        return 1;
 };
+
+
 
 /*  NO MORE THEN 1e5 !!!!!  SO caught  */
 #define KEYS_TO_FIND_NUM (int) 1e5

@@ -1,4 +1,5 @@
 #include "generic.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -17,6 +18,23 @@ FILE *user_file () {
     }
     
     return file;
+}
+
+int user_choice (const char *s) {
+    printf ("%s", s);
+    int ch = -1;
+    
+    ch = getchar ();
+    switch (ch) {
+        case 'y':
+            return ERRSUC;
+        case 'n':
+            return ERRWRG;
+        case EOF:
+            return ERREOF;
+        default:
+            return ERRUNK;
+    }
 }
 
 int option_choice (const char *msgs[], size_t msgc, FILE *file) {
