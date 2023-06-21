@@ -73,8 +73,22 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, Key key);
 /*  deletion is always performed from the leaf  */
 int delete_bt (BNodePtr *root, Key key, size_t ver);
 void fix_after_del (BNodePtr *root, BNodePtr node);
+
+size_t set_v3_num (BNodePtr par, BNodePtr leaf);
+
+/*  redistribute  */
 BNodePtr redistribute (BNodePtr leaf);
+void insert_parent_key_to_chld (size_t num, BNodePtr par);
+void lshift_par_children (size_t num, BNodePtr par);
+void clear_par_and_leaf (size_t num, BNodePtr par, BNodePtr leaf);
+void insert_missing_child (size_t num, BNodePtr par, BNodePtr leaf);
+
+/*  merge - par has two chidren of size 1  */
 BNodePtr merge (BNodePtr *root, BNodePtr leaf);
+void move_par_key_to_chld (size_t num, BNodePtr par);
+void move_grandchildren (size_t num, BNodePtr par, BNodePtr leaf);
+void clear_par_and_leaf_ (BNodePtr par, size_t num);
+BNodePtr get_nonnull_child (BNodePtr leaf);
 
 /*  Destructors  */
 void free_tree (BNodePtr root);

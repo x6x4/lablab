@@ -90,13 +90,13 @@ int delete_tree (BNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;
 
-    s = "Enter version of item to delete: \n";
+    /*s = "Enter version of item to delete: \n";
 
     printf ("%s", s);
     
     status = get_int_file (file, &ver, INT_MAX, 0);
     if (status == ERREOF) 
-        return 0;  
+        return 0;  */
 
     switch (delete_bt (root, key, ver)) {
         case ERRSUC:
@@ -201,14 +201,14 @@ int print_tree (BNodePtr *root, FILE *file) {
     colored_print_bt (*root, NULL);
     printf ("\n");
 
-    int status = -1;
+    /*int status = -1;
     const char *s = "\nUnwrap some branch? (y/n): \n";
     while ((status = user_choice (s)) == ERRSUC) 
         find_tree (root, file);
 
     if (status == ERREOF)
         return 0;
-    else 
+    else */
         return 1;
 };
 

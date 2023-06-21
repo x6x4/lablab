@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define NO_3_VERTEX CHILD_NUM - 1
+
 /*  TREE  */
 
 int insert_somewhere (BNodePtr *root, Key key, char *val) {
@@ -203,7 +205,8 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
     InfoPtr *max_key_in_lchild = NULL;
     InfoPtr *key_to_delete = NULL;
 
-    /*  deletion from list or from tree  */
+    /*  Deletion from list  */
+
     node_for_deletion = find_bt (*root, key, &pos_node);
     if (!node_for_deletion)
         return ERRWRG;
@@ -217,6 +220,8 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
 
     if (*head)
         return ERRSUC;
+
+    /*  Deletion from tree  */
 
     /*  move key to leaf  */
     max_in_lchild = find_max (node_for_deletion->child[pos_node]);
@@ -243,7 +248,7 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
 
 void fix_after_del (BNodePtr *root, BNodePtr leaf) {
 
-    size_t vertex_3_chld = CHILD_NUM - 1;
+    size_t v3_chld = NO_3_VERTEX;
 
     if (!leaf)
         return;
@@ -254,97 +259,34 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
         return;
     }
 
-    /*  leaf with 2 keys  */
+    /*  non-empty leaf  */
     if (leaf->csize != 0) {
         if (leaf->par)
             fix_after_del (root, leaf->par);
         return;
     }
 
-    /*  emptied child  */
+    /*  emptied leaf  */
+
     BNodePtr par = leaf->par;
+    v3_chld = set_v3_num (par, leaf);
 
-    for (size_t i = 0; i < par->csize + 1; i++) {
-        if (par->child[i]->csize == 2) {
-            leaf = redistribute (leaf);
-            vertex_3_chld = i;
-            break;
-        }
-    } 
-
-    if (vertex_3_chld == CHILD_NUM - 1 && par->csize == 2)
+    if (NO_3_VERTEX == v3_chld && par->csize < 2)
+        leaf = merge (root, leaf);
+    else 
         leaf = redistribute (leaf);
     
-    else if (vertex_3_chld == CHILD_NUM - 1)
-        leaf = merge (root, leaf);
-
+    /*  recursion  */
     fix_after_del (root, leaf);
 }
 
-void insert_parent_key (size_t num, BNodePtr par) {
-    switch (num) {
-        case 0:
-        case 1:
-            insert_to_vertex (par->child[0], par->info[0]);
-            break;
-        case 2:
-            insert_to_vertex (par->child[1], par->info[1]);
+size_t set_v3_num (BNodePtr par, BNodePtr leaf) {
+
+    for (size_t i = 0; i < par->csize + 1; i++) {
+        if (par->child[i]->csize == 2)
+            return i;
     }
-}
-
-void lshift_fill (size_t num, BNodePtr par) {
-    switch (num) {
-        case 0:
-            par->child[0] = par->child[1];
-        case 1:
-            par->child[1] = par->child[2];
-        case 2:
-            par->child[2] = NULL;
-    }
-}
-
-void clear (size_t num, BNodePtr par, BNodePtr leaf) {
-    switch (num) {
-        case 0:
-        case 1:
-            delete_from_vertex (par, par->info[0]->key);
-            break;
-        case 2:
-            delete_from_vertex (par, par->info[1]->key);
-    }
-    free_nullify (leaf);
-}
-
-void insert_third_child (size_t num, BNodePtr par, BNodePtr leaf) {
-    BNodePtr node_to_insert = NULL;
-    BNodePtr possible_par = NULL;
-
-    for (size_t i = 0; i < CHILD_NUM - 2; i++) {
-        if (leaf->child[i]) {
-            node_to_insert = leaf->child[i];
-            break;
-        }
-    }
-    
-    BNodePtr *place_to_insert = NULL;
-
-    switch (num) {
-        case 0:
-            place_to_insert = &(par->child[0]->child[0]);
-            break;
-        case 1:
-            place_to_insert = &(par->child[0]->child[2]);
-            break;
-        case 2:
-            place_to_insert = &(par->child[1]->child[2]);
-    }
-
-    if (*place_to_insert)
-        possible_par = (*place_to_insert)->par;
-
-    *place_to_insert = node_to_insert;
-    if (node_to_insert) 
-        (*place_to_insert)->par = possible_par;
+    return NO_3_VERTEX;
 }
 
 void rotate_right (size_t src, size_t dest, BNodePtr par) {
@@ -404,15 +346,6 @@ size_t set_num (BNodePtr par, BNodePtr leaf) {
     return CHILD_NUM - 1;
 }
 
-size_t set_v3_num (BNodePtr par, BNodePtr leaf) {
-
-    for (size_t i = 0; i < CHILD_NUM - 1; i++) {
-        if (par->child[i]->csize == 2)
-            return i;
-    }
-    return CHILD_NUM - 1;
-}
-
 BNodePtr redistribute (BNodePtr leaf) {
 
     BNodePtr par = leaf->par;
@@ -422,22 +355,39 @@ BNodePtr redistribute (BNodePtr leaf) {
     size_t leaf_num = set_num (par, leaf);
     size_t vertex_3_num = set_v3_num (par, leaf);
 
-    if (par->csize == 2 && vertex_3_num == CHILD_NUM - 1) {
-        lshift_fill (leaf_num, par);
-        insert_parent_key (leaf_num, par);
+    if (par->csize == 2 && NO_3_VERTEX == vertex_3_num) {
+        lshift_par_children (leaf_num, par);
+        insert_parent_key_to_chld (leaf_num, par);
 
         /*  right shift  */
         if (leaf_num == 0) {
-            par->child[0]->child[1] = par->child[0]->child[0];
-            par->child[0]->child[2] = par->child[0]->child[1];
+            for (size_t i = CHILD_NUM - 2; i > 0; i--)
+                par->child[0]->child[i] = par->child[0]->child[i-1];
         }
 
-        insert_third_child (leaf_num, par, leaf);
-        clear (leaf_num, par, leaf);
+        colored_print_bt (par, NULL);
+
+        insert_missing_child (leaf_num, par, leaf);
+        clear_par_and_leaf (leaf_num, par, leaf);
     } 
-    else if (par->csize == 2 && vertex_3_num) {
+
+    else if (par->csize == 2) {
         
-        if (leaf_num == 2) {
+        if (leaf_num == 0) {
+            if (vertex_3_num == 1) 
+                rotate_left (1, 0, par);
+            else if (vertex_3_num == 2) {
+                rotate_left (1, 0, par);  
+                rotate_left (2, 1, par);
+            }
+        }
+        else if (leaf_num == 1) {
+            if (vertex_3_num == 2) 
+                rotate_left (2, 1, par);
+            else if (vertex_3_num == 0) 
+                rotate_right (0, 1, par);  
+        }
+        else if (leaf_num == 2) {
             if (vertex_3_num == 1) 
                 rotate_right (1, 2, par);
             else if (vertex_3_num == 2) {
@@ -446,21 +396,8 @@ BNodePtr redistribute (BNodePtr leaf) {
                 rotate_right (0, 1, par);
             } 
         }
-        else if (leaf_num == 1) {
-            if (vertex_3_num == 2) 
-                rotate_left (2, 1, par);
-            else if (vertex_3_num == 2) 
-                rotate_right (0, 1, par);  
-        }
-        else if (leaf_num == 0) {
-            if (vertex_3_num == 1) 
-                rotate_left (1, 0, par);
-            else if (vertex_3_num == 2) {
-                rotate_left (1, 0, par);  
-                rotate_left (2, 1, par);
-            }
-        }
-    }
+    }   
+       
     else if (par->csize == 1) {
         if (leaf_num == 0 && vertex_3_num == 1) {
             if (leaf->child[0] == NULL) 
@@ -477,46 +414,74 @@ BNodePtr redistribute (BNodePtr leaf) {
     return par;
 }
 
-void move_par_key (size_t num, BNodePtr par) {
+void lshift_par_children (size_t num, BNodePtr par) {
     switch (num) {
         case 0:
-            insert_to_vertex (par->child[1], par->info[0]);
-            break;
+            par->child[0] = par->child[1];
+        case 1:
+            par->child[1] = par->child[2];
+        case 2:
+            par->child[2] = NULL;
+    }
+}
+
+void insert_parent_key_to_chld (size_t num, BNodePtr par) {
+    switch (num) {
+        case 0:
         case 1:
             insert_to_vertex (par->child[0], par->info[0]);
+            break;
+        case 2:
+            insert_to_vertex (par->child[1], par->info[1]);
     }
 }
 
-BNodePtr non_null_child (BNodePtr leaf) {
-    if (leaf->child[0]) 
-        return leaf->child[0];
-    if (leaf->child[1]) 
-        return leaf->child[1];
-    return NULL;
-}
+void insert_missing_child (size_t num, BNodePtr par, BNodePtr leaf) {
+    BNodePtr node_to_insert = NULL;
+    BNodePtr possible_par = NULL;
 
-void move_children (size_t num, BNodePtr par, BNodePtr leaf) {
+    for (size_t i = 0; i < CHILD_NUM - 2; i++) {
+        if (leaf->child[i]) {
+            node_to_insert = leaf->child[i];
+            break;
+        }
+    }
+    
+    BNodePtr *place_to_insert = NULL;
+
     switch (num) {
         case 0:
-            par->child[1]->child[2] = par->child[1]->child[1];
-            par->child[1]->child[1] = par->child[1]->child[0];
-            par->child[1]->child[0] = non_null_child (leaf);
-            if (par->child[1]->child[0])
-                par->child[1]->child[0]->par = par->child[1];
+            place_to_insert = &(par->child[0]->child[0]);
+            possible_par = par->child[0];
             break;
         case 1:
-            par->child[0]->child[2] = non_null_child (leaf);
-            if (par->child[0]->child[2])
-                par->child[0]->child[2]->par = par->child[0];
+            place_to_insert = &(par->child[0]->child[2]);
+            possible_par = par->child[0];
+            break;
+        case 2:
+            place_to_insert = &(par->child[1]->child[2]);
+            possible_par = par->child[1];
     }
+
+    *place_to_insert = node_to_insert;
+    if (node_to_insert) 
+        (*place_to_insert)->par = possible_par;
 }
 
-void clear_merge (BNodePtr par, size_t num) {
-    delete_from_vertex (par, par->info[0]->key);
-    free_vertex (&(par->child[num]));
+void clear_par_and_leaf (size_t num, BNodePtr par, BNodePtr leaf) {
+    switch (num) {
+        case 0:
+        case 1:
+            delete_from_vertex (par, par->info[0]->key);
+            break;
+        case 2:
+            delete_from_vertex (par, par->info[1]->key);
+    }
+    free_nullify (leaf);
 }
 
-/*  par has two chidren of size 1  */
+/*  MERGE  */
+
 BNodePtr merge (BNodePtr *root, BNodePtr leaf) {
     BNodePtr par = leaf->par;
     if (!par)
@@ -528,12 +493,12 @@ BNodePtr merge (BNodePtr *root, BNodePtr leaf) {
     else if (leaf == par->child[1]) 
         num = 1;
 
-    move_par_key (num, par);
-    move_children (num, par, leaf);
-    clear_merge (par, num);
+    move_par_key_to_chld (num, par);
+    move_grandchildren (num, par, leaf);
+    clear_par_and_leaf_ (par, num);
     
     if (par->par == NULL) {
-        BNodePtr new_root = non_null_child (par);
+        BNodePtr new_root = get_nonnull_child (par);
         new_root->par = NULL;
         free_vertex (&par);
         *root = new_root;
@@ -541,6 +506,45 @@ BNodePtr merge (BNodePtr *root, BNodePtr leaf) {
     }
 
     return par;
+}
+
+void move_par_key_to_chld (size_t num, BNodePtr par) {
+    switch (num) {
+        case 0:
+            insert_to_vertex (par->child[1], par->info[0]);
+            break;
+        case 1:
+            insert_to_vertex (par->child[0], par->info[0]);
+    }
+}
+
+void move_grandchildren (size_t num, BNodePtr par, BNodePtr leaf) {
+    switch (num) {
+        case 0:
+            par->child[1]->child[2] = par->child[1]->child[1];
+            par->child[1]->child[1] = par->child[1]->child[0];
+            par->child[1]->child[0] = get_nonnull_child (leaf);
+            if (par->child[1]->child[0])
+                par->child[1]->child[0]->par = par->child[1];
+            break;
+        case 1:
+            par->child[0]->child[2] = get_nonnull_child (leaf);
+            if (par->child[0]->child[2])
+                par->child[0]->child[2]->par = par->child[0];
+    }
+}
+
+void clear_par_and_leaf_ (BNodePtr par, size_t num) {
+    delete_from_vertex (par, par->info[0]->key);
+    free_vertex (&(par->child[num]));
+}
+
+BNodePtr get_nonnull_child (BNodePtr leaf) {
+    if (leaf->child[0]) 
+        return leaf->child[0];
+    if (leaf->child[1]) 
+        return leaf->child[1];
+    return NULL;
 }
 
 /*  DESTRUCTORS  */
