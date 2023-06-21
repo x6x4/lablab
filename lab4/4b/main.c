@@ -16,7 +16,7 @@ int import_tree (BNodePtr *root, FILE *file);
 int print_tree (BNodePtr *root, FILE *file);
 int timing_tree (BNodePtr *root, FILE *file);
 
-const char *msgs [] = {"\n0 - quit", "1 - insert", "2 - delete by key",
+const char *msgs [] = {"\n0 - quit", "1 - insert", "2 - delete by key+version",
                        "3 - find by key", "4 - find max", "5 - traverse", 
                        "6 - import", "7 - print", "8 - timing tree"};
 const size_t msgc = sizeof msgs / sizeof msgs[0];

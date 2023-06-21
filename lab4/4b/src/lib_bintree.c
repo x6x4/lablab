@@ -210,7 +210,13 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
 
     INode *head = &(node_for_deletion->info[pos_node]->head);
 
-    return delete_from_ll (head, ver);
+    if (delete_from_ll (head, ver) == ERRWRG)
+        return ERRWRG;
+
+    node_for_deletion->info[pos_node]->csize--;
+
+    if (*head)
+        return ERRSUC;
 
     /*  move key to leaf  */
     max_in_lchild = find_max (node_for_deletion->child[pos_node]);

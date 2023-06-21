@@ -9,7 +9,7 @@ enum {
 };
 
 #define RED(s) "\x1b[31m"s"\x1b[0m"
-#define CYAN(s) "\x1b[33m"s"\x1b[0m"
+#define YELLOW(s) "\x1b[33m"s"\x1b[0m"
 
 /*  Opens file with entered filename for reading.  */
 FILE *user_file ();

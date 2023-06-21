@@ -64,12 +64,11 @@ void print_ll (INode head) {
     INode node = head;
 
     while (node) {
-        printf (CYAN("(%s, %lu)"), node->val, node->ver);
+        printf (YELLOW("(%lu, %s)"), node->ver, node->val);
         if (node->next)
             printf ("->");
         node = node->next;
     } 
-    //printf ("\n");
 }
 
 int delete_from_ll (INode *head, size_t ver) {
@@ -77,9 +76,14 @@ int delete_from_ll (INode *head, size_t ver) {
     INode node = find_in_ll_by_ver (ver, *head, &prev);
     if (!node)
         return ERRWRG;
-    
-    prev->next = node->next;
+    if (prev)
+        prev->next = node->next;
+
+    if (node == *head)
+        *head = node->next;
+
     free_nullify (node->val);
+    free_nullify (node);
     return ERRSUC;
 }
 
