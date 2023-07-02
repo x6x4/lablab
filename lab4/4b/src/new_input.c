@@ -1,23 +1,35 @@
 #include "generic.h"
-#include <stddef.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 FILE *user_file () {
-    puts ("Enter filename (50 symbols max) to read from");
-    char filename [51] = {};
+    char *filename = NULL;
     char *errmsg = "";
     FILE *file = NULL;
+	size_t len = 0;
+
+	puts ("Enter filename of file to read from. Enter \"/proc/self/fd/0\" to read from stdin.");
 
     while (!file) {
-        printf ("%s", errmsg);
-        errmsg = "Wrong file\n";
-        if (scanf ("%50s", filename) ==  EOF)
-            return NULL;
+		
+        if (getline (&filename, &len, stdin) == EOF) {
+            free (filename);
+			return NULL;
+		}
+
+		/*  getline appends extra \n to to the end of the line  */
+		filename[strcspn(filename, "\n")] = '\0';
+
         file = fopen (filename, "r");
+		
+		if (!file)
+			perror (errmsg);
     }
+	
+	/*  clean buffer allocated by getline  */
+   	free (filename);	
     
-    return file;
+	return file;
 }
 
 int user_choice (const char *s) {

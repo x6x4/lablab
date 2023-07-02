@@ -3,8 +3,11 @@
 enum {
 	ERREOF = -1,
 	ERRSUC,
-	ERRWRG
+	ERRWRG,
+	ERRUNK
 };
+
+#define RED(s) "\x1b[31m"s"\x1b[0m"
 
 /*  Opens file with entered filename for reading.  */
 FILE *user_file ();
