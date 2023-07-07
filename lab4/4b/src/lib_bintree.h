@@ -44,13 +44,13 @@ struct Info
 /*  Insertion  */ 
 
 /*  
-    insert in list if duplicate;
+    insert in list if duplicate key;
     calls insert_bt otherwise 
 */
-int insert_somewhere (BNodePtr *root, Key key, char *val);
+int insert_bt (BNodePtr *root, Key key, char *val);
 
 /*  recursive insertion is always performed to the leaf  */
-void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info);
+void insert_to_tree (BNodePtr *root, BNodePtr cnode, InfoPtr info);
 
 /*  recursive pushing  */
 void split_up_from_node (BNodePtr *root, BNodePtr node);
@@ -91,7 +91,7 @@ void clear_par_and_leaf_ (BNodePtr par, size_t num);
 BNodePtr get_nonnull_child (BNodePtr leaf);
 
 /*  Destructors  */
-void free_tree (BNodePtr root);
+void free_bt (BNodePtr *root);
 
 
 

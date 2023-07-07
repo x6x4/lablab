@@ -2,6 +2,7 @@
 #include "src/generic.h"
 #include <stdio.h>
 #include <limits.h>
+#include <stdlib.h>
 #include <time.h>
 
 int insert_tree (BstNodePtr *root, FILE *file);
@@ -13,6 +14,13 @@ int import_tree (BstNodePtr *root, FILE *file);
 int print_tree (BstNodePtr *root, FILE *file);
 int timing_tree (BstNodePtr *root, FILE *file);
 
+void timing_search (BstNodePtr test_root, int *test_keys, int bunch_num);
+void timing_insertion (BstNodePtr *test_root, int *test_keys, int bunch_num);
+void timing_deletion (BstNodePtr *test_root, int *test_keys, int bunch_num);
+void timing_traversal (BstNodePtr test_root, int *test_keys, int bunch_num);
+
+/*  GLOBAL VARIABLES  */
+
 const char *msgs [] = {"\n0 - quit", "1 - insert", "2 - delete by key",
                        "3 - find by key", "4 - find min", "5 - traverse", 
                        "6 - import", "7 - print", "8 - timing tree"};
@@ -21,6 +29,8 @@ const size_t msgc = sizeof msgs / sizeof msgs[0];
 int (*fptr[]) (BstNodePtr*, FILE*)  = {NULL, insert_tree, delete_tree, 
                                       find_tree, findmin_tree, traverse_tree,
                                       import_tree, print_tree, timing_tree};
+
+/*  MAIN  */
 
 int main () {
 
@@ -35,7 +45,7 @@ int main () {
     }
 
     fclose (file);
-    free_bst (root);
+    free_bst (&root);
     puts ("quit");
     return 0;
 }
@@ -159,6 +169,10 @@ int import_tree (BstNodePtr *root, FILE *file) {
 
 int print_tree (BstNodePtr *root, FILE *file) {
     printf ("\nTree:\n");
+    if (!(*root)) {
+        printf ("(void)\n");
+        return 1;
+    }
     (*root)->height = 0;
     set_height (root);
     print_bst (*root, 0);
@@ -166,88 +180,100 @@ int print_tree (BstNodePtr *root, FILE *file) {
     return 1;
 };
 
-/*  NO MORE THEN 1e5 !!!!!  SO caught  */
-#define KEYS_TO_FIND_NUM (int) 1e4
-/*  no more then 1e3. all slows down */
-#define KEYS_IN_BST (int) 1e5
+/*  NO MORE THEN 1e5 !!!!!  caveat: stack overflow  */
+
+#define BUNCH_SZ (int) 1e3
+
+#define BUNCH_NUM 10
+
+#define EPOCHS_NUM 10
+
 
 int timing_tree (BstNodePtr *root, FILE *file)
 {
     BstNodePtr test_root = NULL;
-    BstNodePtr key_root = NULL;
-    int init_bunch = 20, init_epoch = 20, bunch = init_bunch,
-    keys_to_find[KEYS_TO_FIND_NUM], rand_key, keys_in_bst = KEYS_IN_BST, i, m;
-    clock_t first, last;
+    
+    int test_keys[BUNCH_SZ*EPOCHS_NUM];
+    
     srand(time(NULL));
+    
+    for (int epochs_num = 0; epochs_num < EPOCHS_NUM; epochs_num++) {
+        for (int bunch_num = 1; bunch_num <= BUNCH_NUM; bunch_num++) {
 
-    while (init_epoch-- > 0) {
-        
-        while (bunch-- > 0){
-            for (i = 0; i < KEYS_TO_FIND_NUM; ++i)
-                keys_to_find[i] = (rand()%10) * (rand()%10);
-            for (i = 0; i < keys_in_bst; ){
-                rand_key = (rand()%100) * (rand()%100);
+            int num_of_keys = BUNCH_SZ*bunch_num;
+
+            /*  Fill test array.  */
+            for (int i = 0; i < BUNCH_SZ; ++i)
+                test_keys[i] = rand();
+
+            /*  Fill test root  */
+            for (int i = 0; i < num_of_keys; ){
+                int rand_key = rand();
+                /*  ensure that the actual number of keys is incremented  */
                 if (insert_bst (&test_root, rand_key, 0) == ERRSUC)
                     ++i;
             }
 
-            /*  SEARCH  */
-            m = 0;
-            first = clock();
-            for (i = 0; i < KEYS_TO_FIND_NUM; ++i) {
-                if (find_by_key (&key_root, test_root, keys_to_find[i]) == ERRSUC)
-                    ++m;
-            }
-            last = clock();
+            timing_search (test_root, test_keys, bunch_num);
+            timing_insertion (&test_root, test_keys, bunch_num);
+            timing_deletion (&test_root, test_keys, bunch_num);
+            timing_traversal (test_root, test_keys, bunch_num); 
 
-            //printf("%d items was found\n", m);
-            printf("%d NN %d time %ld\n", init_bunch - bunch, 
-            (init_bunch - bunch)*keys_in_bst, last - first);
-
-            /*  INSERTION  */
-            m = 0;
-            first = clock();
-            for (i = 0; i < KEYS_TO_FIND_NUM; ++i) {
-                if (insert_bst (&test_root, keys_to_find[i], 0) == ERRSUC)
-                    ++m;
-            }
-            last = clock();
-
-            //printf("%d items was inserted\n", m);
-            printf("%d NN %d time %ld\n", init_bunch - bunch, 
-            (init_bunch - bunch)*keys_in_bst, last - first);
-
-            /*  DELETION  */
-            m = 0;
-            first = clock();
-            for (i = 0; i < KEYS_TO_FIND_NUM; ++i) {
-                if (delete_bst (&test_root, keys_to_find[i]) == ERRSUC)
-                    ++m;
-            }
-            last = clock();
-
-            //printf("%d items was deleted\n", m);
-            printf("%d NN %d time %ld\n", init_bunch - bunch, 
-            (init_bunch - bunch)*keys_in_bst, last - first);
-
-            /*  TRAVERSAL  */
-            m = 0;
-            first = clock();
-            for (i = 0; i < KEYS_TO_FIND_NUM; ++i) {
-                traverse_bst (test_root, keys_to_find[i]);
-                ++m;
-            }
-            last = clock();
-
-            //printf("%d items was traversed\n", m);
-            printf("%d NN %d time %ld\n", init_bunch - bunch, 
-            (init_bunch - bunch)*keys_in_bst, last - first);
-            
+            free_bst (&test_root);   
         }
-        bunch = init_bunch;
-        
     }
-    free_bst (test_root);
 
+    exit (0);
     return 1;
+}
+void timing_search (BstNodePtr test_root, int *test_keys, int bunch_num) {
+    clock_t first = 0, last = 0;
+    BstNodePtr buf = NULL;
+
+    first = clock();
+    for (int i = 0; i < BUNCH_SZ; ++i) 
+        find_by_key (&buf, test_root, test_keys[i]);
+
+    last = clock();
+
+    printf("%d nodes_num %d time %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
+}
+
+void timing_insertion (BstNodePtr *test_root, int *test_keys, int bunch_num) {
+    clock_t first = 0, last = 0;
+    BstNodePtr buf = NULL;
+
+    first = clock();
+    for (int i = 0; i < BUNCH_SZ; ++i) 
+        insert_bst (test_root, test_keys[i], 0);
+
+    last = clock();
+
+    printf("%d nodes_num %d time %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
+}
+
+void timing_deletion (BstNodePtr *test_root, int *test_keys, int bunch_num) {
+    clock_t first = 0, last = 0;
+    BstNodePtr buf = NULL;
+
+    first = clock();
+    for (int i = 0; i < BUNCH_SZ; ++i) 
+        delete_bst (test_root, test_keys[i]);
+
+    last = clock();
+
+    printf("%d nodes_num %d time %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
+}
+
+void timing_traversal (BstNodePtr test_root, int *test_keys, int bunch_num) {
+    clock_t first = 0, last = 0;
+    BstNodePtr buf = NULL;
+
+    first = clock();
+    for (int i = 0; i < BUNCH_SZ; ++i) 
+        traverse_bst (test_root, test_keys[i]);
+
+    last = clock();
+
+    printf("%d nodes_num %d time %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
 }

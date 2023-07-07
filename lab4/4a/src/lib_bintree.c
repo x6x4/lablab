@@ -53,62 +53,51 @@ size_t insert_bst (BstNodePtr *rooot, size_t key, size_t val) {
     return ERRSUC;
 }
 
-int delete_bst (BstNodePtr *rooot, size_t key) {
-    BstNodePtr node, true_deleted = NULL, next_to_true_deleted = NULL,
-    true_subtree = NULL, true_par = NULL;
+int delete_bst (BstNodePtr *root, size_t key) {
+    BstNodePtr node = NULL, victim = NULL, next_to_victim = NULL,
+    next_to_node = NULL, victim_chd = NULL, victim_par = NULL;
+    int has_node_empty_child = 0;
 
-    if (find_by_key (&node, *rooot, key) == ERRWRG) 
+    /*  Find node with given key.  */
+
+    if (find_by_key (&node, *root, key) == ERRWRG) 
         return ERRWRG;
 
-    /*  Ok, we found node with given key.  */
+    next_to_node = find_min (node->right);
+    has_node_empty_child = !(node->left) || !(node->right);
 
-    if ( !(node->left) || !(node->right) ) 
-        true_deleted = node;
-    else {
-        true_deleted = find_min (node->right);
-    }
+    victim = has_node_empty_child ? node : next_to_node;
 
-    /*  So in fact we delete node with only 1 child.  */
+    victim_chd = victim->left ? victim->left : victim->right;
+    victim_par = victim->par;    
+
+    if (!victim_par) 
+        /*  Set new root  */
+        *root = victim_chd;
     
-    if (true_deleted->left)
-        true_subtree = true_deleted->left;
-    else
-        true_subtree = true_deleted->right;
-
-    true_par = true_deleted->par;
-
-    /*  We set subtree and partree for our node.  */
-
-    if (true_subtree)
-        true_subtree->par = true_par;
-
-    if (!true_par) 
-        rooot = &true_subtree;
-    else if (true_deleted == true_par->left) 
-        true_par->left = true_subtree;
+    /*  Replace victim with its child.  */
+    else if (victim == victim_par->left) 
+        victim_par->left = victim_chd;
     else 
-        true_par->right = true_subtree;
+        victim_par->right = victim_chd;
     
-    /*  Update appropriate fields.  */
-
-    next_to_true_deleted = next_node (*rooot, true_deleted);
-
-    if (true_deleted != node) {
-        if (next_to_true_deleted)
-            next_to_true_deleted->prev = node;
-
-        node->info->key = true_deleted->info->key;
-        node->info->val = true_deleted->info->val;
-    } else {
-        if (next_to_true_deleted)
-            next_to_true_deleted->prev = node->prev;
+    if (victim_chd)
+        victim_chd->par = victim_par;
+    
+    if (victim != node) {
+        /*  Replace node fields with victim fields  */
+        node->info->key = victim->info->key;
+        node->info->val = victim->info->val;
     }
 
-    free (true_deleted->info);
-    free (true_deleted);
+    next_to_victim = next_node (*root, victim);
+    if (next_to_victim)
+        next_to_victim->prev = victim->prev;
+
+    free_nullify (victim->info);
+    free_nullify (victim);
 
     return ERRSUC;
-    
 }
 
 void set_height (BstNodePtr *root) {
@@ -230,13 +219,12 @@ BstNodePtr find_max (BstNodePtr rooot) {
     return buf;
 }
 
-
-void free_bst (BstNodePtr root) {
-    if (root) {
-        free_bst (root->left);
-        free_bst (root->right);
-        free (root->info);
-        free (root);
+void free_bst (BstNodePtr *root) {
+    if (*root) {
+        free_bst (&((*root)->left));
+        free_bst (&((*root)->right));
+        free_nullify ((*root)->info);
+        free_nullify (*root);
     }
-    root = NULL;
 }
+

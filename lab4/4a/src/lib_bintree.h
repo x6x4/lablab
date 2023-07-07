@@ -3,8 +3,9 @@
 
 typedef struct BstNode BstNode;
 typedef struct BstNode *BstNodePtr;
-typedef struct Info *Info;
+typedef struct Info_t *Info;
 
+#define free_nullify(ptr) free (ptr); ptr = NULL;
 
 struct BstNode {
     size_t height;
@@ -15,7 +16,7 @@ struct BstNode {
     BstNodePtr prev;
 };
 
-struct Info
+struct Info_t
 {
     size_t key;
     size_t val;
@@ -43,4 +44,4 @@ void set_height (BstNodePtr *root);
 
 int delete_bst (BstNodePtr *rooot, size_t key);
 
-void free_bst (BstNodePtr root);
+void free_bst (BstNodePtr *root);

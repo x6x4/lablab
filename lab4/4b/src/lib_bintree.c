@@ -10,10 +10,9 @@
 
 /*  TREE  */
 
-int insert_somewhere (BNodePtr *root, Key key, char *val) {
+int insert_bt (BNodePtr *root, Key key, char *val) {
     size_t pos = 0;
-    BNodePtr node = NULL;
-    node = find_bt (*root, key, &pos);
+    BNodePtr node = find_bt (*root, key, &pos);
 
     InfoPtr info = !node ? NULL : node->info[pos];
 
@@ -25,12 +24,12 @@ int insert_somewhere (BNodePtr *root, Key key, char *val) {
     if (node)
         return ERRSUC;
 
-    insert_bt (root, *root, info);
+    insert_to_tree (root, *root, info);
     return ERRSUC;
 }
 
 /*  INSERTION  */
-void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info) {
+void insert_to_tree (BNodePtr *root, BNodePtr cnode, InfoPtr info) {
 
     if (!(*root)) {
         *root = new_vertex (info);
@@ -46,12 +45,12 @@ void insert_bt (BNodePtr *root, BNodePtr cnode, InfoPtr info) {
     /*  Recursive descent  */
     for (size_t i = 0; i < cnode->csize; i++) {
         if ( LTE (info->key, cnode->info[i]->key) ) {
-            insert_bt (root, cnode->child[i], info);
+            insert_to_tree (root, cnode->child[i], info);
             return;
         }
     }
     /*  go to rightmost child  */
-    insert_bt (root, cnode->child[cnode->csize], info);
+    insert_to_tree (root, cnode->child[cnode->csize], info);
 }
 
 void split_up_from_node (BNodePtr *root, BNodePtr node) {
@@ -548,15 +547,15 @@ BNodePtr get_nonnull_child (BNodePtr leaf) {
 }
 
 /*  DESTRUCTORS  */
-void free_tree (BNodePtr root) {
-    if (!root) 
+void free_bt (BNodePtr *root) {
+    if (!(*root))
         return;
 
-    free_tree (root->child[0]);
-    free_tree (root->child[1]);
-    free_tree (root->child[2]);
-    
-    free_vertex (&root);
+    free_bt (&((*root)->child[0]));
+    free_bt (&((*root)->child[1]));
+    free_bt (&((*root)->child[2]));
+
+    free_vertex (root);
 }
 
 

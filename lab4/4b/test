@@ -1,20 +1,101 @@
-56657
-60870
-62906
-66769
-68138
-66992
-71949
-69593
-74072
-72574
-73477
-79567
-78162
-79335
-87754
-84611
-83090
-83410
-82835
-85601
+8 - timing tree
+1 nodes_num 10 time 7
+2 nodes_num 20 time 6
+3 nodes_num 30 time 7
+4 nodes_num 40 time 7
+5 nodes_num 50 time 8
+6 nodes_num 60 time 8
+7 nodes_num 70 time 7
+8 nodes_num 80 time 6
+9 nodes_num 90 time 6
+10 nodes_num 100 time 6
+1 nodes_num 10 time 3
+2 nodes_num 20 time 4
+3 nodes_num 30 time 4
+4 nodes_num 40 time 5
+5 nodes_num 50 time 4
+6 nodes_num 60 time 5
+7 nodes_num 70 time 5
+8 nodes_num 80 time 6
+9 nodes_num 90 time 6
+10 nodes_num 100 time 6
+1 nodes_num 10 time 4
+2 nodes_num 20 time 4
+3 nodes_num 30 time 4
+4 nodes_num 40 time 4
+5 nodes_num 50 time 5
+6 nodes_num 60 time 4
+7 nodes_num 70 time 5
+8 nodes_num 80 time 5
+9 nodes_num 90 time 5
+10 nodes_num 100 time 5
+1 nodes_num 10 time 3
+2 nodes_num 20 time 4
+3 nodes_num 30 time 5
+4 nodes_num 40 time 4
+5 nodes_num 50 time 5
+6 nodes_num 60 time 5
+7 nodes_num 70 time 5
+8 nodes_num 80 time 5
+9 nodes_num 90 time 5
+10 nodes_num 100 time 6
+1 nodes_num 10 time 4
+2 nodes_num 20 time 4
+3 nodes_num 30 time 5
+4 nodes_num 40 time 5
+5 nodes_num 50 time 5
+6 nodes_num 60 time 5
+7 nodes_num 70 time 5
+8 nodes_num 80 time 5
+9 nodes_num 90 time 5
+10 nodes_num 100 time 5
+1 nodes_num 10 time 4
+2 nodes_num 20 time 4
+3 nodes_num 30 time 4
+4 nodes_num 40 time 5
+5 nodes_num 50 time 4
+6 nodes_num 60 time 4
+7 nodes_num 70 time 4
+8 nodes_num 80 time 4
+9 nodes_num 90 time 4
+10 nodes_num 100 time 4
+1 nodes_num 10 time 3
+2 nodes_num 20 time 3
+3 nodes_num 30 time 4
+4 nodes_num 40 time 4
+5 nodes_num 50 time 4
+6 nodes_num 60 time 4
+7 nodes_num 70 time 5
+8 nodes_num 80 time 5
+9 nodes_num 90 time 7
+10 nodes_num 100 time 8
+1 nodes_num 10 time 4
+2 nodes_num 20 time 5
+3 nodes_num 30 time 3
+4 nodes_num 40 time 5
+5 nodes_num 50 time 4
+6 nodes_num 60 time 5
+7 nodes_num 70 time 4
+8 nodes_num 80 time 5
+9 nodes_num 90 time 5
+10 nodes_num 100 time 5
+1 nodes_num 10 time 3
+2 nodes_num 20 time 3
+3 nodes_num 30 time 4
+4 nodes_num 40 time 4
+5 nodes_num 50 time 4
+6 nodes_num 60 time 5
+7 nodes_num 70 time 5
+8 nodes_num 80 time 5
+9 nodes_num 90 time 5
+10 nodes_num 100 time 5
+1 nodes_num 10 time 2
+2 nodes_num 20 time 3
+3 nodes_num 30 time 4
+4 nodes_num 40 time 4
+5 nodes_num 50 time 4
+6 nodes_num 60 time 5
+7 nodes_num 70 time 4
+8 nodes_num 80 time 4
+9 nodes_num 90 time 4
+10 nodes_num 100 time 5
