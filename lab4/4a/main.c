@@ -112,7 +112,7 @@ int find_tree (BstNodePtr *root, FILE *file) {
     if (status == ERREOF) 
         return 0;
 
-    if (find_by_key (&node, *root, key) == ERRSUC) 
+    if (find_by_key_or_ret_par (&node, *root, key) == ERRSUC) 
         printf ("(%lu, %lu)\n", node->info->key, node->info->val);
     else 
         printf ("No key\n");
@@ -180,13 +180,11 @@ int print_tree (BstNodePtr *root, FILE *file) {
     return 1;
 };
 
-/*  NO MORE THEN 1e5 !!!!!  caveat: stack overflow  */
-
+/*  Killed on 1e4  */
 #define BUNCH_SZ (int) 1e3
 
-#define BUNCH_NUM 10
-
-#define EPOCHS_NUM 10
+/*  Overall EPOCHS_NUM epochs with EPOCHS_NUM bunches in each.  */
+#define EPOCHS_NUM 50
 
 
 int timing_tree (BstNodePtr *root, FILE *file)
@@ -198,7 +196,7 @@ int timing_tree (BstNodePtr *root, FILE *file)
     srand(time(NULL));
     
     for (int epochs_num = 0; epochs_num < EPOCHS_NUM; epochs_num++) {
-        for (int bunch_num = 1; bunch_num <= BUNCH_NUM; bunch_num++) {
+        for (int bunch_num = 1; bunch_num <= EPOCHS_NUM; bunch_num++) {
 
             int num_of_keys = BUNCH_SZ*bunch_num;
 
@@ -217,7 +215,7 @@ int timing_tree (BstNodePtr *root, FILE *file)
             timing_search (test_root, test_keys, bunch_num);
             timing_insertion (&test_root, test_keys, bunch_num);
             timing_deletion (&test_root, test_keys, bunch_num);
-            timing_traversal (test_root, test_keys, bunch_num); 
+            //timing_traversal (test_root, test_keys, bunch_num); 
 
             free_bst (&test_root);   
         }
@@ -232,7 +230,7 @@ void timing_search (BstNodePtr test_root, int *test_keys, int bunch_num) {
 
     first = clock();
     for (int i = 0; i < BUNCH_SZ; ++i) 
-        find_by_key (&buf, test_root, test_keys[i]);
+        find_by_key_or_ret_par (&buf, test_root, test_keys[i]);
 
     last = clock();
 

@@ -1,13 +1,15 @@
 #include "lib_bintree.h"
 #include "generic.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 BstNodePtr init_node (size_t key, size_t val) {
     BstNodePtr new_node = calloc (1, sizeof *new_node);
+    
     new_node->info = new_info (key, val);
-    new_node->left = NULL;
-    new_node->right = NULL;
+    new_node->left = new_node->right = NULL;
     new_node->height = 0;
+    new_node->prev = new_node->next = NULL;
 
     return new_node;
 }
@@ -24,65 +26,79 @@ size_t insert_bst (BstNodePtr *rooot, size_t key, size_t val) {
 
     BstNodePtr new_node = init_node (key, val);
     
-    if (find_by_key (&(new_node->par), *rooot, key) == ERRSUC) {
+    /*  Duplicate.  */
+    if (find_by_key_or_ret_par (&(new_node->par), *rooot, key) == ERRSUC) {
         size_t old_val = new_node->par->info->val;
         new_node->par->info->val = val;
         free (new_node->info);
         free (new_node);
         return old_val;
     }
+
+    BstNodePtr par = new_node->par;
     
-    if (!(new_node->par)) {
+    /*  Insert root.  */
+    if (!par) {
         *rooot = new_node;
-        new_node->prev = NULL;
         return ERRSUC;
     }
 
-    if (new_node->par->info->key < key) {
-        BstNodePtr next = next_node (*rooot, new_node->par);
-        if (next)
-            next->prev = new_node;
-        new_node->par->right = new_node;
-        new_node->prev = new_node->par;
+    if (key > par->info->key) {
+        /*  insert to right.  */
+        par->right = new_node;
+
+        BstNodePtr next = par->next;
+        
+        /*  par -> new node  */
+        new_node->prev = par;
+        par->next = new_node;
+        /*  new node -> next  */
+        if (next) next->prev = new_node;
+        new_node->next = next;
+
     } else {
-        new_node->par->left = new_node;
-        new_node->prev = new_node->par->prev;
-        new_node->par->prev = new_node;
+        /*  insert to left.  */
+        par->left = new_node;
+        
+        BstNodePtr prev = par->prev;
+
+        /*  prev -> new node  */
+        if (prev) prev->next = new_node;
+        new_node->prev = prev;
+        /*  new node -> par  */
+        new_node->next = par;
+        par->prev = new_node;
     }
     
     return ERRSUC;
 }
 
 int delete_bst (BstNodePtr *root, size_t key) {
-    BstNodePtr node = NULL, victim = NULL, next_to_victim = NULL,
-    next_to_node = NULL, victim_chd = NULL, victim_par = NULL;
-    int has_node_empty_child = 0;
+    BstNodePtr node = NULL, victim = NULL, victim_chld = NULL, victim_par = NULL;
 
     /*  Find node with given key.  */
-
-    if (find_by_key (&node, *root, key) == ERRWRG) 
+    if (find_by_key_or_ret_par (&node, *root, key) == ERRWRG) 
         return ERRWRG;
+    
+    int has_node_empty_child = !(node->left) || !(node->right);
 
-    next_to_node = find_min (node->right);
-    has_node_empty_child = !(node->left) || !(node->right);
-
-    victim = has_node_empty_child ? node : next_to_node;
-
-    victim_chd = victim->left ? victim->left : victim->right;
+    /*  Set core variables.  */
+    victim = has_node_empty_child ? node : find_min (node->right);
+    victim_chld = victim->left ? victim->left : victim->right;
     victim_par = victim->par;    
 
     if (!victim_par) 
         /*  Set new root  */
-        *root = victim_chd;
+        *root = victim_chld;
     
     /*  Replace victim with its child.  */
     else if (victim == victim_par->left) 
-        victim_par->left = victim_chd;
+        victim_par->left = victim_chld;
     else 
-        victim_par->right = victim_chd;
+        victim_par->right = victim_chld;
     
-    if (victim_chd)
-        victim_chd->par = victim_par;
+    /*  Link grandchild to granddad  */
+    if (victim_chld) victim_chld->par = victim_par;
     
     if (victim != node) {
         /*  Replace node fields with victim fields  */
@@ -90,10 +106,14 @@ int delete_bst (BstNodePtr *root, size_t key) {
         node->info->val = victim->info->val;
     }
 
-    next_to_victim = next_node (*root, victim);
-    if (next_to_victim)
-        next_to_victim->prev = victim->prev;
+    BstNodePtr victim_prev = victim->prev;
+    BstNodePtr victim_next = victim->next;
 
+    /*  Link victim_prev and victim_next  */
+    if (victim_prev) victim_prev->next = victim->next;
+    if (victim_next) victim_next->prev = victim->prev;
+
+    /*  Deletion itself  */
     free_nullify (victim->info);
     free_nullify (victim);
 
@@ -149,6 +169,11 @@ void print_bst (BstNodePtr rooot, size_t height) {
 
 void traverse_bst (BstNodePtr root, size_t key) {
 
+    if (!root) {
+        //printf ("(void)");
+        return;
+    }
+
     BstNodePtr buf = find_max (root);
 
     if (key == NO_KEY) {
@@ -157,6 +182,11 @@ void traverse_bst (BstNodePtr root, size_t key) {
             buf = buf->prev;    
         }
     } else {
+        if (!(buf && buf->info->key > key)) {
+            //printf ("(no greater keys)");
+            return;
+        }
+
         while (buf && buf->info->key > key) {
             //printf ("(%lu, %lu) ", buf->info->key, buf->info->val);
             buf = buf->prev;
@@ -164,22 +194,10 @@ void traverse_bst (BstNodePtr root, size_t key) {
     }
 }
 
-BstNodePtr next_node (BstNodePtr root, BstNodePtr node) {
-    BstNodePtr buf = root;
-    if (!buf) 
-        return NULL;
+/*  If key not found returns in par possible parent.  */
+int find_by_key_or_ret_par (BstNodePtr *result, BstNodePtr root, size_t key) {
 
-    buf = find_max (root);
-
-    while (buf && (buf->prev != node))
-        buf = buf->prev;
-
-    return buf;
-}
-
-int find_by_key (BstNodePtr *result, BstNodePtr rooot, size_t key) {
-
-    BstNodePtr par = rooot;
+    BstNodePtr par = root;
     BstNodePtr buf = par;
 
 	while (par){
