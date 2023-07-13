@@ -1,9 +1,28 @@
 #include "generic.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+char *get_str (FILE *file) {
+
+    char *str_val = NULL;
+    char *str = NULL;
+	size_t len = 0;
+
+    if (getline (&str_val, &len, file) != EOF) {
+        str = strdup (str_val);
+
+		/*  getline appends extra \n to to the end of the line  */
+	    str[strcspn(str, "\n")] = '\0';
+    }
+        
+    /*  clean buffer allocated by getline  */
+    free_nullify (str_val);
+
+    return str;
+}
+
 FILE *user_file () {
-    char *filename = NULL;
     char *errmsg = "";
     FILE *file = NULL;
 	size_t len = 0;
@@ -11,23 +30,18 @@ FILE *user_file () {
 	puts ("Enter filename of file to read from. Enter \"/proc/self/fd/0\" to read from stdin.");
 
     while (!file) {
-		
-        if (getline (&filename, &len, stdin) == EOF) {
-            free (filename);
-			return NULL;
-		}
-
-		/*  getline appends extra \n to to the end of the line  */
-		filename[strcspn(filename, "\n")] = '\0';
+        char *filename = get_str (stdin);
+        
+        if (!filename) 
+            return NULL;
 
         file = fopen (filename, "r");
+
+        free_nullify (filename);
 		
 		if (!file)
 			perror (errmsg);
     }
-	
-	/*  clean buffer allocated by getline  */
-   	free (filename);	
     
 	return file;
 }

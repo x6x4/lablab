@@ -1,43 +1,12 @@
+#include "lib_mini_bt.h"
+
 #include <stddef.h>
-#include <stdlib.h>
 #include <limits.h>
 #include <string.h>
 
-typedef struct BNode BNode;
-typedef struct BNode *BNodePtr;
-typedef struct Info *InfoPtr;
-typedef struct InfoNode *INode;
-typedef char *Key;
-typedef short Bool;
-
-#define KEYS_NUM 3
-#define CHILD_NUM 4
-
-#define LTE(s1,s2) ((strcmp (s1, s2)) <= 0)
-#define GT(s1,s2) ((strcmp (s1, s2)) > 0)
-#define EQ(s1,s2) ((strcmp (s1, s2)) == 0)
-
-#define free_nullify(ptr) free (ptr); ptr = NULL;
 
 #define NODES_TO_FIND 0x10
-
-struct BNode {
-    size_t height;
-    size_t csize;
-    InfoPtr info [KEYS_NUM];
-    BNodePtr child [CHILD_NUM];
-    BNodePtr par;
-};
-
-struct Info
-{
-    Key key;
-    INode head;
-    size_t csize;
-};
-
 #define NO_KEY __SIZE_MAX__
-
 
 /*  TREE  */
 
@@ -45,22 +14,29 @@ struct Info
 
 /*  
     insert in list if duplicate key;
-    calls insert_bt otherwise 
+    calls insert_to_tree otherwise 
 */
 int insert_bt (BNodePtr *root, Key key, char *val);
 
-/*  recursive insertion is always performed to the leaf  */
-void insert_to_tree (BNodePtr *root, BNodePtr cnode, InfoPtr info);
+/*  insertion is always performed to the leaf  */
+void insert_to_tree (BNodePtr *root, BNodePtr cnode, InfoListPtr info);
 
 /*  recursive pushing  */
-void split_up_from_node (BNodePtr *root, BNodePtr node);
-/*  distribute the node's children equally between the created left and right nodes  */
-void create_at_split (BNodePtr node, BNodePtr *left, BNodePtr *right);
+void split_node (BNodePtr *root, BNodePtr node);
+
+/*  move down edge keys and make them children of the middle key  */
+void split_middle (BNodePtr node, BNodePtr *left, BNodePtr *right);
 
 /*  Search  */
-/*  returns NULL if key not found  */
+
+/*  
+    returns NULL if key not found; 
+    the node and the position of the key in it otherwise 
+*/
 BNodePtr find_bt (BNodePtr root, Key key, size_t *pos);
-BNodePtr find_max (BNodePtr root);
+
+BNodePtr find_max_node (BNodePtr root);
+int chld_for_descent (BNodePtr root, Key key);
 
 /*  Print  */
 void print_bt (BNodePtr root);
@@ -70,24 +46,31 @@ void colored_print_bt (BNodePtr root, Key key);
 void colored_print_bt_lvl (BNodePtr root, size_t height, Key key);
 
 /*  Deletion  */
+int delete_list_node (Key key, size_t ver, BNodePtr victim, size_t key_pos);
+
 /*  deletion is always performed from the leaf  */
 int delete_bt (BNodePtr *root, Key key, size_t ver);
 void fix_after_del (BNodePtr *root, BNodePtr node);
 
-size_t set_v3_num (BNodePtr par, BNodePtr leaf);
+size_t get_v3_num (BNodePtr par, BNodePtr leaf);
 
 /*  redistribute  */
 BNodePtr redistribute (BNodePtr leaf);
-void insert_parent_key_to_chld (size_t num, BNodePtr par);
-void lshift_par_children (size_t num, BNodePtr par);
-void clear_par_and_leaf (size_t num, BNodePtr par, BNodePtr leaf);
-void insert_missing_child (size_t num, BNodePtr par, BNodePtr leaf);
 
-/*  merge - par has two chidren of size 1  */
+void rotate_right (size_t src, size_t dest, BNodePtr par);
+void rotate_left (size_t src, size_t dest, BNodePtr par);
+size_t set_leaf_num (BNodePtr par, BNodePtr leaf);
+
+void insert_parent_key_to_chld (size_t victim_num, BNodePtr par);
+void lshift_par_children (size_t victim_num, BNodePtr par);
+void clear_par_and_leaf (size_t victim_num, BNodePtr par, BNodePtr leaf);
+void insert_missing_child (size_t victim_num, BNodePtr par, BNodePtr leaf);
+
+/*  merge - par of size 1 has two chidren of size 1  */
 BNodePtr merge (BNodePtr *root, BNodePtr leaf);
-void move_par_key_to_chld (size_t num, BNodePtr par);
-void move_grandchildren (size_t num, BNodePtr par, BNodePtr leaf);
-void clear_par_and_leaf_ (BNodePtr par, size_t num);
+void move_par_key_to_nonnull_chld (size_t victim_num, BNodePtr par);
+void assign_grandchildren_to_nonnull_chld (size_t victim_num, BNodePtr par, BNodePtr leaf);
+void clear_par_and_leaf_ (BNodePtr par, size_t victim_num);
 BNodePtr get_nonnull_child (BNodePtr leaf);
 
 /*  Destructors  */

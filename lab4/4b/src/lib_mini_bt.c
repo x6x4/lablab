@@ -1,20 +1,21 @@
 #include "lib_mini_bt.h"
 #include "generic.h"
 #include <stdio.h>
+#include <string.h>
 
 /*  LIST  */
 
-int change_info (InfoPtr *info, Key key, char *val) {
+int branch_ext (InfoListPtr *info, Key key, char *val) {
 
     if (!(*info))
-        *info = new_info (key);
+        *info = new_infolist (key);
 
     return insert_to_ll (&((*info)->head), val);    
 }
 
-int insert_to_ll (INode *head, char *val) {
-    INode prev = NULL;
-    INode node = find_in_ll_by_val (val, *head, &prev);
+int insert_to_ll (InfoPtr *head, char *val) {
+    InfoPtr prev = NULL;
+    InfoPtr node = find_in_ll_by_val (val, *head, &prev);
     if (node)
         return ERRDUP;
     
@@ -26,8 +27,8 @@ int insert_to_ll (INode *head, char *val) {
     return ERRSUC;
 }
 
-INode insert_to_ll_end (char *val, INode prev) {
-    INode node = calloc (1, sizeof *node);
+InfoPtr insert_to_ll_end (char *val, InfoPtr prev) {
+    InfoPtr node = calloc (1, sizeof *node);
     node->val = strdup (val); 
     node->ver = 0;
     node->next = NULL;
@@ -39,11 +40,11 @@ INode insert_to_ll_end (char *val, INode prev) {
     return node;
 }
 
-INode find_in_ll_by_val (char *val, INode head, INode *prev) {
+InfoPtr find_in_ll_by_val (char *val, InfoPtr head, InfoPtr *prev) {
     if (!head)
         return NULL;
 
-    INode node = head;
+    InfoPtr node = head;
     while (node && !(EQ (node->val, val))) {
         *prev = node;
         node = node->next;
@@ -51,8 +52,8 @@ INode find_in_ll_by_val (char *val, INode head, INode *prev) {
     return node;
 }
 
-INode find_in_ll_by_ver (size_t ver, INode head, INode *prev) {
-    INode node = head;
+InfoPtr find_in_ll_by_ver (size_t ver, InfoPtr head, InfoPtr *prev) {
+    InfoPtr node = head;
     while (node && node->ver != ver) {
         *prev = node;
         node = node->next;
@@ -60,8 +61,8 @@ INode find_in_ll_by_ver (size_t ver, INode head, INode *prev) {
     return node;
 }
 
-void print_ll (INode head) {
-    INode node = head;
+void print_ll (InfoPtr head) {
+    InfoPtr node = head;
 
     while (node) {
         printf (YELLOW("(%lu, %s)"), node->ver, node->val);
@@ -71,26 +72,29 @@ void print_ll (INode head) {
     } 
 }
 
-int delete_from_ll (INode *head, size_t ver) {
-    INode prev = NULL;
-    INode node = find_in_ll_by_ver (ver, *head, &prev);
+int delete_from_ll (InfoPtr *head, size_t ver) {
+    InfoPtr prev = NULL;
+    InfoPtr node = find_in_ll_by_ver (ver, *head, &prev);
     if (!node)
         return ERRWRG;
     if (prev)
         prev->next = node->next;
 
     if (node == *head)
+        //  set list head to null, if "node" is the only node in the list
         *head = node->next;
 
+    //  free memory
     free_nullify (node->val);
     free_nullify (node);
+
     return ERRSUC;
 }
 
-void free_ll (INode *head) {
+void free_ll (InfoPtr *head) {
 
-    INode node = *head;
-    INode next = node;
+    InfoPtr node = *head;
+    InfoPtr next = node;
 
     while (node) {
         next = node->next;
@@ -106,7 +110,7 @@ void free_ll (INode *head) {
 
 /*  CONSTRUCTORS  */
 
-BNodePtr new_vertex (InfoPtr info) {
+BNodePtr new_vertex (InfoListPtr info) {
     BNodePtr node = calloc (1, sizeof *node);
 
     node->csize = 1;
@@ -119,7 +123,7 @@ BNodePtr new_vertex (InfoPtr info) {
     return node;
 }
 
-BNodePtr new_bt_node (InfoPtr info, BNodePtr children[4], BNodePtr par) {
+BNodePtr new_bt_node (InfoListPtr info, BNodePtr children[4], BNodePtr par) {
     BNodePtr node = calloc (1, sizeof *node);
 
     node->csize = 1;
@@ -131,8 +135,8 @@ BNodePtr new_bt_node (InfoPtr info, BNodePtr children[4], BNodePtr par) {
     return node;
 }
 
-InfoPtr new_info (Key key) {
-    InfoPtr info = calloc (1, sizeof *info);
+InfoListPtr new_infolist (Key key) {
+    InfoListPtr info = calloc (1, sizeof *info);
     info->key = strdup (key);
     info->csize = 0;
     info->head = NULL;
@@ -140,22 +144,47 @@ InfoPtr new_info (Key key) {
     return info;
 }
 
+/*  INSERTION  */ 
+void insert_to_vertex (BNodePtr node, InfoListPtr info) {
+    node->info[node->csize++] = info;
+    sort_node (node);
+}
+
 /*  DESTRUCTORS  */
 
 void free_vertex (BNodePtr *node) {
     for (size_t i = 0; i < (*node)->csize; i++) {
-        free_info (&((*node)->info[i]));
+        free_infolist (&((*node)->info[i]));
     }
     free_nullify (*node);
 }
 
-void free_info (InfoPtr *info) {
+void free_infolist (InfoListPtr *info) {
     if (!(*info))
         return;
     free_nullify ((*info)->key);
     free_ll (&((*info)->head));
     free_nullify ((*info));
     return;
+}
+
+/*  DELETION  */
+int shift_infolists_and_change_sz (BNodePtr node, Key key) {
+    if (node->csize == 0) 
+        return ERRWRG;
+
+    for (size_t i = 0; i < node->csize; i++) {
+        if (node->info[i] == NULL || EQ(node->info[i]->key, key)) {
+            /*  Left shift.  */
+            for (size_t j = i; j < node->csize - 1; j++) 
+                node->info[j] = node->info[j+1];
+
+            node->csize--;
+            return ERRSUC;
+        }
+    }
+
+    return ERRWRG;
 }
 
 /*  SEARCH  */
@@ -178,20 +207,20 @@ int find_in_vertex (BNodePtr node, char *key, size_t *pos) {
 
 /*  REORDER  */
 
-void swap (InfoPtr *a, InfoPtr *b) {
-    InfoPtr buf = *a;
+void swap (InfoListPtr *a, InfoListPtr *b) {
+    InfoListPtr buf = *a;
     *a = *b;
     *b = buf;
 }
 
 //  Result: a < b
-void asc_sort_2 (InfoPtr *a, InfoPtr *b) {
+void asc_sort_2 (InfoListPtr *a, InfoListPtr *b) {
     if (GT((*a)->key, (*b)->key))
         swap (a, b);
 }
 
 //  Result: a < b < c
-void asc_sort_3 (InfoPtr *a, InfoPtr *b, InfoPtr *c) {
+void asc_sort_3 (InfoListPtr *a, InfoListPtr *b, InfoListPtr *c) {
     if (GT((*a)->key, (*b)->key))
         swap (a, b);
     if (GT((*a)->key, (*c)->key))
@@ -215,38 +244,17 @@ void sort_node (BNodePtr node) {
     }
 }
 
-/*  INSERTION  */ 
-void insert_to_vertex (BNodePtr node, InfoPtr info) {
-    node->info[node->csize++] = info;
-    sort_node (node);
-}
-
-/*  DELETION  */
-int delete_from_vertex (BNodePtr node, Key key) {
-    if (node->csize == 0) 
-        return ERRWRG;
-
-    for (size_t i = 0; i < node->csize; i++) {
-        if (node->info[i] == NULL || EQ(node->info[i]->key, key)) {
-            /*  Left shift.  */
-            for (size_t j = i; j < node->csize - 1; j++) 
-                node->info[j] = node->info[j+1];
-
-            node->csize--;
-            return ERRSUC;
-        }
-    }
-
-    return ERRWRG;
-}
 
 /*  OTHER  */
-void fix_root_after_split (BNodePtr node, InfoPtr info, BNodePtr node1, BNodePtr node2) {
-    node->info[0] = info;
-    node->child[0] = node1;
-    node->child[1] = node2;
-    node->child[2] = node->child[3] = node->par = NULL;
-    node->csize = 1;
+void construct_root_after_split (BNodePtr root, InfoListPtr root_info, BNodePtr left, BNodePtr right) {
+    root->info[0] = root_info;
+
+    root->child[0] = left;
+    root->child[1] = right;
+
+    root->child[2] = root->child[3] = root->par = NULL;
+    
+    root->csize = 1;
 }
 
 Bool is_leaf (BNodePtr node) {
