@@ -10,7 +10,7 @@ CC = gcc $(CFLAGS)
 
 .PHONY: all init builddir timing clean 
 
-all: timing tree.bin 
+all: init tree.bin 
 
 init: builddir 
 
@@ -23,7 +23,7 @@ tree.bin: $(LIB1) $(LIB2) $(GEN) $(BUILDDIR)/main.o
 
 	$(CC) $^ -o $@
 
-timing: timing.bin
+timing: init timing.bin
 	scripts/timing.sh 
 
 timing.bin: $(LIB1) $(LIB2) $(GEN) $(BUILDDIR)/timing.o
@@ -36,13 +36,13 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(SRCDIR)/%.h
 #  	pretty-print
 	@echo + CC $^
 
-	$(CC) $^ -o $@
+	$(CC) -c $< -o $@
 
-$(BUILDDIR)/%.o: %.c %.h
+$(BUILDDIR)/%.o: %.c 
 #  	pretty-print
 	@echo + CC $^
 
-	$(CC) $^ -o $@
+	$(CC) -c $< -o $@
 
 clean:
 	rm -r ./$(BUILDDIR)

@@ -12,10 +12,10 @@ preproc()
 #  select the lines corresponding to each operation
 selection() 
 {
-    awk 'NR%3==1' ../test | awk '{print $5}' > build/search
-    awk 'NR%3==2' ../test | awk '{print $5}' > build/insertion
-    awk 'NR%3==0' ../test | awk '{print $5}' > build/deletion
-    #awk 'NR%4==0' ../test | awk '{print $5}' > build/traversal
+    awk 'NR%3==1' build/test | awk '{print $5}' > build/search
+    awk 'NR%3==2' build/test | awk '{print $5}' > build/insertion
+    awk 'NR%3==0' build/test | awk '{print $5}' > build/deletion
+    #awk 'NR%4==0' build/test | awk '{print $5}' > build/traversal
 }
 
 ############################################
