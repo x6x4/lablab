@@ -339,7 +339,6 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
     if (leaf->csize != 0) {
         /*  leaf is non-empty */
         if (par)
-            //  ?????
             fix_after_del (root, par);
         else 
             //  root
