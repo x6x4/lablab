@@ -89,10 +89,20 @@ void timing_traversal (BNodePtr test_root, char test_keys[BUNCH_SZ*EPOCHS_NUM][1
     BNodePtr buf = NULL;
 
     first = clock();
-    //for (int i = 0; i < BUNCH_SZ; ++i) 
-        //traverse_bt (test_root, test_keys[i]);
+    for (int i = 0; i < BUNCH_SZ; ++i) 
+        silent_traverse_bt (test_root);
 
     last = clock();
 
     printf("%d nodes_num %d time %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
+}
+
+void silent_traverse_bt (BNodePtr root) {
+    if (!root) 
+        return;
+
+    for (size_t i = 0; i < root->csize; i++) 
+        silent_traverse_bt (root->child[i]);
+        
+    silent_traverse_bt (root->child[root->csize]);
 }

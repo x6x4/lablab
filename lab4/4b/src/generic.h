@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 
 #define free_nullify(ptr) free (ptr); ptr = NULL;

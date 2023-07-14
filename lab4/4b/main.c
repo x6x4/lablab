@@ -1,4 +1,4 @@
-#include "src/lib_bintree.h"
+#include "src/lib_bt_func.h"
 #include "src/generic.h"
 #include <stddef.h>
 #include <stdio.h>
@@ -92,13 +92,13 @@ int delete_tree (BNodePtr *root, FILE *file) {
     if (!key)
         return ERREOF;
 
-    /*s = "Enter version of item to delete: \n";
+    s = "Enter version of item to delete: \n";
 
     printf ("%s", s);
     
-    status = get_int_file (file, &ver, INT_MAX, 0);
+    int status = get_int_file (file, (int*) &ver, INT_MAX, 0);
     if (status == ERREOF) 
-        return 0;  */
+        return 0;  
 
     switch (delete_bt (root, key, ver)) {
         case ERRSUC:
@@ -148,7 +148,7 @@ int findmax_tree (BNodePtr *root, FILE *file) {
 
     if (node) {
         size_t pos = node->csize - 1;
-        printf (" %s (%lu) \n", node->info[pos]->key, node->info[pos]->csize);
+        colored_print_bt (*root, node->info[pos]->key);
     }
     else
         puts ("Void tree.");
@@ -157,26 +157,17 @@ int findmax_tree (BNodePtr *root, FILE *file) {
 };
 
 int traverse_tree (BNodePtr *root, FILE *file) {
-/*    size_t key = 0;
-    int status = -1;
     const char *s = "Enter key to traverse from or \"a\" to traverse all tree: \n";
 
     printf ("%s", s);
-    char ch = 0;
-    scanf ("%c", &ch);
-
-    if (ch != 'a') {
-        ungetc (ch, stdin);
-        status = get_int_file (file, &key, INT_MAX, 0);
-        if (status == ERREOF) 
-            return 0;
-    } else {
-        key = NO_KEY;
-    }
-
     printf ("\nTraverse:\n");
-    traverse_bst (*root, key);
-    printf ("\n");*/
+
+    if (!(*root))
+        printf ("(void)");
+    else 
+        traverse_bt (*root);
+
+    printf ("\n");
     return ERRSUC;
 }
 
@@ -203,14 +194,14 @@ int print_tree (BNodePtr *root, FILE *file) {
     colored_print_bt (*root, NULL);
     printf ("\n");
 
-    /*int status = -1;
+    int status = -1;
     const char *s = "\nUnwrap some branch? (y/n): \n";
     while ((status = user_choice (s)) == ERRSUC) 
         find_tree (root, file);
 
     if (status == ERREOF)
         return ERREOF;
-    else */
+    else 
         return ERRSUC;
 };
 

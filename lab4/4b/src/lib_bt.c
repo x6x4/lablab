@@ -1,4 +1,4 @@
-#include "lib_mini_bt.h"
+#include "lib_bt.h"
 #include "generic.h"
 #include <stdio.h>
 #include <string.h>
@@ -68,6 +68,8 @@ void print_ll (InfoPtr head) {
         printf (YELLOW("(%lu, %s)"), node->ver, node->val);
         if (node->next)
             printf ("->");
+        else 
+            printf (" ");
         node = node->next;
     } 
 }

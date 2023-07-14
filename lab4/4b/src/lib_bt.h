@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdlib.h>
 
 /*  Useful macros.  */
@@ -11,11 +13,13 @@ typedef struct BNode *BNodePtr;
 
 /*  List of values with the same key.  */
 typedef struct InfoList *InfoListPtr;
+
 typedef struct Info *InfoPtr;
 
 typedef char *Key;
 typedef short Bool;
 
+//  for code simplicity
 #define KEYS_NUM 3
 #define CHILD_NUM 4
 
@@ -29,6 +33,7 @@ struct BNode {
     BNodePtr par;
 };
 
+/*  Node of the list of values with the same key.  */
 struct Info {
     char *val;
     size_t ver;
@@ -42,6 +47,7 @@ struct InfoList
     InfoPtr head;
     size_t csize;
 };
+
 
 /*  LIST  */
 int branch_ext (InfoListPtr *info, Key key, char *val);

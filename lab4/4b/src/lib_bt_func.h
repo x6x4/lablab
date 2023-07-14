@@ -1,4 +1,6 @@
-#include "lib_mini_bt.h"
+#pragma once
+
+#include "lib_bt.h"
 
 #include <stddef.h>
 #include <limits.h>
@@ -36,6 +38,7 @@ void split_middle (BNodePtr node, BNodePtr *left, BNodePtr *right);
 BNodePtr find_bt (BNodePtr root, Key key, size_t *pos);
 
 BNodePtr find_max_node (BNodePtr root);
+BNodePtr find_min_node (BNodePtr root);
 int chld_for_descent (BNodePtr root, Key key);
 
 /*  Print  */
@@ -44,6 +47,7 @@ void set_height (BNodePtr root);
 void print_bt_lvl (BNodePtr root, size_t height);
 void colored_print_bt (BNodePtr root, Key key);
 void colored_print_bt_lvl (BNodePtr root, size_t height, Key key);
+void colored_print_node (BNodePtr root, Key key);
 
 /*  Deletion  */
 int delete_list_node (Key key, size_t ver, BNodePtr victim, size_t key_pos);
@@ -72,6 +76,9 @@ void move_par_key_to_nonnull_chld (size_t victim_num, BNodePtr par);
 void assign_grandchildren_to_nonnull_chld (size_t victim_num, BNodePtr par, BNodePtr leaf);
 void clear_par_and_leaf_ (BNodePtr par, size_t victim_num);
 BNodePtr get_nonnull_child (BNodePtr leaf);
+
+/*  Traverse  */
+void traverse_bt (BNodePtr root);
 
 /*  Destructors  */
 void free_bt (BNodePtr *root);

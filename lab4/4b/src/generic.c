@@ -51,6 +51,8 @@ int user_choice (const char *s) {
     int ch = -1;
     
     ch = getchar ();
+    //  eat trailing newline
+    getchar();
     switch (ch) {
         case 'y':
             return ERRSUC;

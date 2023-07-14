@@ -1,4 +1,4 @@
-#include "lib_bintree.h"
+#include "lib_bt_func.h"
 #include "generic.h"
 
 #include <stddef.h>
@@ -180,15 +180,7 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, char *key) {
     if (height) 
         printf ("%*s└── ", (int) (4*height - 4), ""); 
 
-    /*  Color desired key.  */
-    for (size_t i = 0; i < root->csize; i++) {
-        if (key && EQ(root->info[i]->key, key)) {
-            printf (RED("%s(%lu): "), root->info[i]->key, root->info[i]->csize);
-            print_ll (root->info[i]->head);
-        }
-        else 
-            printf ("%s(%lu) ", root->info[i]->key, root->info[i]->csize);
-    }
+    colored_print_node (root, key);
 
     /*  Print all the children.  */
     for (size_t i = 0; i < CHILD_NUM - 1; i++) {
@@ -201,6 +193,17 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, char *key) {
     }
 }
 
+void colored_print_node (BNodePtr root, Key key) {
+    /*  Color desired key.  */
+    for (size_t i = 0; i < root->csize; i++) {
+        if (key && EQ(root->info[i]->key, key)) {
+            printf (RED("%s(%lu): "), root->info[i]->key, root->info[i]->csize);
+            print_ll (root->info[i]->head);
+        }
+        else 
+            printf ("%s(%lu) ", root->info[i]->key, root->info[i]->csize);
+    }
+}
 
 /*  Search  */
 
@@ -249,11 +252,18 @@ BNodePtr find_max_node (BNodePtr root) {
             return find_max_node (root->child[i]);
     }
     return find_max_node (root->child[CHILD_NUM-1]);
+}
 
+BNodePtr find_min_node (BNodePtr root) {
+    if (root == NULL || root->child[0] == NULL /*leaf*/ )
+        return root;
+
+    /*  min_node - 1st child of the node  */
+    return find_max_node (root->child[0]);
 }
 
 
-/*  DELETION  */
+/*  Deletion.  */
 
 /*  deletion is always performed from the leaf  */
 int delete_bt (BNodePtr *root, Key key, size_t ver) {
@@ -358,7 +368,6 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
     }
 }
 
-/*  MERGE  */
 /*  merge - par of size 1 has two chidren of size 1  */
 BNodePtr merge (BNodePtr *root, BNodePtr leaf) {
     BNodePtr par = leaf->par;
@@ -436,6 +445,7 @@ size_t get_v3_num (BNodePtr par, BNodePtr leaf) {
     return NO_3VERTEX;
 }
 
+/*  redistribute  */
 BNodePtr redistribute (BNodePtr leaf) {
 
     BNodePtr par = leaf->par;
@@ -454,8 +464,6 @@ BNodePtr redistribute (BNodePtr leaf) {
             for (size_t i = CHILD_NUM - 2; i > 0; i--)
                 par->child[0]->child[i] = par->child[0]->child[i-1];
         }
-
-        colored_print_bt (par, NULL);
 
         //  "leaf" can't have more than 1 child
         //  (due to ascending order of deletion)
@@ -646,7 +654,19 @@ size_t set_leaf_num (BNodePtr par, BNodePtr leaf) {
     return CHILD_NUM - 1;
 }
 
+/*  Traverse  */
+void traverse_bt (BNodePtr root) {
+    if (!root) 
+        return;
 
+    for (size_t i = 0; i < root->csize; i++) {
+        traverse_bt (root->child[i]);
+        printf ("%s ", root->info[i]->key);
+    }
+    traverse_bt (root->child[root->csize]);
+}
+
+ 
 /*  DESTRUCTORS  */
 void free_bt (BNodePtr *root) {
     if (!(*root))
