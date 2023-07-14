@@ -535,8 +535,10 @@ void lshift_par_children (size_t victim_num, BNodePtr par) {
     switch (victim_num) {
         case 0:
             par->child[0] = par->child[1];
+            // fall through
         case 1:
             par->child[1] = par->child[2];
+            // fall through
         case 2:
             par->child[2] = NULL;
     }
