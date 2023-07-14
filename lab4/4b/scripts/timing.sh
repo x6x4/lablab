@@ -5,8 +5,8 @@
 preproc() 
 {
     ../timing.bin > ../test 
-    rm ord_del ord_ins ord_search #ord_ins # #ord_trav
-    EPOCHS=10
+    rm ord_del ord_ins ord_search ord_trav
+    EPOCHS=20
 }
 
 ############################################
@@ -28,12 +28,12 @@ sort ()
         awk 'NR%'$EPOCHS'=='${i} search >> ord_search
         awk 'NR%'$EPOCHS'=='${i} insertion >> ord_ins
         awk 'NR%'$EPOCHS'=='${i} deletion >> ord_del
-    #    awk 'NR%'$EPOCHS'=='${i} traversal >> ord_trav
+        #awk 'NR%'$EPOCHS'=='${i} traversal >> ord_trav
     done 
         awk 'NR%'$EPOCHS'==0' search >> ord_search
         awk 'NR%'$EPOCHS'==0' insertion >> ord_ins
         awk 'NR%'$EPOCHS'==0' deletion >> ord_del
-    #    awk 'NR%'$EPOCHS'==0' traversal >> ord_trav
+        #awk 'NR%'$EPOCHS'==0' traversal >> ord_trav
 }
 
 ############################################

@@ -1,5 +1,5 @@
 
-CC = cc -Wno-incompatible-pointer-types -g 
+CC = cc -Wall -Wextra -Wno-incompatible-pointer-types 
 LIB1 = bin/lib_bt.o
 LIB2 = bin/lib_bt_func.o
 GEN = bin/generic.o
