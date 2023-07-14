@@ -230,20 +230,20 @@ int chld_for_descent (BNodePtr root, Key key) {
     if (!root)
         return -1;
 
-    puts ("0");
+    //puts ("0");
 
     /*  key < chld0 (< chld1)  */
     if (root->info[0] && LT(key, root->info[0]->key)) 
         return 0;
     
-    puts ("1");
+    //puts ("1");
 
     /*  chld0 < key < (chld1)  */
-    if (root->csize == 2 && root->info[1] && LT(key, root->info[1]->key) 
+    if ( ((root->csize == 2) && root->info[1] && LT(key, root->info[1]->key) ) 
         || root->csize == 1)
         return 1;
 
-    puts ("2");
+    //puts ("2");
 
     /*  chld0 < chld1 < key  */
     if (root->csize == 2)
@@ -286,7 +286,7 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
     if (!victim)
         return ERRWRG;
 
-    int status = delete_list_node (key, ver, victim, key_pos);
+    int status = delete_list_node (ver, victim, key_pos);
 
     if (status != ERRCONT)
         return status;
@@ -324,7 +324,7 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
     return ERRSUC;
 }
 
-int delete_list_node (Key key, size_t ver, BNodePtr victim, size_t key_pos) {
+int delete_list_node (size_t ver, BNodePtr victim, size_t key_pos) {
 
     InfoPtr *head = &(victim->info[key_pos]->head);
 
@@ -364,7 +364,7 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
         /*  emptied leaf  */
 
         size_t v3_chld = NO_3VERTEX;
-        v3_chld = get_v3_num (par, leaf);
+        v3_chld = get_v3_num (par);
 
         if (NO_3VERTEX == v3_chld && par->csize < 2)
             //  1 node in parent and all children
@@ -446,7 +446,7 @@ void clear_par_and_leaf_ (BNodePtr par, size_t victim_num) {
     free_vertex (&(par->child[victim_num]));
 }
 
-size_t get_v3_num (BNodePtr par, BNodePtr leaf) {
+size_t get_v3_num (BNodePtr par) {
 
     for (size_t i = 0; i < par->csize + 1; i++) {
         if (par->child[i]->csize == 2)
@@ -463,7 +463,7 @@ BNodePtr redistribute (BNodePtr leaf) {
         return leaf;
 
     size_t leaf_num = set_leaf_num (par, leaf);
-    size_t vertex3_num = get_v3_num (par, leaf);
+    size_t vertex3_num = get_v3_num (par);
 
     if (par->csize == 2 && NO_3VERTEX == vertex3_num) {
         lshift_par_children (leaf_num, par);

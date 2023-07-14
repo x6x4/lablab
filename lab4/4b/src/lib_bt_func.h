@@ -50,13 +50,13 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, Key key);
 void colored_print_node (BNodePtr root, Key key);
 
 /*  Deletion  */
-int delete_list_node (Key key, size_t ver, BNodePtr victim, size_t key_pos);
+int delete_list_node (size_t ver, BNodePtr victim, size_t key_pos);
 
 /*  deletion is always performed from the leaf  */
 int delete_bt (BNodePtr *root, Key key, size_t ver);
 void fix_after_del (BNodePtr *root, BNodePtr node);
 
-size_t get_v3_num (BNodePtr par, BNodePtr leaf);
+size_t get_v3_num (BNodePtr par);
 
 /*  redistribute  */
 BNodePtr redistribute (BNodePtr leaf);

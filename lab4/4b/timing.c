@@ -63,7 +63,6 @@ void timing_search (BNodePtr test_root, char test_keys[BUNCH_SZ][2], int bunch_n
 
 void timing_insertion (BNodePtr *test_root, char test_keys[BUNCH_SZ][2], int bunch_num) {
     clock_t first = 0, last = 0;
-    BNodePtr buf = NULL;
 
     first = clock();
     for (int i = 0; i < BUNCH_SZ; ++i) 
@@ -76,7 +75,6 @@ void timing_insertion (BNodePtr *test_root, char test_keys[BUNCH_SZ][2], int bun
 
 void timing_deletion (BNodePtr *test_root, char test_keys[BUNCH_SZ][2], int bunch_num) {
     clock_t first = 0, last = 0;
-    BNodePtr buf = NULL;
 
     first = clock();
     for (int i = 0; i < BUNCH_SZ; ++i) 
@@ -87,9 +85,8 @@ void timing_deletion (BNodePtr *test_root, char test_keys[BUNCH_SZ][2], int bunc
     printf("%d nodes_num %d time %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
 }
 
-void timing_traversal (BNodePtr test_root, char test_keys[BUNCH_SZ][2], int bunch_num) {
+void timing_traversal (BNodePtr test_root, int bunch_num) {
     clock_t first = 0, last = 0;
-    BNodePtr buf = NULL;
 
     first = clock();
     for (int i = 0; i < BUNCH_SZ; ++i) 

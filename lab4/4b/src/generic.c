@@ -25,7 +25,6 @@ char *get_str (FILE *file) {
 FILE *user_file () {
     char *errmsg = "";
     FILE *file = NULL;
-	size_t len = 0;
 
 	puts ("Enter filename of file to read from. Enter \"/proc/self/fd/0\" to read from stdin.");
 
@@ -67,9 +66,8 @@ int user_choice (const char *s) {
 
 int option_choice (const char *msgs[], size_t msgc, FILE *file) {
     int option_num = -1;
-    char *errmsg = "";
 
-    for (int i = 0; i < msgc; i++) 
+    for (int i = 0; i < (int) msgc; i++) 
         puts (msgs[i]);
     
     int status = get_int_file (file, &option_num, msgc - 1, 0);
