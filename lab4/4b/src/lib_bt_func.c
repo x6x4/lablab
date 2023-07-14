@@ -226,14 +226,24 @@ BNodePtr find_bt (BNodePtr root, Key key, size_t *pos) {
 }
 
 int chld_for_descent (BNodePtr root, Key key) {
+
+    if (!root)
+        return -1;
+
+    puts ("0");
+
     /*  key < chld0 (< chld1)  */
-    if (LT(key, root->info[0]->key))
+    if (root->info[0] && LT(key, root->info[0]->key)) 
         return 0;
+    
+    puts ("1");
 
     /*  chld0 < key < (chld1)  */
-    if (root->csize == 2 && LT(key, root->info[1]->key) 
+    if (root->csize == 2 && root->info[1] && LT(key, root->info[1]->key) 
         || root->csize == 1)
         return 1;
+
+    puts ("2");
 
     /*  chld0 < chld1 < key  */
     if (root->csize == 2)
@@ -430,7 +440,8 @@ void assign_grandchildren_to_nonnull_chld (size_t victim_num, BNodePtr par, BNod
 }
 
 void clear_par_and_leaf_ (BNodePtr par, size_t victim_num) {
-    shift_infolists_and_change_sz (par, par->info[0]->key);
+    if (par->info[0])
+        shift_infolists_and_change_sz (par, par->info[0]->key);
     // when empty "leaf" was kept non-null because of non-null child
     free_vertex (&(par->child[victim_num]));
 }
@@ -578,9 +589,11 @@ void clear_par_and_leaf (size_t victim_num, BNodePtr par, BNodePtr leaf) {
     switch (victim_num) {
         case 0:
         case 1:
-            shift_infolists_and_change_sz (par, par->info[0]->key);
+            if (par->info[0])
+                shift_infolists_and_change_sz (par, par->info[0]->key);
             break;
         case 2:
+            if (par->info[1])
             shift_infolists_and_change_sz (par, par->info[1]->key);
     }
     free_nullify (leaf);
@@ -607,7 +620,8 @@ void rotate_right (size_t src, size_t dest, BNodePtr par) {
     par->child[dest]->csize = 1;
 
     par->info[src] = par->child[src]->info[src_sz - 1];
-    shift_infolists_and_change_sz (par->child[src], par->child[src]->info[src_sz - 1]->key);
+    if (par->child[src] && par->child[src]->info[src_sz - 1])
+        shift_infolists_and_change_sz (par->child[src], par->child[src]->info[src_sz - 1]->key);
 
     /*  right shift source node children  */
     par->child[dest]->child[0] = par->child[src]->child[src_sz];
@@ -631,7 +645,8 @@ void rotate_left (size_t src, size_t dest, BNodePtr par) {
     par->child[dest]->csize = 1;
 
     par->info[src - 1] = par->child[src]->info[0];
-    shift_infolists_and_change_sz (par->child[src], par->child[src]->info[0]->key);
+    if (par->child[src] && par->child[src]->info[0])
+        shift_infolists_and_change_sz (par->child[src], par->child[src]->info[0]->key);
 
     /*  left shift source node children  */
     par->child[dest]->child[1] = par->child[src]->child[0];

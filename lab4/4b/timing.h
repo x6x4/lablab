@@ -4,7 +4,7 @@
 #include "src/generic.h"
 
 /*  Killed on 1e4  */
-#define BUNCH_SZ (int) 100
+#define BUNCH_SZ (int) 10
 
 /*  Overall EPOCHS_NUM epochs with EPOCHS_NUM bunches in each.  */
 #define EPOCHS_NUM 10

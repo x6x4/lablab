@@ -193,11 +193,14 @@ int shift_infolists_and_change_sz (BNodePtr node, Key key) {
 
 int find_in_vertex (BNodePtr node, char *key, size_t *pos) {
 
+    if (!node) 
+        return ERRWRG;
+
     if (!key)
         return ERRWRG;
 
     for (size_t i = 0; i < node->csize; i++) {
-        if (EQ(node->info[i]->key, key)) {
+        if (node->info[i] && EQ(node->info[i]->key, key)) {
             *pos = i;
             return ERRSUC;
         }
@@ -217,7 +220,7 @@ void swap (InfoListPtr *a, InfoListPtr *b) {
 
 //  Result: a < b
 void asc_sort_2 (InfoListPtr *a, InfoListPtr *b) {
-    if (GT((*a)->key, (*b)->key))
+    if ((*a) && (*b) && GT((*a)->key, (*b)->key))
         swap (a, b);
 }
 
