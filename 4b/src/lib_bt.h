@@ -18,11 +18,12 @@ typedef struct Info *InfoPtr;
 
 typedef char *Key;
 typedef char *Val;
+
 typedef short Bool;
 
 //  for code simplicity
 #define KEYS_NUM 3
-#define CHILD_NUM KEYS_NUM + 1
+#define CHILD_NUM (KEYS_NUM + 1)
 
 /*  Tree structures.  */
 
@@ -34,7 +35,7 @@ struct BNode {
     BNodePtr par;
 };
 
-/*  Node of the list of values with the same key.  */
+/*  Node of the single-linked list of values with the same key.  */
 struct Info {
     Val val;
     size_t ver;
