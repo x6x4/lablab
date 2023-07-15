@@ -10,12 +10,14 @@ CC = gcc $(CFLAGS)
 
 .PHONY: all init builddir timing clean 
 
-all: timing.bin
+all: time
+
+time: timing 
+	scripts/timing.sh  
 
 tree: init tree.bin 
 
 timing: init timing.bin
-	scripts/timing.sh 
 
 init: builddir 
 

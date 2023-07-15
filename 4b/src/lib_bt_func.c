@@ -1,6 +1,7 @@
 #include "lib_bt_func.h"
 #include "generic.h"
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -18,6 +19,9 @@
     calls insert_to_tree otherwise 
 */
 int insert_bt (BNodePtr *root, Key key, Val val) {
+
+    VALIDATE_TREE (*root);
+
     size_t pos = 0;
     BNodePtr node = find_bt (*root, key, &pos);
 
@@ -34,6 +38,8 @@ int insert_bt (BNodePtr *root, Key key, Val val) {
     /*  standard insertion  */
     insert_to_tree (root, *root, info);
     
+    VALIDATE_TREE (*root);
+
     return ERRSUC;
 }
 
@@ -45,7 +51,7 @@ void insert_to_tree (BNodePtr *root, BNodePtr cnode, InfoListPtr info) {
         *root = new_vertex (info);
         return;
     }
- 
+
     /*  insert to leaf  */
     if (is_leaf (cnode)) {
         insert_to_vertex (cnode, info);
@@ -226,31 +232,23 @@ BNodePtr find_bt (BNodePtr root, Key key, size_t *pos) {
 
 int chld_for_descent (BNodePtr root, Key key) {
 
-    if (!root)
-        return -1;
-
-    //puts ("0");
+    assert (root);
+    assert (key);
 
     /*  key < chld0 (< chld1)  */
-    if (root->info[0] && LT(key, root->info[0]->key)) {
-        printf ("ptr: %p\n", root);
-        printf ("ptr: %p\n", root->info[0]);
+    if (root->info[0] && LT(key, root->info[0]->key)) 
         return 0;
-    }
-    
-    //puts ("1");
 
     /*  chld0 < key < (chld1)  */
     if ( ((root->csize == 2) && root->info[1] && LT(key, root->info[1]->key) ) 
         || root->csize == 1)
         return 1;
 
-    //puts ("2");
-
     /*  chld0 < chld1 < key  */
     if (root->csize == 2)
         return 2;
 
+    assert (0 && "BAD CHILD FOR DESCENT");
     return -1;
 }
 
@@ -279,6 +277,8 @@ BNodePtr find_min_node (BNodePtr root) {
 
 /*  deletion is always performed from the leaf  */
 int delete_bt (BNodePtr *root, Key key, size_t ver) {
+
+    VALIDATE_TREE (*root);
 
     /*  Deletion from infolist.  */
 
@@ -312,12 +312,14 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
     }
 
     /*  delete key in leaf  */
-    if (exchange_key)
+    if (exchange_key) {
         free_infolist (exchange_key);
+        //printf ("ptr:%p\n", exchange_key);
+    }
     else {
-        printf ("keyptr: %p\n", victim->info[key_pos]);
+        //printf ("keyptr: %p\n", victim->info[key_pos]);
         free_infolist (key_place);
-        printf ("keyptr: %p\n", victim);
+        ///printf ("keyptr: %p\n", victim);
     }
 
 
@@ -326,6 +328,8 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
 
     /*  fix bt  */
     fix_after_del (root, victim);
+
+    VALIDATE_TREE (*root);
 
     return ERRSUC;
 }
@@ -426,6 +430,9 @@ void move_par_key_to_nonnull_chld (size_t victim_num, BNodePtr par) {
             break;
         case 1:
             insert_to_vertex (par->child[0], par->info[0]);
+            break;
+        default:
+            assert (0 && "BAD VICTIM NUMBER");
     }
 }
 
@@ -442,6 +449,9 @@ void assign_grandchildren_to_nonnull_chld (size_t victim_num, BNodePtr par, BNod
             par->child[0]->child[2] = get_nonnull_child (leaf);
             if (par->child[0]->child[2])
                 par->child[0]->child[2]->par = par->child[0];
+            break;
+        default:
+            assert (0 && "BAD VICTIM NUMBER");
     }
 }
 
@@ -547,6 +557,9 @@ void lshift_par_children (size_t victim_num, BNodePtr par) {
             // fall through
         case 2:
             par->child[2] = NULL;
+            break;
+        default:
+            assert (0 && "BAD VICTIM NUMBER");
     }
 }
 
@@ -558,6 +571,9 @@ void insert_parent_key_to_chld (size_t victim_num, BNodePtr par) {
             break;
         case 2:
             insert_to_vertex (par->child[1], par->info[1]);
+            break;
+        default:
+            assert (0 && "BAD VICTIM NUMBER");
     }
 }
 
@@ -586,6 +602,9 @@ void insert_missing_child (size_t victim_num, BNodePtr par, BNodePtr leaf) {
         case 2:
             place_to_insert = &(par->child[1]->child[2]);
             possible_par = par->child[1];
+            break;
+        default:
+            assert (0 && "BAD VICTIM NUMBER");
     }
 
     *place_to_insert = node_to_insert;
@@ -603,6 +622,9 @@ void clear_par_and_leaf (size_t victim_num, BNodePtr par, BNodePtr leaf) {
         case 2:
             if (par->info[1])
             shift_infolists_and_change_sz (par, par->info[1]->key);
+            break;
+        default:
+            assert (0 && "BAD VICTIM NUMBER");
     }
     free_nullify (leaf);
 }

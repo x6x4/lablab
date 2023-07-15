@@ -82,7 +82,7 @@ int insert_tree (BNodePtr *root, FILE *file) {
 
 int delete_tree (BNodePtr *root, FILE *file) {
 
-    char *key = NULL, *val = NULL;
+    char *key = NULL;
     size_t ver = 0;
     const char *s = "Enter key of item to delete: \n";
 
