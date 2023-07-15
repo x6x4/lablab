@@ -51,9 +51,8 @@ struct InfoList
 
 
 /*  LIST  */
-int branch_ext (InfoListPtr *info, Key key, Val val);
+void branch_ext (InfoListPtr *info, Key key, Val val);
 void insert_to_ll (InfoPtr *head, Val val, InfoPtr prev);
-InfoPtr find_in_ll_by_val (InfoPtr head, Val val, InfoPtr *prev);
 InfoPtr find_in_ll_by_ver (InfoPtr head, size_t ver, InfoPtr *prev);
 void print_ll (InfoPtr head);
 int delete_from_ll (InfoPtr *head, size_t ver);

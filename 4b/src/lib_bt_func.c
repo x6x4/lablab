@@ -23,8 +23,7 @@ int insert_bt (BNodePtr *root, Key key, Val val) {
 
     InfoListPtr info = !node ? NULL : node->info[pos];
 
-    if (branch_ext (&info, key, val) == ERRDUP) 
-        return ERRDUP;
+    branch_ext (&info, key, val);
 
     info->csize++;
     

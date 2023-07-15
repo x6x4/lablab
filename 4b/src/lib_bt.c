@@ -1,58 +1,64 @@
 #include "lib_bt.h"
 #include "generic.h"
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
 /*  LIST  */
 
-int branch_ext (InfoListPtr *info, Key key, Val val) {
+void branch_ext (InfoListPtr *info, Key key, Val val) {
 
     if (!(*info))
         *info = new_infolist (key);
 
-    InfoPtr head = (*info)->head;
-    InfoPtr prev = NULL;
-    
-    InfoPtr node = find_in_ll_by_val (head, val, &prev);
-    if (node)
-        return ERRDUP;
+    assert (*info != NULL);
+    assert (EQ((*info)->key, key));
 
-    insert_to_ll (&head, val, prev);    
-    return ERRSUC;
+    InfoPtr *head = &((*info)->head);
+
+    //  insert to the start of the list 
+    insert_to_ll (head, val, NULL);    
 }
 
 void insert_to_ll (InfoPtr *head, Val val, InfoPtr prev) {
+
+    //  null head value should entail null prev value
+    assert (*head == NULL && prev == NULL);
+
     InfoPtr node = calloc (1, sizeof *node);
+    assert (node);
+
     node->val = strdup (val); 
+    assert (node->val);
+
     node->ver = 0;
-    node->next = NULL;
     
     if (prev) {
+        node->next = prev->next;
         prev->next = node;
         node->ver = prev->ver + 1;
-    }
-
-    /*  if end is start  */
-    if (!(*head))
+    } else {
+        //  insert to start (make node a new head)
+        node->next = *head;
         *head = node;
-}
-
-InfoPtr find_in_ll_by_val (InfoPtr head, Val val, InfoPtr *prev) {
-    if (!head)
-        return NULL;
-
-    InfoPtr node = head;
-    while (node && !(EQ (node->val, val))) {
-        *prev = node;
-        node = node->next;
     }
-    return node;
+
 }
 
 InfoPtr find_in_ll_by_ver (InfoPtr head, size_t ver, InfoPtr *prev) {
+    
+    if (!head) {
+        //  set prev according to head
+        if (prev)
+            *prev = NULL;
+
+        return NULL; 
+    }
+
     InfoPtr node = head;
     while (node && node->ver != ver) {
-        *prev = node;
+        if (prev)
+            *prev = node;
         node = node->next;
     }
     return node;
@@ -74,16 +80,18 @@ void print_ll (InfoPtr head) {
 int delete_from_ll (InfoPtr *head, size_t ver) {
     InfoPtr prev = NULL;
     InfoPtr node = find_in_ll_by_ver (*head, ver, &prev);
+
     if (!node)
         return ERRWRG;
-    if (prev)
-        prev->next = node->next;
+
+    //  prev is either null or previous for the node
+    assert (!prev || prev->next == node);
 
     if (node == *head)
-        //  set list head to null, if "node" is the only node in the list
         *head = node->next;
+    else 
+        prev->next = node->next;        
 
-    //  free memory
     free_nullify (node->val);
     free_nullify (node);
 
@@ -92,18 +100,19 @@ int delete_from_ll (InfoPtr *head, size_t ver) {
 
 void free_ll (InfoPtr *head) {
 
-    InfoPtr node = *head;
-    InfoPtr next = node;
+    InfoPtr *node = head;
+    InfoPtr next = *node;
 
-    while (node) {
-        next = node->next;
-        free_nullify (node->val);
-        free_nullify (node);
-        node = next;
+    while (*node) {
+        next = (*node)->next;
+        free_nullify ((*node)->val);
+        free_nullify (*node);
+        *node = next;
     } 
 
     *head = NULL;
 }
+
 
 /*  NODE  */
 
