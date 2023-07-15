@@ -2,7 +2,7 @@
 #include "generic.h"
 #include <stdio.h>
 #include <string.h>
-
+#include <assert.h>
 /*  LIST  */
 
 int branch_ext (InfoListPtr *info, Key key, Val val) {
@@ -22,37 +22,49 @@ int branch_ext (InfoListPtr *info, Key key, Val val) {
 }
 
 void insert_to_ll (InfoPtr *head, Val val, InfoPtr prev) {
+    assert(!(*head == NULL && prev != NULL)); // Check if *head is NULL then prev is NULL too.
+
     InfoPtr node = calloc (1, sizeof *node);
+    assert(node);
+
     node->val = strdup (val); 
     node->ver = 0;
-    node->next = NULL;
+    node->next = prev ? prev->next : *head;
+    
+    assert(node->val);
     
     if (prev) {
         prev->next = node;
         node->ver = prev->ver + 1;
+    } else { /* insertion to head */
+        *head = node;
     }
 
-    /*  if end is start  */
-    if (!(*head))
-        *head = node;
 }
 
 InfoPtr find_in_ll_by_val (InfoPtr head, Val val, InfoPtr *prev) {
-    if (!head)
+    if (!head){
+        if (prev) *prev = NULL;
         return NULL;
+    }
 
     InfoPtr node = head;
     while (node && !(EQ (node->val, val))) {
-        *prev = node;
+        if(prev) *prev = node;
         node = node->next;
     }
     return node;
 }
 
 InfoPtr find_in_ll_by_ver (InfoPtr head, size_t ver, InfoPtr *prev) {
+    if (!head) {
+        if (prev) *prev = NULL;
+        return NULL;
+    }
+    
     InfoPtr node = head;
     while (node && node->ver != ver) {
-        *prev = node;
+        if(prev) *prev = node;
         node = node->next;
     }
     return node;
@@ -74,8 +86,10 @@ void print_ll (InfoPtr head) {
 int delete_from_ll (InfoPtr *head, size_t ver) {
     InfoPtr prev = NULL;
     InfoPtr node = find_in_ll_by_ver (*head, ver, &prev);
+
     if (!node)
         return ERRWRG;
+    
     if (prev)
         prev->next = node->next;
 

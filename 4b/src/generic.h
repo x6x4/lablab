@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#define free_nullify(ptr) free (ptr); ptr = NULL;
+#define free_nullify(ptr) {free (ptr); ptr = NULL;}
 
 enum {
 	ERREOF = -1,
