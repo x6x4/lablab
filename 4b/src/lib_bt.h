@@ -145,24 +145,99 @@ BNodePtr new_bt_node (InfoListPtr info, BNodePtr children[4], BNodePtr par);
 InfoListPtr new_infolist (Key key);
 
 /*  Destructors  */
+/**
+ * @brief Deletes BNode. Do NOT frees children.
+ * 
+ * @param node [IN/OUR] - node to free. It becomes NULL after clearing.
+ */
 void free_vertex (BNodePtr *node);
+
+/**
+ * @brief Deletes InfoList.
+ * 
+ * @param info [IN/OUR] - list to free. It becomes NULL after clearing.
+ */
 void free_infolist (InfoListPtr *info);
 
 /*  Search  */
-int find_in_vertex (BNodePtr node, char *key, size_t *pos);
+/**
+ * @brief Searches if key exists in node.
+ * 
+ * @param node [IN]           - node to search in.
+ * @param key  [IN]           - key to search for.
+ * @param pos  [OUT] OPTIONAL - position of key. Not changed if not found.
+ * @return int - ERRSUC if exists / ERRWRG if not or bad input.
+ */
+int find_in_vertex (BNodePtr node, Key key, size_t *pos);
 
 /*  Reorder  */
+/**
+ * @brief Swaps two InfoLists.
+ * 
+ * @param a [IN/OUT] -+-> Not NULL pointers to info lists.
+ * @param b [IN/OUT] -+
+ */
 void swap (InfoListPtr *a, InfoListPtr *b);
+
+/**
+ * @brief Sorts two InfoLists by key.
+ * 
+ * @param a [IN/OUT] -+-> Not NULL pointers to info lists.
+ * @param b [IN/OUT] -+
+ */
 void asc_sort_2 (InfoListPtr *a, InfoListPtr *b);
+
+/**
+ * @brief Sorts three InfoLists by key.
+ * 
+ * @param a [IN/OUT] -+-> Not NULL pointers to info lists. Lists must be NOT NULL too. 
+ * @param b [IN/OUT] -+
+ * @param c [IN/OUT] -+
+ */
 void asc_sort_3 (InfoListPtr *a, InfoListPtr *b, InfoListPtr *c);
+
+/**
+ * @brief Sorts infos by key in node.
+ *                              ^
+ * @param node [IN] ------------+
+ */
 void sort_node (BNodePtr node);
 
 /*  Insertion  */ 
+/**
+ * @brief Inserts new key (as InfoList) to vertex. Must be free space in vertex.
+ * 
+ * @param node [IN] - node insert to.
+ * @param info [IN] - info insert to. Takes ownership.
+ */
 void insert_to_vertex (BNodePtr node, InfoListPtr info);
 
 /*  Deletion  */
+/**
+ * @brief Corrects list in node after deletion.
+ * 
+ * @param node [IN] - node to fixup. 
+ * @param key  [IN] - ??
+ * @return int - error code. Possible: ERRWRG
+ */
 int shift_infolists_and_change_sz (BNodePtr node, Key key);
 
 /*  Other  */
+
+/**
+ * @brief Builds new root after split.
+ * 
+ * @param root      [IN] - new root vertex to fill. Not NULL.
+ * @param root_info [IN] - new root info.
+ * @param left      [IN] - left child.
+ * @param right     [IN] - right child.
+ */
 void construct_root_after_split (BNodePtr root, InfoListPtr root_info, BNodePtr left, BNodePtr right);
+
+/**
+ * @brief Check if node is leaf.
+ * 
+ * @param node [IN] - not NULL node to check.
+ * @return Bool - if is leaf.
+ */
 Bool is_leaf (BNodePtr node);

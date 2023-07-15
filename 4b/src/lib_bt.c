@@ -176,6 +176,9 @@ InfoListPtr new_infolist (Key key) {
 
 /*  INSERTION  */ 
 void insert_to_vertex (BNodePtr node, InfoListPtr info) {
+    assert(node);
+    assert(node->csize < KEYS_NUM);
+    
     node->info[node->csize++] = info;
     sort_node (node);
 }
@@ -200,6 +203,7 @@ void free_infolist (InfoListPtr *info) {
 
 /*  DELETION  */
 int shift_infolists_and_change_sz (BNodePtr node, Key key) {
+    assert(node);
     if (node->csize == 0) 
         return ERRWRG;
 
@@ -229,7 +233,7 @@ int find_in_vertex (BNodePtr node, char *key, size_t *pos) {
 
     for (size_t i = 0; i < node->csize; i++) {
         if (node->info[i] && EQ(node->info[i]->key, key)) {
-            *pos = i;
+            if(pos) *pos = i;
             return ERRSUC;
         }
     }
@@ -241,6 +245,8 @@ int find_in_vertex (BNodePtr node, char *key, size_t *pos) {
 /*  REORDER  */
 
 void swap (InfoListPtr *a, InfoListPtr *b) {
+    assert(a != NULL);
+    assert(b != NULL);
     InfoListPtr buf = *a;
     *a = *b;
     *b = buf;
@@ -248,12 +254,22 @@ void swap (InfoListPtr *a, InfoListPtr *b) {
 
 //  Result: a < b
 void asc_sort_2 (InfoListPtr *a, InfoListPtr *b) {
+    assert(a != NULL);
+    assert(b != NULL);
     if ((*a) && (*b) && GT((*a)->key, (*b)->key))
         swap (a, b);
 }
 
 //  Result: a < b < c
 void asc_sort_3 (InfoListPtr *a, InfoListPtr *b, InfoListPtr *c) {
+    assert(a != NULL);
+    assert(b != NULL);
+    assert(c != NULL);
+    
+    assert(*a != NULL);
+    assert(*b != NULL);
+    assert(*c != NULL);
+
     if (GT((*a)->key, (*b)->key))
         swap (a, b);
     if (GT((*a)->key, (*c)->key))
@@ -263,6 +279,7 @@ void asc_sort_3 (InfoListPtr *a, InfoListPtr *b, InfoListPtr *c) {
 }
 
 void sort_node (BNodePtr node) {
+    assert(node);
     switch (node->csize) {
         case 0:
         case 1:
@@ -271,15 +288,20 @@ void sort_node (BNodePtr node) {
         case 2:
             asc_sort_2 (&(node->info[0]), &(node->info[1]));
             return;
+
         case 3:
             asc_sort_3 (&(node->info[0]), &(node->info[1]), &(node->info[2]));
             return;
+
+        default:
+            assert(0 && "BAD NODE");
     }
 }
 
 
 /*  OTHER  */
 void construct_root_after_split (BNodePtr root, InfoListPtr root_info, BNodePtr left, BNodePtr right) {
+    assert(root);
     root->info[0] = root_info;
 
     root->child[0] = left;
@@ -291,5 +313,6 @@ void construct_root_after_split (BNodePtr root, InfoListPtr root_info, BNodePtr 
 }
 
 Bool is_leaf (BNodePtr node) {
+    assert(node);
     return !(node->child[0] || node->child[1] || node->child[2]);
 }
