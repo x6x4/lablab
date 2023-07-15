@@ -241,3 +241,21 @@ void construct_root_after_split (BNodePtr root, InfoListPtr root_info, BNodePtr 
  * @return Bool - if is leaf.
  */
 Bool is_leaf (BNodePtr node);
+
+/**
+ * @brief Check validity of tree.
+ * 
+ * @param node  [IN] - tree to check.
+ * @return char* - text of error. NULL if ok;
+ */
+const char* is_valid_node(const BNodePtr node);
+
+#define VALIDATE_TREE(node)                                                         \
+do {                                                                                \
+    const char* _err = is_valid_node(node);                                         \
+    if(_err) {                                                                      \
+        fprintf(stderr, "Tree(%p) is INVALID: %s.\n", node, _err);                  \
+        fprintf(stderr, "%s:%d %s\n ", __FILE__, __LINE__, __PRETTY_FUNCTION__);    \
+        abort();                                                                    \
+    }                                                                               \
+} while(0)
