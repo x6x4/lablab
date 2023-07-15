@@ -51,8 +51,19 @@ struct InfoList
 };
 
 
-/*  LIST  */
+/*========================= < LIST > =========================*/
+
+/**
+* @brief Add value to list. Creates list if NULL. 
+* 
+* @param info [IN/OUT]  - list for insertion. 
+    If it is NULL, creates list.
+* @param key [IN]       - list key. 
+    Required for list creation.
+* @param val [IN]       - inserted value. Is copied. 
+*/
 void branch_ext (InfoListPtr *info, Key key, Val val);
+
 void insert_to_ll (InfoPtr *head, Val val, InfoPtr prev);
 InfoPtr find_in_ll_by_ver (InfoPtr head, size_t ver, InfoPtr *prev);
 void print_ll (InfoPtr head);
