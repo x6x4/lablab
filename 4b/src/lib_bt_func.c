@@ -17,7 +17,7 @@
     insert in list if duplicate key;
     calls insert_to_tree otherwise 
 */
-int insert_bt (BNodePtr *root, Key key, char *val) {
+int insert_bt (BNodePtr *root, Key key, Val val) {
     size_t pos = 0;
     BNodePtr node = find_bt (*root, key, &pos);
 
@@ -233,8 +233,11 @@ int chld_for_descent (BNodePtr root, Key key) {
     //puts ("0");
 
     /*  key < chld0 (< chld1)  */
-    if (root->info[0] && LT(key, root->info[0]->key)) 
+    if (root->info[0] && LT(key, root->info[0]->key)) {
+        printf ("ptr: %p\n", root);
+        printf ("ptr: %p\n", root->info[0]);
         return 0;
+    }
     
     //puts ("1");
 
@@ -312,8 +315,12 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
     /*  delete key in leaf  */
     if (exchange_key)
         free_infolist (exchange_key);
-    else 
+    else {
+        printf ("keyptr: %p\n", victim->info[key_pos]);
         free_infolist (key_place);
+        printf ("keyptr: %p\n", victim);
+    }
+
 
     /*  fill in the freed node cell.  */
     shift_infolists_and_change_sz (victim, key);

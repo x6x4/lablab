@@ -4,7 +4,7 @@
 
 /*  Useful macros.  */
 
-#define LT(s1,s2) ((strcmp (s1, s2)) <= 0)
+#define LT(s1,s2) ((strcmp (s1, s2)) < 0)
 #define GT(s1,s2) ((strcmp (s1, s2)) > 0)
 #define EQ(s1,s2) ((strcmp (s1, s2)) == 0)
 
@@ -17,11 +17,12 @@ typedef struct InfoList *InfoListPtr;
 typedef struct Info *InfoPtr;
 
 typedef char *Key;
+typedef char *Val;
 typedef short Bool;
 
 //  for code simplicity
 #define KEYS_NUM 3
-#define CHILD_NUM 4
+#define CHILD_NUM KEYS_NUM + 1
 
 /*  Tree structures.  */
 
@@ -35,7 +36,7 @@ struct BNode {
 
 /*  Node of the list of values with the same key.  */
 struct Info {
-    char *val;
+    Val val;
     size_t ver;
     InfoPtr next;
 };
@@ -50,11 +51,10 @@ struct InfoList
 
 
 /*  LIST  */
-int branch_ext (InfoListPtr *info, Key key, char *val);
-int insert_to_ll (InfoPtr *head, char *val);
-InfoPtr insert_to_ll_end (char *val, InfoPtr prev);
-InfoPtr find_in_ll_by_val (char *val, InfoPtr head, InfoPtr *prev);
-InfoPtr find_in_ll_by_ver (size_t ver, InfoPtr head, InfoPtr *prev);
+int branch_ext (InfoListPtr *info, Key key, Val val);
+void insert_to_ll (InfoPtr *head, Val val, InfoPtr prev);
+InfoPtr find_in_ll_by_val (InfoPtr head, Val val, InfoPtr *prev);
+InfoPtr find_in_ll_by_ver (InfoPtr head, size_t ver, InfoPtr *prev);
 void print_ll (InfoPtr head);
 int delete_from_ll (InfoPtr *head, size_t ver);
 void free_ll (InfoPtr *head);

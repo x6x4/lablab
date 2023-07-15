@@ -18,7 +18,7 @@
     insert in list if duplicate key;
     calls insert_to_tree otherwise 
 */
-int insert_bt (BNodePtr *root, Key key, char *val);
+int insert_bt (BNodePtr *root, Key key, Val val);
 
 /*  insertion is always performed to the leaf  */
 void insert_to_tree (BNodePtr *root, BNodePtr cnode, InfoListPtr info);

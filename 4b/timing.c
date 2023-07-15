@@ -13,7 +13,7 @@ int timing_tree ()
     
     char test_keys[BUNCH_SZ][2] = {};
     
-    srand(time(NULL));
+    srand(1);
     
     for (int epochs_num = 0; epochs_num < EPOCHS_NUM; epochs_num++) {
         for (int bunch_num = 1; bunch_num <= EPOCHS_NUM; bunch_num++) {

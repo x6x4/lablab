@@ -10,7 +10,12 @@ CC = gcc $(CFLAGS)
 
 .PHONY: all init builddir timing clean 
 
-all: init tree.bin 
+all: timing.bin
+
+tree: init tree.bin 
+
+timing: init timing.bin
+	scripts/timing.sh 
 
 init: builddir 
 
@@ -22,9 +27,6 @@ tree.bin: $(LIB1) $(LIB2) $(GEN) $(BUILDDIR)/main.o
 	@echo + ld $^
 
 	$(CC) $^ -o $@
-
-timing: init timing.bin
-	scripts/timing.sh 
 
 timing.bin: $(LIB1) $(LIB2) $(GEN) $(BUILDDIR)/timing.o
 #  	pretty-print

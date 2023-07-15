@@ -97,8 +97,8 @@ int delete_tree (BNodePtr *root, FILE *file) {
     printf ("%s", s);
     
     int status = get_int_file (file, (int*) &ver, INT_MAX, 0);
-    if (status == ERREOF) 
-        return 0;  
+    if (status != ERRSUC) 
+        return status;  
 
     switch (delete_bt (root, key, ver)) {
         case ERRSUC:

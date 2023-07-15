@@ -5,29 +5,23 @@
 
 /*  LIST  */
 
-int branch_ext (InfoListPtr *info, Key key, char *val) {
+int branch_ext (InfoListPtr *info, Key key, Val val) {
 
     if (!(*info))
         *info = new_infolist (key);
 
-    return insert_to_ll (&((*info)->head), val);    
-}
-
-int insert_to_ll (InfoPtr *head, char *val) {
+    InfoPtr head = (*info)->head;
     InfoPtr prev = NULL;
-    InfoPtr node = find_in_ll_by_val (val, *head, &prev);
+    
+    InfoPtr node = find_in_ll_by_val (head, val, &prev);
     if (node)
         return ERRDUP;
-    
-    node = insert_to_ll_end (val, prev);
-    /*  if end is start  */
-    if (!(*head))
-        *head = node;
-    
+
+    insert_to_ll (&head, val, prev);    
     return ERRSUC;
 }
 
-InfoPtr insert_to_ll_end (char *val, InfoPtr prev) {
+void insert_to_ll (InfoPtr *head, Val val, InfoPtr prev) {
     InfoPtr node = calloc (1, sizeof *node);
     node->val = strdup (val); 
     node->ver = 0;
@@ -37,10 +31,13 @@ InfoPtr insert_to_ll_end (char *val, InfoPtr prev) {
         prev->next = node;
         node->ver = prev->ver + 1;
     }
-    return node;
+
+    /*  if end is start  */
+    if (!(*head))
+        *head = node;
 }
 
-InfoPtr find_in_ll_by_val (char *val, InfoPtr head, InfoPtr *prev) {
+InfoPtr find_in_ll_by_val (InfoPtr head, Val val, InfoPtr *prev) {
     if (!head)
         return NULL;
 
@@ -52,7 +49,7 @@ InfoPtr find_in_ll_by_val (char *val, InfoPtr head, InfoPtr *prev) {
     return node;
 }
 
-InfoPtr find_in_ll_by_ver (size_t ver, InfoPtr head, InfoPtr *prev) {
+InfoPtr find_in_ll_by_ver (InfoPtr head, size_t ver, InfoPtr *prev) {
     InfoPtr node = head;
     while (node && node->ver != ver) {
         *prev = node;
@@ -76,7 +73,7 @@ void print_ll (InfoPtr head) {
 
 int delete_from_ll (InfoPtr *head, size_t ver) {
     InfoPtr prev = NULL;
-    InfoPtr node = find_in_ll_by_ver (ver, *head, &prev);
+    InfoPtr node = find_in_ll_by_ver (*head, ver, &prev);
     if (!node)
         return ERRWRG;
     if (prev)
