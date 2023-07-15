@@ -20,6 +20,7 @@ int branch_ext (InfoListPtr *info, Key key, Val val) {
         return ERRDUP;
     
     insert_to_ll (&head, val, prev); // prev here is end of list. 
+    (*info)->head = head;
     return ERRSUC;
 }
 

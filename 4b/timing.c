@@ -30,7 +30,7 @@ int timing_tree ()
             /*  Fill test root  */
             for (int i = 0; i < num_of_keys; ) {
                 int rand_int = rand()%255 + 1;
-                char rand_key [1] = {(char) rand_int};
+                char rand_key [2] = {(char) rand_int};
                 /*  ensure that the actual number of keys is incremented  */
                 if (insert_bt (&test_root, rand_key, rand_key) == ERRSUC)
                     ++i;
