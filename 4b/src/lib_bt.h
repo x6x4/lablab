@@ -50,8 +50,16 @@ struct InfoList
     size_t csize;
 };
 
+/*=====================================================< LIST >=================================================*/
 
-/*  LIST  */
+/**
+ * @brief Add UNIQUE value to list. Creates list if NULL.
+ * 
+ * @param info [IN/OUT] - list insert to. If NULL creates list.
+ * @param key  [IN]     - key of list. Needed for creation.
+ * @param val  [IN]     - value insert to. Copied. If value already exists returns ERRDUP.
+ * @return int - Error code. Possible ERRDUP - value already exists.
+ */
 int branch_ext (InfoListPtr *info, Key key, Val val);
 
 /**
@@ -106,11 +114,34 @@ int delete_from_ll (InfoPtr *head, size_t ver);
  */
 void free_ll (InfoPtr *head);
 
-/*  NODE  */
+/*=====================================================< NODE >=================================================*/
 
 /*  Constructors  */
+
+/**
+ * @brief Creates new standalone node for tree.
+ * 
+ * @param info [IN] - content for node (Key, list of values). Takes ownership.
+ * @return BNodePtr - created node. NULL if any error occurred.
+ */
 BNodePtr new_vertex (InfoListPtr info);
+
+/**
+ * @brief Creates new node for tree with given children and parent.
+ * 
+ * @param info      [IN] - content  for node (Key, list of values). Takes ownership.
+ * @param children  [IN] - children for node. Takes ownership.
+ * @param par       [IN] - parent of node
+ * @return BNodePtr - created node. NULL if any error occurred.
+ */
 BNodePtr new_bt_node (InfoListPtr info, BNodePtr children[4], BNodePtr par);
+
+/**
+ * @brief Creates new info list for given key.
+ * 
+ * @param key [IN] - key list is made for.
+ * @return InfoListPtr - created list. NULL if any error occurred.
+ */
 InfoListPtr new_infolist (Key key);
 
 /*  Destructors  */

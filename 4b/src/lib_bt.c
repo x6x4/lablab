@@ -9,6 +9,8 @@ int branch_ext (InfoListPtr *info, Key key, Val val) {
 
     if (!(*info))
         *info = new_infolist (key);
+    
+    assert(EQ(key, (*info)->key));
 
     InfoPtr head = (*info)->head;
     InfoPtr prev = NULL;
@@ -16,8 +18,8 @@ int branch_ext (InfoListPtr *info, Key key, Val val) {
     InfoPtr node = find_in_ll_by_val (head, val, &prev);
     if (node)
         return ERRDUP;
-
-    insert_to_ll (&head, val, prev);    
+    
+    insert_to_ll (&head, val, prev); // prev here is end of list. 
     return ERRSUC;
 }
 
@@ -125,7 +127,10 @@ void free_ll (InfoPtr *head) {
 
 BNodePtr new_vertex (InfoListPtr info) {
     BNodePtr node = calloc (1, sizeof *node);
-
+    
+    if(!node) 
+        return NULL;
+    
     node->csize = 1;
     node->info[0] = info;
     
@@ -138,7 +143,10 @@ BNodePtr new_vertex (InfoListPtr info) {
 
 BNodePtr new_bt_node (InfoListPtr info, BNodePtr children[4], BNodePtr par) {
     BNodePtr node = calloc (1, sizeof *node);
-
+    
+    if(!node)
+        return NULL;
+    
     node->csize = 1;
     node->info[0] = info;
     for (size_t i = 0; i < CHILD_NUM; i++)
@@ -150,9 +158,18 @@ BNodePtr new_bt_node (InfoListPtr info, BNodePtr children[4], BNodePtr par) {
 
 InfoListPtr new_infolist (Key key) {
     InfoListPtr info = calloc (1, sizeof *info);
-    info->key = strdup (key);
+    
+    if(!info)
+        return NULL;
+
+    info->key   = strdup (key);
     info->csize = 0;
-    info->head = NULL;
+    info->head  = NULL;
+
+    if(!info->key) {
+        free_nullify(info);
+        return NULL;
+    }
 
     return info;
 }
