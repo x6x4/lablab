@@ -7,10 +7,10 @@
 #define LEN 11
 
 /*  Killed on 1e4  */
-#define BUNCH_SZ (int) 10
+#define BUNCH_SZ (int) 100
 
 /*  Overall EPOCHS_NUM epochs with EPOCHS_NUM bunches in each.  */
-#define EPOCHS_NUM 20
+#define EPOCHS_NUM 50
 
 
 void timing_tree ();

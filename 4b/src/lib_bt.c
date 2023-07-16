@@ -24,6 +24,7 @@ void branch_ext (InfoListPtr *info, Key key, Val val) {
     insert_to_ll (head, val, NULL);    
 }
 
+
 void insert_to_ll (InfoPtr *head, Val val, InfoPtr prev) {
 
     //  null head value should entail null prev value
@@ -44,6 +45,13 @@ void insert_to_ll (InfoPtr *head, Val val, InfoPtr prev) {
     } else {
         //  insert to start (make node a new head)
         node->next = *head;
+
+        /*  set version  */
+        if (*head)
+            node->ver = (*head)->ver + 1;
+        else 
+            node->ver = 1;
+
         *head = node;
     }
 
@@ -82,6 +90,14 @@ void print_ll (InfoPtr head) {
 }
 
 int delete_from_ll (InfoPtr *head, size_t ver) {
+
+    assert (head);
+
+    #ifdef TIMING
+    if (*head)
+        ver = (*head)->ver;
+    #endif
+
     InfoPtr prev = NULL;
     InfoPtr node = find_in_ll_by_ver (*head, ver, &prev);
 

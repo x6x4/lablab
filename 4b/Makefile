@@ -2,6 +2,7 @@ CC = cc
 BUILDDIR = build
 SRCDIR = src
 LIB1 = $(BUILDDIR)/lib_bt.o
+LIB1_T = $(BUILDDIR)/lib_bt_timing.o
 LIB2 = $(BUILDDIR)/lib_bt_func.o
 GEN = $(BUILDDIR)/generic.o
 
@@ -10,7 +11,7 @@ CC = gcc $(CFLAGS)
 
 .PHONY: all init builddir timing clean 
 
-all: time
+all: time tree
 
 time: timing 
 	scripts/timing.sh  
@@ -30,11 +31,17 @@ tree.bin: $(LIB1) $(LIB2) $(GEN) $(BUILDDIR)/main.o
 
 	$(CC) $^ -o $@
 
-timing.bin: $(LIB1) $(LIB2) $(GEN) $(BUILDDIR)/timing.o
+timing.bin: $(LIB1_T) $(LIB2) $(GEN) $(BUILDDIR)/timing.o
 #  	pretty-print
 	@echo + ld $^
 
 	$(CC) $^ -o $@
+
+$(LIB1_T): $(SRCDIR)/lib_bt.c $(SRCDIR)/lib_bt.h
+#  	pretty-print
+	@echo + CC $^
+
+	$(CC) -c -DTIMING $< -o $@
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(SRCDIR)/%.h
 #  	pretty-print

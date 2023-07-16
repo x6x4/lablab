@@ -5,7 +5,7 @@
 preproc() 
 {
     ./timing.bin > build/test 
-    EPOCHS=20
+    EPOCHS=50
 }
 
 ############################################

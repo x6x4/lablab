@@ -206,7 +206,7 @@ void colored_print_node (BNodePtr root, Key key) {
 
 /*  
     returns NULL if key not found; 
-    the node and the position of the key in it otherwise
+    the node and position of key in it otherwise
 */
 BNodePtr find_bt (BNodePtr root, Key key, size_t *pos) {
     
@@ -370,7 +370,7 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
         /*  emptied leaf  */
 
         size_t v3_chld = NO_3VERTEX;
-        v3_chld = get_v3_num (par);
+        v3_chld = get_v3_num_left (par);
 
         if (NO_3VERTEX == v3_chld && par->csize < 2)
             //  1 node in parent and all children
@@ -458,9 +458,18 @@ void clear_par_and_leaf_ (BNodePtr par, size_t victim_num) {
     free_vertex (&(par->child[victim_num]));
 }
 
-size_t get_v3_num (BNodePtr par) {
+size_t get_v3_num_left (BNodePtr par) {
 
     for (size_t i = 0; i < par->csize + 1; i++) {
+        if (par->child[i]->csize == 2)
+            return i;
+    }
+    return NO_3VERTEX;
+}
+
+size_t get_v3_num_right (BNodePtr par) {
+
+    for (size_t i = par->csize; i >= 0; i--) {
         if (par->child[i]->csize == 2)
             return i;
     }
@@ -475,7 +484,7 @@ BNodePtr redistribute (BNodePtr leaf) {
         return leaf;
 
     size_t leaf_num = set_leaf_num (par, leaf);
-    size_t vertex3_num = get_v3_num (par);
+    size_t vertex3_num = get_v3_num_left (par);
 
     if (par->csize == 2 && NO_3VERTEX == vertex3_num) {
         lshift_par_children (leaf_num, par);
@@ -504,21 +513,35 @@ BNodePtr redistribute (BNodePtr leaf) {
                 rotate_left (1, 0, par);  
                 rotate_left (2, 1, par);
             }
+            else
+                assert (0 && "WRONG LEAF NUM"); 
         }
         else if (leaf_num == 1) {
             if (vertex3_num == 2) 
                 rotate_left (2, 1, par);
             else if (vertex3_num == 0) 
-                rotate_right (0, 1, par);  
+                rotate_right (0, 1, par); 
+            else
+                assert (0 && "WRONG LEAF NUM"); 
         }
         else if (leaf_num == 2) {
+            /*  
+                2 right rotates in case of child_0 3-vertex 
+                entail child_1 to be 2-vertex, 
+                so if we seek for 3-vertex,
+                we must start from rightmost child
+            */
+            vertex3_num = get_v3_num_right (par);
+
             if (vertex3_num == 1) 
                 rotate_right (1, 2, par);
-            else if (vertex3_num == 2) {
+            else if (vertex3_num == 0) {
                 rotate_right (1, 2, par);
                 par->child[1]->child[1] = par->child[1]->child[0];
                 rotate_right (0, 1, par);
             } 
+            else
+                assert (0 && "WRONG LEAF NUM"); 
         }
     }   
        

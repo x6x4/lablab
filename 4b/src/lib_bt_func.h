@@ -60,7 +60,8 @@ int delete_list_node (size_t ver, BNodePtr victim, size_t key_pos);
 int delete_bt (BNodePtr *root, Key key, size_t ver);
 void fix_after_del (BNodePtr *root, BNodePtr node);
 
-size_t get_v3_num (BNodePtr par);
+size_t get_v3_num_left (BNodePtr par);
+size_t get_v3_num_right (BNodePtr par);
 
 /*  redistribute  */
 BNodePtr redistribute (BNodePtr leaf);

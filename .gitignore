@@ -1,8 +1,8 @@
 *.vscode
 *.o
 *.bin
-4a/build
-4b/build
-5/build
+*build
+*build
+*build
 vgcore.*
 core
