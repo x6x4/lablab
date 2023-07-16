@@ -107,14 +107,17 @@ void construct_root_after_split (BNodePtr root, InfoListPtr root_info, BNodePtr 
  * @param node  [IN] - tree to check.
  * @return char* - text of error. NULL if ok;
  */
-const char* is_valid_node(const BNodePtr node);
+const char* is_valid_node(const BNodePtr node, BNodePtr* mist);
 
 #define VALIDATE_TREE(node)                                                         \
 do {                                                                                \
-    const char* _err = is_valid_node(node);                                         \
+    BNodePtr mist = NULL;                                                           \
+    const char* _err = is_valid_node(node, &mist);                                  \
     if(_err) {                                                                      \
         fprintf(stderr, "Tree(%p) is INVALID: %s.\n", node, _err);                  \
         fprintf(stderr, "%s:%d %s\n ", __FILE__, __LINE__, __PRETTY_FUNCTION__);    \
+        /* ((int*)0)[0]++;*/                                                        \
+        graph_dump (node, "ERROR");                                                 \
         abort();                                                                    \
     }                                                                               \
 } while(0)

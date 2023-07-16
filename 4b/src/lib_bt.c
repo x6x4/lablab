@@ -136,6 +136,7 @@ BNodePtr new_vertex (InfoListPtr info) {
 
 BNodePtr new_bt_node (InfoListPtr info, BNodePtr children[4], BNodePtr par) {
     BNodePtr node = calloc (1, sizeof *node);
+    // fprintf(stderr, "new node[%p]\n", node);
     assert (node);
 
     node->csize = 1;
@@ -150,6 +151,7 @@ BNodePtr new_bt_node (InfoListPtr info, BNodePtr children[4], BNodePtr par) {
 InfoListPtr new_infolist (Key key) {
     InfoListPtr info = calloc (1, sizeof *info);
     assert (info);
+    // fprintf(stderr, "new:%p\n", info);
 
     info->key = strdup (key);
     assert (info->key);
@@ -183,13 +185,13 @@ void free_vertex (BNodePtr *node) {
 void free_infolist (InfoListPtr *info) {
     if (!(*info))
         return;
-    
+        
     puts ((*info)->key);
 
     free_nullify ((*info)->key);
     free_ll (&((*info)->head));
+    // fprintf (stderr, "free: %p\n", *info);
     free_nullify (*info);
-    printf ("ptr: %p\n", *info);
     return;
 }
 
@@ -203,7 +205,7 @@ int shift_infolists_and_change_sz (BNodePtr node, Key key) {
         return ERRWRG;
 
     for (size_t i = 0; i < node->csize; i++) {
-        if (node->info[i] == NULL /* EQ(node->info[i]->key, key)*/ ) {
+        if (node->info[i] == NULL || EQ(node->info[i]->key, key)) {
             /*  Left shift.  */
             for (size_t j = i; j < node->csize - 1; j++) 
                 node->info[j] = node->info[j+1];
@@ -324,21 +326,26 @@ static const char* is_valid_info(const InfoListPtr info) {
     return NULL;
 }
 
-const char* is_valid_node(const BNodePtr node) {
+const char* is_valid_node(const BNodePtr node, BNodePtr* mist) {
     if(node == NULL) 
         return NULL;
 
-    if(node->csize > KEYS_NUM) 
-        return "TOO big csize";
+    if(node->csize > KEYS_NUM) {
+        return (mist ? *mist=node : node), "TOO big csize";
+    }
+
+    if(node->csize == 0) {
+        return (mist ? *mist=node : node), "EMPTY NODE";
+    }
 
     for(size_t i = 0; i < node->csize; ++i) {
-        if(node->info[i] == NULL) return "BAD CHILD";
+        if(node->info[i] == NULL) return (mist ? *mist=node : node),"BAD CHILD";
 
         const char* err = is_valid_info(node->info[i]);
-        if(err) return err;
+        if(err) return (mist ? *mist=node : node), err;
 
         if(i != 0 && !LT(node->info[i-1]->key, node->info[i]->key)) {
-            return "KEYS UNSORTED";
+            return (mist ? *mist=node : node), "KEYS UNSORTED";
         }
 
     }
@@ -355,37 +362,30 @@ const char* is_valid_node(const BNodePtr node) {
         for(size_t i = 0; i < node->csize+1; ++i) {
             if(node->child[i] == NULL) return "Missing child in not leaf node";
 
-            const char* err = is_valid_node(node->child[i]);
+            const char* err = is_valid_node(node->child[i], mist);
             if(err) return err;
 
             if(node->child[i]->par != node) return "Bad parent link";
 
             if(i != 0) {
-                for(size_t j = 0; j < KEYS_NUM; ++j) {
+                for(size_t j = 0; j < node->child[i]->csize; ++j) {
                     if(node->child[i]->info[j] &&
                         !LT(node->info[i-1]->key, node->child[i]->info[j]->key)) {
-                            return "Bad child order: child key less than parent";
+                            return (mist ? *mist=node : node), "Bad child order: child key less than parent";
                         }
                 }
             }
 
             if(i != node->csize) {
-                for(size_t j = 0; j < KEYS_NUM; ++j) {
+                for(size_t j = 0; j < node->child[i]->csize; ++j) {
                     if(node->child[i]->info[j] &&
                         !GT(node->info[i]->key, node->child[i]->info[j]->key)) {
-                            return "Bad child order: child key greater than parent";
+                            return (mist ? *mist=node : node), "Bad child order: child key greater than parent";
                         }
                 }
             }
         }
     }
-
-    for(size_t i = node->csize+1; i < CHILD_NUM; ++i) {
-        if(node->child[i] != NULL) {
-            return "Chid is NOT NULL; Too MANY children";
-        }
-    }
-
 
     return NULL;
 }

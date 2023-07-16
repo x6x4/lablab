@@ -167,7 +167,7 @@ void set_height (BNodePtr root) {
 
 void colored_print_bt_lvl (BNodePtr root, size_t height, char *key) {
     static size_t no_children = 0;
-
+    
     /*  Print null child if there are brothers.  */
     if (!root) {
         if (!no_children)
@@ -226,6 +226,10 @@ BNodePtr find_bt (BNodePtr root, Key key, size_t *pos) {
     if (find_in_vertex (root, key, pos) == ERRSUC) 
         return root;
 
+    if(is_leaf(root)) {
+        return NULL;
+    }
+
     int for_descent = chld_for_descent (root, key);
     return find_bt (root->child[for_descent], key, pos);
 }
@@ -248,6 +252,7 @@ int chld_for_descent (BNodePtr root, Key key) {
     if (root->csize == 2)
         return 2;
 
+    // graph_dump(root, "bad descent");
     assert (0 && "BAD CHILD FOR DESCENT");
     return -1;
 }
@@ -277,8 +282,9 @@ BNodePtr find_min_node (BNodePtr root) {
 
 /*  deletion is always performed from the leaf  */
 int delete_bt (BNodePtr *root, Key key, size_t ver) {
-
+    // fprintf(stderr, "Deleting %s:%zu\n", key, ver);
     VALIDATE_TREE (*root);
+    graph_dump(*root, "before del");
 
     /*  Deletion from infolist.  */
 
@@ -289,6 +295,7 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
         return ERRWRG;
 
     int status = delete_list_node (ver, victim, key_pos);
+    // graph_dump(*root, "after list del");
 
     if (status != ERRCONT)
         return status;
@@ -310,24 +317,26 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
         swap (exchange_key, key_place);
         victim = exchange_leaf;
     }
-
+    graph_dump(*root, "after exchange");
     /*  delete key in leaf  */
     if (exchange_key) {
         free_infolist (exchange_key);
-        //printf ("ptr:%p\n", exchange_key);
+        // printf ("ptr:%p\n", exchange_key);
     }
     else {
-        //printf ("keyptr: %p\n", victim->info[key_pos]);
         free_infolist (key_place);
         ///printf ("keyptr: %p\n", victim);
     }
 
-
     /*  fill in the freed node cell.  */
     shift_infolists_and_change_sz (victim, key);
 
+    graph_dump(*root, "after shift");
+
     /*  fix bt  */
     fix_after_del (root, victim);
+
+    // graph_dump(*root, "after fixup");
 
     VALIDATE_TREE (*root);
 
@@ -381,7 +390,7 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
             leaf = merge (root, leaf);
         else 
             leaf = redistribute (leaf);
-        
+        graph_dump(*root, "Fixuped");
         /*  recursion  */
         fix_after_del (root, leaf);
     }
@@ -389,6 +398,7 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
 
 /*  merge - par of size 1 has two chidren of size 1  */
 BNodePtr merge (BNodePtr *root, BNodePtr leaf) {
+    graph_dump(*root, "merge");
     BNodePtr par = leaf->par;
     if (!par)
         return NULL;
@@ -401,14 +411,17 @@ BNodePtr merge (BNodePtr *root, BNodePtr leaf) {
         victim_num = 1;
 
     move_par_key_to_nonnull_chld (victim_num, par);
-    
+    graph_dump(*root, "After move");
     /*  
         there are always 3 of them
         because "leaf" can't have more than 1 child
         (due to ascending manner of deletion)
     */
     assign_grandchildren_to_nonnull_chld (victim_num, par, leaf);
+    graph_dump(*root, "After assign");
+    graph_dump(leaf, "After assign leaf");
     clear_par_and_leaf_ (par, victim_num);
+    graph_dump(*root, "After clear");
     
     if (par == *root) {
         //  make new root
@@ -470,11 +483,20 @@ size_t get_v3_num (BNodePtr par) {
     }
     return NO_3VERTEX;
 }
+static
+size_t get_v3_num_r (BNodePtr par) {
+
+    for (size_t i = par->csize; i < CHILD_NUM ; i--) {
+        if (par->child[i]->csize == 2)
+            return i;
+    }
+    return NO_3VERTEX;
+}
 
 /*  redistribute  */
 BNodePtr redistribute (BNodePtr leaf) {
-
     BNodePtr par = leaf->par;
+    graph_dump(par, "redistribute");
     if (!par)
         return leaf;
 
@@ -499,7 +521,8 @@ BNodePtr redistribute (BNodePtr leaf) {
     } 
 
     else if (par->csize == 2) {
-        
+        // graph_dump(par, "case 2");
+        // fprintf(stderr, "vertex3_num: %zu, leaf_num:%zu\n", vertex3_num, leaf_num);
         if (leaf_num == 0) {
             //  leaf can't be 3-vertex, because it's empty
             if (vertex3_num == 1) 
@@ -508,21 +531,31 @@ BNodePtr redistribute (BNodePtr leaf) {
                 rotate_left (1, 0, par);  
                 rotate_left (2, 1, par);
             }
+            else assert(0);
         }
         else if (leaf_num == 1) {
             if (vertex3_num == 2) 
                 rotate_left (2, 1, par);
             else if (vertex3_num == 0) 
                 rotate_right (0, 1, par);  
+            else assert(0);
         }
         else if (leaf_num == 2) {
-            if (vertex3_num == 1) 
+            vertex3_num = get_v3_num_r(par);
+            if (vertex3_num == 1) {
                 rotate_right (1, 2, par);
-            else if (vertex3_num == 2) {
+                graph_dump(par, "after rotate 1");
+            }
+            else if (vertex3_num == 0) {
                 rotate_right (1, 2, par);
+                graph_dump(par, "after rotate 1");
                 par->child[1]->child[1] = par->child[1]->child[0];
+                graph_dump(par, "after assign");
                 rotate_right (0, 1, par);
+                graph_dump(par, "after rotate 2");
             } 
+            else assert(0);
+
         }
     }   
        
@@ -677,6 +710,7 @@ void rotate_left (size_t src, size_t dest, BNodePtr par) {
     par->info[src - 1] = par->child[src]->info[0];
     if (par->child[src] && par->child[src]->info[0])
         shift_infolists_and_change_sz (par->child[src], par->child[src]->info[0]->key);
+    // // graph_dump(par, "After shift");
 
     /*  left shift source node children  */
     par->child[dest]->child[1] = par->child[src]->child[0];
@@ -723,5 +757,60 @@ void free_bt (BNodePtr *root) {
     free_vertex (root);
 }
 
+static size_t n_dumps = 0;
+void graph_dump(BNodePtr node, const char* name) {
+    return; 
+    FILE* file = fopen("build/dump.dot", "w");
+    assert(file);
+
+    fprintf(file, 
+    "digraph dump {\n"
+    "\"%s\"\n"
+    "node [shape=record];\n",
+    name
+    );
+
+    graph_dump_node(node, file);
+    
+    fprintf(file, "}\n");
+    fclose(file);
 
 
+    char command[255] = "";
+    sprintf(command, "dot build/dump.dot -T png -o dump/%zu.png", n_dumps++);
+    if(system(command))
+        abort();
+}
+
+void graph_dump_node(BNodePtr node, FILE* file) {
+    if(!node) {
+        fprintf(file, "NULL\n");
+        return;
+    }
+
+    fprintf(file, "N%p [label=\"{%p | {", node, node);
+    for(size_t i = 0; i < node->csize; ++i) {
+        fprintf(file, "%s[%lx] %c", node->info[i] ? node->info[i]->key : NULL, ((size_t)node->info[i]) & 0xFFF, (i == node->csize -1) ? '}' : '|');
+    }
+
+    if(!node->csize) {
+        fprintf(file, "empty}");
+    }
+
+    if(!is_leaf(node)) {
+        fprintf(file, "| {");
+        for(size_t i = 0; i <= node->csize; ++i) {
+            fprintf(file, "<c%zu>[%lx]%c", i, ((size_t)node->child[i]) & 0xFFF, (i == node->csize) ? '}' : '|');
+        }
+    }
+    fprintf(file, "}\"];\n");
+
+    if(!is_leaf(node)) {
+        for(size_t i = 0; i <= node->csize; ++i) {
+            if(node->child[i]) {
+                graph_dump_node(node->child[i], file);
+                fprintf(file, "N%p:<c%zu> -> N%p\n", node, i, node->child[i]);
+            }
+        }
+    }
+}

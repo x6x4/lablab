@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <limits.h>
+#include <stdio.h>
 #include <string.h>
 
 
@@ -83,5 +84,7 @@ void traverse_bt (BNodePtr root);
 /*  Destructors  */
 void free_bt (BNodePtr *root);
 
+void graph_dump(BNodePtr node, const char* name);
 
+void graph_dump_node(BNodePtr node, FILE* file);
 
