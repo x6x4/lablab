@@ -14,11 +14,15 @@
 
 /*  Insertion  */ 
 
-/*  
-    insert in list if duplicate key;
-    calls insert_to_tree otherwise 
-*/
-int insert_bt (BNodePtr *root, Key key, Val val);
+
+/**
+ * @brief Insert key-val pair to tree.
+ * 
+ * @param root [IN/OUT] - tree for insertion.
+ * @param key  [IN] - key to insert.
+ * @param val  [IN] - value to insert.
+ */
+void insert_bt (BNodePtr *root, Key key, Val val);
 
 /*  insertion is always performed to the leaf  */
 void insert_to_tree (BNodePtr *root, BNodePtr cnode, InfoListPtr info);

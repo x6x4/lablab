@@ -76,6 +76,7 @@ void free_ll (InfoPtr *head);
 BNodePtr new_vertex (InfoListPtr info);
 BNodePtr new_bt_node (InfoListPtr info, BNodePtr children[4], BNodePtr par);
 InfoListPtr new_infolist (Key key);
+void new_root_from_fields (BNodePtr root, InfoListPtr root_info, BNodePtr left, BNodePtr right);
 
 /*  Destructors  */
 void free_vertex (BNodePtr *node);
@@ -96,10 +97,22 @@ void insert_to_vertex (BNodePtr node, InfoListPtr info);
 /*  Deletion  */
 int shift_infolists_and_change_sz (BNodePtr node, Key key);
 
-/*  Other  */
-void construct_root_after_split (BNodePtr root, InfoListPtr root_info, BNodePtr left, BNodePtr right);
-
+/*  Validation.  */
 #define is_leaf(node) (!(node->child[0]))
+
+#define try(check)                  \
+do {                                \
+    const char* err = check;        \
+    if (err) return err;            \
+} while(0)    
+
+/**
+ * @brief Check validity of infolist.
+ * 
+ * @param info  [IN] - infolist to check.
+ * @return char* - text of error. NULL if ok;
+ */
+static const char* is_valid_info(const InfoListPtr info);
 
 /**
  * @brief Check validity of tree.
@@ -108,6 +121,8 @@ void construct_root_after_split (BNodePtr root, InfoListPtr root_info, BNodePtr 
  * @return char* - text of error. NULL if ok;
  */
 const char* is_valid_node(const BNodePtr node);
+const char* check_node_infos (BNodePtr node);
+const char* check_node_children (BNodePtr node);
 
 #define VALIDATE_TREE(node)                                                         \
 do {                                                                                \
@@ -118,3 +133,5 @@ do {                                                                            
         abort();                                                                    \
     }                                                                               \
 } while(0)
+
+const char* check_sz (BNodePtr node);

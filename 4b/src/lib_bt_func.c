@@ -14,33 +14,23 @@
 
 /*  Insertion  */ 
 
-/*  
-    insert in list if duplicate key;
-    calls insert_to_tree otherwise 
-*/
-int insert_bt (BNodePtr *root, Key key, Val val) {
-
-    VALIDATE_TREE (*root);
+void insert_bt (BNodePtr *root, Key key, Val val) {
 
     size_t pos = 0;
     BNodePtr node = find_bt (*root, key, &pos);
-
     InfoListPtr info = !node ? NULL : node->info[pos];
 
     branch_ext (&info, key, val);
-
     info->csize++;
     
-    /*  branch ext  */
+    /*  branch ext case  */
     if (node)
-        return ERRSUC;
+        return;
 
-    /*  standard insertion  */
+    /*  standard insertion case  */
     insert_to_tree (root, *root, info);
-    
-    VALIDATE_TREE (*root);
 
-    return ERRSUC;
+    return;
 }
 
 /*  insertion is always performed to the leaf  */
@@ -88,7 +78,7 @@ void split_node (BNodePtr *root, BNodePtr node) {
     if (node == *root) {
         left->par = *root;
         right->par = *root;
-        construct_root_after_split (*root, (*root)->info[1], left, right);
+        new_root_from_fields (*root, (*root)->info[1], left, right);
         return;
     }
 
@@ -188,11 +178,13 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, char *key) {
     colored_print_node (root, key);
 
     /*  Print all the children.  */
-    for (size_t i = 0; i < CHILD_NUM - 1; i++) {
+    for (size_t i = 0; i < root->csize + 1; i++) {
         no_children = 1;
-        for (size_t j = 0; j < CHILD_NUM - 1; j++) {
-            if (root->child[j])
+        for (size_t j = 0; j < root->csize + 1; j++) {
+            if (root->child[j]) {
                 no_children = 0;
+                break;
+            }
         }
         colored_print_bt_lvl (root->child[i], height, key);
     }
@@ -226,8 +218,16 @@ BNodePtr find_bt (BNodePtr root, Key key, size_t *pos) {
     if (find_in_vertex (root, key, pos) == ERRSUC) 
         return root;
 
+    if (is_leaf (root)) 
+        return NULL;
+
     int for_descent = chld_for_descent (root, key);
-    return find_bt (root->child[for_descent], key, pos);
+    
+    if (for_descent == -1)
+        //  maybe garbage leaf or something
+        return NULL;
+    else
+        return find_bt (root->child[for_descent], key, pos);
 }
 
 int chld_for_descent (BNodePtr root, Key key) {
@@ -248,7 +248,6 @@ int chld_for_descent (BNodePtr root, Key key) {
     if (root->csize == 2)
         return 2;
 
-    assert (0 && "BAD CHILD FOR DESCENT");
     return -1;
 }
 
@@ -279,6 +278,9 @@ BNodePtr find_min_node (BNodePtr root) {
 int delete_bt (BNodePtr *root, Key key, size_t ver) {
 
     VALIDATE_TREE (*root);
+
+    //printf ("\n\n");
+    //colored_print_bt (*root, key);
 
     /*  Deletion from infolist.  */
 
@@ -312,16 +314,10 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
     }
 
     /*  delete key in leaf  */
-    if (exchange_key) {
+    if (exchange_key) 
         free_infolist (exchange_key);
-        //printf ("ptr:%p\n", exchange_key);
-    }
-    else {
-        //printf ("keyptr: %p\n", victim->info[key_pos]);
+    else 
         free_infolist (key_place);
-        ///printf ("keyptr: %p\n", victim);
-    }
-
 
     /*  fill in the freed node cell.  */
     shift_infolists_and_change_sz (victim, key);

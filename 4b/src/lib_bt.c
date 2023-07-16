@@ -102,6 +102,9 @@ int delete_from_ll (InfoPtr *head, size_t ver) {
 
 void free_ll (InfoPtr *head) {
 
+    if (!(*head))
+        return;
+
     InfoPtr *node = head;
     InfoPtr next = *node;
 
@@ -160,6 +163,22 @@ InfoListPtr new_infolist (Key key) {
     return info;
 }
 
+void new_root_from_fields (BNodePtr root, InfoListPtr root_info, BNodePtr left, BNodePtr right) {
+    assert (root);
+    assert (root_info);
+    assert (left);
+    assert (right);
+    
+    root->info[0] = root_info;
+
+    root->child[0] = left;
+    root->child[1] = right;
+
+    root->child[2] = root->child[3] = root->par = NULL;
+    
+    root->csize = 1;
+}
+
 
 /*  INSERTION  */ 
 void insert_to_vertex (BNodePtr node, InfoListPtr info) {
@@ -181,15 +200,12 @@ void free_vertex (BNodePtr *node) {
 }
 
 void free_infolist (InfoListPtr *info) {
-    if (!(*info))
+    if ((!info) || !(*info))
         return;
-    
-    puts ((*info)->key);
 
     free_nullify ((*info)->key);
     free_ll (&((*info)->head));
     free_nullify (*info);
-    printf ("ptr: %p\n", *info);
     return;
 }
 
@@ -203,7 +219,8 @@ int shift_infolists_and_change_sz (BNodePtr node, Key key) {
         return ERRWRG;
 
     for (size_t i = 0; i < node->csize; i++) {
-        if (node->info[i] == NULL /* EQ(node->info[i]->key, key)*/ ) {
+        //  we need key when we move infos without cleanup
+        if (node->info[i] == NULL || EQ(node->info[i]->key, key) ) {
             /*  Left shift.  */
             for (size_t j = i; j < node->csize - 1; j++) 
                 node->info[j] = node->info[j+1];
@@ -295,97 +312,94 @@ void sort_node (BNodePtr node) {
 }
 
 
-/*  OTHER  */
-void construct_root_after_split (BNodePtr root, InfoListPtr root_info, BNodePtr left, BNodePtr right) {
-    assert (root);
-    assert (root_info);
-    assert (left);
-    assert (right);
-    
-    root->info[0] = root_info;
+/*========================= < VALIDATOR > =========================*/
 
-    root->child[0] = left;
-    root->child[1] = right;
 
-    root->child[2] = root->child[3] = root->par = NULL;
-    
-    root->csize = 1;
-}
+const char* is_valid_node(const BNodePtr node) {
+    /*  no node  */
+    if (node == NULL) 
+        return NULL;
 
-static const char* is_valid_info(const InfoListPtr info) {
-    if(info == NULL) {
-        return "Info is NULL";
-    }
-
-    if(info->key == NULL) {
-        return "EMPTY KEY";
-    }
+    try (check_sz (node));
+    try (check_node_infos (node));
+    try (check_node_children(node));
 
     return NULL;
 }
 
-const char* is_valid_node(const BNodePtr node) {
-    if(node == NULL) 
+
+static const char* is_valid_info(const InfoListPtr info) {
+    /*  check info  */
+    if (info == NULL) 
+        return "Info is NULL";
+
+    /*  check key  */
+    else if (info->key == NULL) 
+        return "EMPTY KEY";
+
+    /*  all is ok  */
+    else 
         return NULL;
+}
 
-    if(node->csize > KEYS_NUM) 
+const char* check_sz (BNodePtr node) {
+    if (node->csize > KEYS_NUM) 
         return "TOO big csize";
+    else
+        return NULL;
+}
 
+const char* check_node_infos (BNodePtr node) {
     for(size_t i = 0; i < node->csize; ++i) {
-        if(node->info[i] == NULL) return "BAD CHILD";
+        /*  check info  */
+        try (is_valid_info(node->info[i]));
 
-        const char* err = is_valid_info(node->info[i]);
-        if(err) return err;
-
-        if(i != 0 && !LT(node->info[i-1]->key, node->info[i]->key)) {
-            return "KEYS UNSORTED";
-        }
-
+        /*  check key order  */
+        if (i != 0 && GT(node->info[i-1]->key, node->info[i]->key)) 
+            return "BAD KEYS ORDER";
     }
+    return NULL;
+}
 
-    /*for(size_t i = node->csize; i < KEYS_NUM; ++i) {
-        if(node->info[i] != NULL) {
-            return "INFO is NOT NULL; Too MANY infos";
-        }
-    }*/
-
+const char* check_node_children (BNodePtr node) {
     Bool is_leaf = is_leaf(node);
 
-    if(!is_leaf) {
+    if (!is_leaf) {
+
         for(size_t i = 0; i < node->csize+1; ++i) {
-            if(node->child[i] == NULL) return "Missing child in not leaf node";
 
-            const char* err = is_valid_node(node->child[i]);
-            if(err) return err;
+            /*  check children  */
+            if (node->child[i] == NULL) 
+                return "Missing child in non-leaf node";
 
-            if(node->child[i]->par != node) return "Bad parent link";
+            /*  recursion  */
+            try (is_valid_node(node->child[i]));
 
-            if(i != 0) {
-                for(size_t j = 0; j < KEYS_NUM; ++j) {
-                    if(node->child[i]->info[j] &&
-                        !LT(node->info[i-1]->key, node->child[i]->info[j]->key)) {
+            /*  check parent link  */
+            if (node->child[i]->par != node) 
+                return "Bad parent link";
+
+            /*  check child order  */
+
+            if (i != 0) {
+                for(size_t j = 0; j < node->child[i]->csize; ++j) {
+                    if (node->child[i]->info[j] &&
+                        GT(node->info[i-1]->key, node->child[i]->info[j]->key)) {
                             return "Bad child order: child key less than parent";
                         }
                 }
             }
 
-            if(i != node->csize) {
-                for(size_t j = 0; j < KEYS_NUM; ++j) {
-                    if(node->child[i]->info[j] &&
-                        !GT(node->info[i]->key, node->child[i]->info[j]->key)) {
+            if (i != node->csize) {
+                for (size_t j = 0; j < node->child[i]->csize; ++j) {
+                    if (node->child[i]->info[j] &&
+                        LT(node->info[i]->key, node->child[i]->info[j]->key)) {
                             return "Bad child order: child key greater than parent";
                         }
                 }
             }
         }
-    }
-
-    for(size_t i = node->csize+1; i < CHILD_NUM; ++i) {
-        if(node->child[i] != NULL) {
-            return "Chid is NOT NULL; Too MANY children";
-        }
-    }
-
-
+    } 
+ 
     return NULL;
 }

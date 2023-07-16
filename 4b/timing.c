@@ -7,13 +7,18 @@ int main () {
     timing_tree ();
 }
 
+#define ASCII ((rand())%26 + 97)
+
 int timing_tree ()
 {
     BNodePtr test_root = NULL;
     
     char test_keys[BUNCH_SZ][2] = {};
     
-    srand(1);
+    unsigned int seed = time(NULL);
+    seed = 16895094501;
+    srand (seed);
+    printf ("seed: %u", seed);
     
     for (int epochs_num = 0; epochs_num < EPOCHS_NUM; epochs_num++) {
         for (int bunch_num = 1; bunch_num <= EPOCHS_NUM; bunch_num++) {
@@ -22,18 +27,16 @@ int timing_tree ()
 
             /*  Fill test array.  */
             for (int i = 0; i < BUNCH_SZ; ++i) {
-                int rand_int = rand()%93 + 33;
+                int rand_int = ASCII;
                 test_keys[i][0] = (char) rand_int;
                 test_keys[i][1] = '\0';
             }
 
             /*  Fill test root  */
-            for (int i = 0; i < num_of_keys; ) {
-                int rand_int = rand()%255 + 1;
+            for (int i = 0; i < num_of_keys; i++) {
+                int rand_int = ASCII;
                 char rand_key [2] = {(char) rand_int};
-                /*  ensure that the actual number of keys is incremented  */
-                if (insert_bt (&test_root, rand_key, rand_key) == ERRSUC)
-                    ++i;
+                insert_bt (&test_root, rand_key, rand_key);
             }
 
             timing_search (test_root, test_keys, bunch_num);
@@ -58,7 +61,7 @@ void timing_search (BNodePtr test_root, char test_keys[BUNCH_SZ][2], int bunch_n
 
     last = clock();
 
-    printf("%d nodes_num %d time %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
+    printf("%d nodes_num: %d time: %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
 }
 
 void timing_insertion (BNodePtr *test_root, char test_keys[BUNCH_SZ][2], int bunch_num) {
@@ -70,7 +73,7 @@ void timing_insertion (BNodePtr *test_root, char test_keys[BUNCH_SZ][2], int bun
 
     last = clock();
 
-    printf("%d nodes_num %d time %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
+    printf("%d nodes_num: %d time: %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
 }
 
 void timing_deletion (BNodePtr *test_root, char test_keys[BUNCH_SZ][2], int bunch_num) {
@@ -82,7 +85,7 @@ void timing_deletion (BNodePtr *test_root, char test_keys[BUNCH_SZ][2], int bunc
 
     last = clock();
 
-    printf("%d nodes_num %d time %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
+    printf("%d nodes_num: %d time: %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
 }
 
 void timing_traversal (BNodePtr test_root, int bunch_num) {
@@ -94,7 +97,7 @@ void timing_traversal (BNodePtr test_root, int bunch_num) {
 
     last = clock();
 
-    printf("%d nodes_num %d time %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
+    printf("%d nodes_num: %d time: %ld\n", bunch_num, bunch_num*BUNCH_SZ, last - first);
 }
 
 void silent_traverse_bt (BNodePtr root) {

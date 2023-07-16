@@ -63,16 +63,8 @@ int insert_tree (BNodePtr *root, FILE *file) {
     if (!val)
         return ERREOF;   
 
-    switch (insert_bt (root, key, val)) {
-        case ERRSUC:
-            printf ("\nItem inserted successfully.\n");
-            break;
-        case ERRDUP:
-            printf ("Duplicate key/value.\n");
-            break;
-        default:
-            printf (RED("Unknown error."));
-    }
+    insert_bt (root, key, val);
+    printf ("\nItem inserted successfully.\n");
 
     free_nullify (key);
     free_nullify (val);
