@@ -7,7 +7,7 @@ int main () {
     timing_tree ();
 }
 
-#define ASCII ((rand())%26 + 97)
+#define ASCII ((rand())%26 + 'a')
 
 int timing_tree ()
 {
@@ -17,7 +17,6 @@ int timing_tree ()
     
     unsigned long seed = time(NULL);
     srand (seed);
-    //printf ("seed: %u", seed);
     
     for (int epochs_num = 0; epochs_num < EPOCHS_NUM; epochs_num++) {
         for (int bunch_num = 1; bunch_num <= EPOCHS_NUM; bunch_num++) {

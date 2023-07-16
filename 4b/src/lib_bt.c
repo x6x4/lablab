@@ -6,7 +6,9 @@
 #include <string.h>
 
 
-/*  LIST  */
+
+/*||||||||||||||||||||||||| < LIST > |||||||||||||||||||||||||*/
+
 
 void branch_ext (InfoListPtr *info, Key key, Val val) {
 
@@ -119,9 +121,12 @@ void free_ll (InfoPtr *head) {
 }
 
 
-/*  NODE  */
 
-/*  CONSTRUCTORS  */
+/*||||||||||||||||||||||||| < NODE > |||||||||||||||||||||||||*/
+
+
+/*========================= < CONSTRUCTORS > =========================*/
+
 
 BNodePtr new_vertex (InfoListPtr info) {
     BNodePtr node = calloc (1, sizeof *node);
@@ -180,7 +185,9 @@ void new_root_from_fields (BNodePtr root, InfoListPtr root_info, BNodePtr left, 
 }
 
 
-/*  INSERTION  */ 
+/*========================= < INSERTION > =========================*/
+
+
 void insert_to_vertex (BNodePtr node, InfoListPtr info) {
     assert (node);
     assert (node->csize < KEYS_NUM);
@@ -190,7 +197,8 @@ void insert_to_vertex (BNodePtr node, InfoListPtr info) {
 }
 
 
-/*  DESTRUCTORS  */
+/*========================= < DESTRUCTORS > =========================*/
+
 
 void free_vertex (BNodePtr *node) {
     for (size_t i = 0; i < (*node)->csize; i++) {
@@ -210,7 +218,9 @@ void free_infolist (InfoListPtr *info) {
 }
 
 
-/*  DELETION  */
+/*========================= < DELETION > =========================*/
+
+
 int shift_infolists_and_change_sz (BNodePtr node, Key key) {
     assert (node);
     assert (key);
@@ -219,8 +229,10 @@ int shift_infolists_and_change_sz (BNodePtr node, Key key) {
         return ERRWRG;
 
     for (size_t i = 0; i < node->csize; i++) {
+
         //  we need key when we move infos without cleanup
         if (node->info[i] == NULL || EQ(node->info[i]->key, key) ) {
+            
             /*  Left shift.  */
             for (size_t j = i; j < node->csize - 1; j++) 
                 node->info[j] = node->info[j+1];
@@ -233,7 +245,9 @@ int shift_infolists_and_change_sz (BNodePtr node, Key key) {
     return ERRWRG;
 }
 
-/*  SEARCH  */
+
+/*========================= < SEARCH > =========================*/
+
 
 int find_in_vertex (BNodePtr node, char *key, size_t *pos) {
 
@@ -256,7 +270,8 @@ int find_in_vertex (BNodePtr node, char *key, size_t *pos) {
 }
 
 
-/*  REORDER  */
+/*========================= < REORDER > =========================*/
+
 
 void swap (InfoListPtr *a, InfoListPtr *b) {
     assert (a);
@@ -312,7 +327,8 @@ void sort_node (BNodePtr node) {
 }
 
 
-/*========================= < VALIDATOR > =========================*/
+
+/*||||||||||||||||||||||||| < VALIDATION > |||||||||||||||||||||||||*/
 
 
 const char* is_valid_node(const BNodePtr node) {
