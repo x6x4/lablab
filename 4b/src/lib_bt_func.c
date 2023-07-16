@@ -471,6 +471,16 @@ size_t get_v3_num (BNodePtr par) {
     return NO_3VERTEX;
 }
 
+static
+size_t get_v3_num_r (BNodePtr par) {
+
+    for (size_t i = par->csize; i < CHILD_NUM ; i--) {
+        if (par->child[i]->csize == 2)
+            return i;
+    }
+    return NO_3VERTEX;
+}
+
 /*  redistribute  */
 BNodePtr redistribute (BNodePtr leaf) {
 
@@ -508,21 +518,24 @@ BNodePtr redistribute (BNodePtr leaf) {
                 rotate_left (1, 0, par);  
                 rotate_left (2, 1, par);
             }
+            else assert(0);
         }
         else if (leaf_num == 1) {
             if (vertex3_num == 2) 
                 rotate_left (2, 1, par);
             else if (vertex3_num == 0) 
                 rotate_right (0, 1, par);  
+            else assert(0);
         }
         else if (leaf_num == 2) {
+            vertex3_num = get_v3_num_r(par);
             if (vertex3_num == 1) 
                 rotate_right (1, 2, par);
-            else if (vertex3_num == 2) {
+            else if (vertex3_num == 0) {
                 rotate_right (1, 2, par);
                 par->child[1]->child[1] = par->child[1]->child[0];
                 rotate_right (0, 1, par);
-            } 
+            } else assert(0);
         }
     }   
        

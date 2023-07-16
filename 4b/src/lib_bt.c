@@ -203,7 +203,7 @@ int shift_infolists_and_change_sz (BNodePtr node, Key key) {
         return ERRWRG;
 
     for (size_t i = 0; i < node->csize; i++) {
-        if (node->info[i] == NULL /* EQ(node->info[i]->key, key)*/ ) {
+        if (node->info[i] == NULL || EQ(node->info[i]->key, key)) {
             /*  Left shift.  */
             for (size_t j = i; j < node->csize - 1; j++) 
                 node->info[j] = node->info[j+1];
@@ -361,18 +361,18 @@ const char* is_valid_node(const BNodePtr node) {
             if(node->child[i]->par != node) return "Bad parent link";
 
             if(i != 0) {
-                for(size_t j = 0; j < KEYS_NUM; ++j) {
+                for(size_t j = 0; j < node->child[i]->csize; ++j) {
                     if(node->child[i]->info[j] &&
-                        !LT(node->info[i-1]->key, node->child[i]->info[j]->key)) {
+                        GT(node->info[i-1]->key, node->child[i]->info[j]->key)) {
                             return "Bad child order: child key less than parent";
                         }
                 }
             }
 
             if(i != node->csize) {
-                for(size_t j = 0; j < KEYS_NUM; ++j) {
+                for(size_t j = 0; j < node->child[i]->csize; ++j) {
                     if(node->child[i]->info[j] &&
-                        !GT(node->info[i]->key, node->child[i]->info[j]->key)) {
+                        LT(node->info[i]->key, node->child[i]->info[j]->key)) {
                             return "Bad child order: child key greater than parent";
                         }
                 }
