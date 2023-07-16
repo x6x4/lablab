@@ -469,7 +469,7 @@ size_t get_v3_num_left (BNodePtr par) {
 
 size_t get_v3_num_right (BNodePtr par) {
 
-    for (size_t i = par->csize; i >= 0; i--) {
+    for (ssize_t i = par->csize; i >= 0; i--) {
         if (par->child[i]->csize == 2)
             return i;
     }
