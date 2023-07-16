@@ -184,12 +184,12 @@ void free_infolist (InfoListPtr *info) {
     if (!(*info))
         return;
     
-    puts ((*info)->key);
+    // puts ((*info)->key);
 
     free_nullify ((*info)->key);
     free_ll (&((*info)->head));
     free_nullify (*info);
-    printf ("ptr: %p\n", *info);
+    // printf ("ptr: %p\n", *info);
     return;
 }
 
