@@ -1,6 +1,8 @@
 *.vscode
 *.o
 *.bin
-/build
+4a/build
+4b/build
+5/build
 vgcore.*
 core

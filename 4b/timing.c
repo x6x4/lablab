@@ -15,10 +15,9 @@ int timing_tree ()
     
     char test_keys[BUNCH_SZ][2] = {};
     
-    unsigned int seed = time(NULL);
-    seed = 16895094501;
+    unsigned long seed = time(NULL);
     srand (seed);
-    printf ("seed: %u", seed);
+    //printf ("seed: %u", seed);
     
     for (int epochs_num = 0; epochs_num < EPOCHS_NUM; epochs_num++) {
         for (int bunch_num = 1; bunch_num <= EPOCHS_NUM; bunch_num++) {
