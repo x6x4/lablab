@@ -1,4 +1,5 @@
 #include "generic.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,11 +65,10 @@ int user_choice (const char *s) {
     }
 }
 
-int option_choice (const char *msgs[], size_t msgc, FILE *file) {
+int option_choice (const char *msgs, size_t msgc, FILE *file) {
     int option_num = -1;
 
-    for (int i = 0; i < (int) msgc; i++) 
-        puts (msgs[i]);
+    puts (msgs);
     
     int status = get_int_file (file, &option_num, msgc - 1, 0);
 
@@ -96,3 +96,19 @@ int get_int_file (FILE *file, int *numptr, int high, int low) {
     return ERRSUC;
 }
 
+int get_sizet_file (FILE *file, size_t *numptr, size_t high, size_t low) {
+    const char *errmsg = "";
+    int status;
+
+    do {
+        printf ("%s", errmsg);
+        errmsg = "Bad unsigned\n";
+        status = fscanf (file, "%lu", numptr);
+        if (status == EOF) {
+            return ERREOF;
+        }
+        while ( fgetc (file) != '\n');
+    } while (!status  || (*numptr > high || *numptr < low));
+
+    return ERRSUC;
+}

@@ -24,6 +24,8 @@ FILE *user_file ();
 /*  Ask if user want to do something  */
 int user_choice (const char *s);
 /*  Return entered option number.  */
-int option_choice (const char *msgs[], size_t msgc, FILE *file);
+int option_choice (const char *msgs, size_t msgc, FILE *file);
 /*  Return entered integer in specified bounds.  */
 int get_int_file (FILE *file, int *numptr, int high, int low);
+/*  Return entered unsigned in specified bounds.  */
+int get_sizet_file (FILE *file, size_t *numptr, size_t high, size_t low);

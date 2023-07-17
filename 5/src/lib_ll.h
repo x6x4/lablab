@@ -5,7 +5,7 @@
 
 #define EQ(s1,s2) ((strcmp (s1, s2)) == 0)
 
-typedef Vnode NodePtr;
+typedef Vertex NodePtr;
 
 /*||||||||||||||||||||||||| < LIST > |||||||||||||||||||||||||*/
 

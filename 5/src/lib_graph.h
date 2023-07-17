@@ -3,18 +3,18 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-typedef struct vertex Vertex;
+typedef struct v_info V_info;
 
-struct vertex {
+struct v_info {
     char *name;
     size_t port;
 };
 
-typedef struct vertex_node *Vnode;
+typedef struct vertex *Vertex;
 
-struct vertex_node {
-    Vertex *info;
-    Vnode next;
+struct vertex {
+    V_info *info;
+    Vertex next;
 };
 
 typedef struct edge Edge;
@@ -28,7 +28,7 @@ typedef struct graph *Graph;
 #define MAX_VERTEX_NUM 10
 
 struct graph {
-    Vnode adj_list [MAX_VERTEX_NUM];
+    Vertex adj_list [MAX_VERTEX_NUM];
     size_t csize;
 };
 
@@ -45,13 +45,13 @@ struct graph {
 int add_vertex (Graph graph, char *name, size_t port);
 
 /**
-* @brief Delete vertex from graph. 
+* @brief remove vertex from graph. 
 * 
-* @param graph [IN]     - graph for deletion. 
+* @param graph [IN]     - graph for removal. 
 * @param node_name [IN] - UNIQUE computer name. 
 * @return int - Error code. Possible ERRWRG - computer name not found.
 */
-int delete_vertex (Graph graph, char *name);
+int remove_vertex (Graph graph, char *name);
 
 /**
 * @brief Change name field of vertex. 
@@ -60,7 +60,7 @@ int delete_vertex (Graph graph, char *name);
 * @param new_name [IN] - new UNIQUE computer name. 
 * @return int - Error code. Possible ERRDUP - computer name already exists.
 */
-int change_vertex_name (Vertex v, char *new_name);
+int change_vertex_name (V_info v, char *new_name);
 
 /**
 * @brief Change port field of vertex. 
@@ -68,9 +68,9 @@ int change_vertex_name (Vertex v, char *new_name);
 * @param v [IN]     - vertex which name is changed.
 * @param new_port [IN] - new port number on which network service is running.
 */
-void change_vertex_port (Vertex v, size_t new_port);
+void change_vertex_port (V_info v, size_t new_port);
 
-
+Vertex find_vertex_in_graph (Graph graph, char *name);
 
 /*||||||||||||||||||||||||| < EDGE FUNCTIONS > |||||||||||||||||||||||||*/
 
@@ -85,11 +85,11 @@ void change_vertex_port (Vertex v, size_t new_port);
 void add_edge (Vertex v1, Vertex v2, size_t *avl_ports);
 
 /**
-* @brief Delete edge from graph. 
+* @brief Remove edge from graph. 
 * 
-* @param v1, v2 [IN]     - ends of deleted edge.
+* @param v1, v2 [IN]     - ends of removed edge.
 */
-void delete_edge (Vertex v1, Vertex v2);
+void remove_edge (Vertex v1, Vertex v2);
 
 /**
 * @brief Change avl_ports field of edge. 
