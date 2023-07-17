@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*  GLOBAL VARIABLES  */
+
+int (*fptr[]) (Graph, FILE*)  = {NULL, Insert, Delete, Update, Print};
 
 
 int main (void) {
@@ -17,7 +20,7 @@ int main (void) {
     info.msgc = 5;
     info.exit_msg = "quit";
 
-    dialog (&info, &G, file);
+    dialog (&info, fptr, &G, file);
 
     fclose (file);
 

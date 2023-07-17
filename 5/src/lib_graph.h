@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-typedef struct v_info V_info;
+typedef struct v_info *V_info;
 
 struct v_info {
     char *name;
@@ -13,7 +13,7 @@ struct v_info {
 typedef struct vertex *Vertex;
 
 struct vertex {
-    V_info *info;
+    V_info info;
     Vertex next;
 };
 
@@ -48,10 +48,9 @@ int add_vertex (Graph graph, char *name, size_t port);
 * @brief remove vertex from graph. 
 * 
 * @param graph [IN]     - graph for removal. 
-* @param node_name [IN] - UNIQUE computer name. 
-* @return int - Error code. Possible ERRWRG - computer name not found.
+* @param v [IN] - vertex to remove. 
 */
-int remove_vertex (Graph graph, char *name);
+void remove_vertex (Graph graph, Vertex v);
 
 /**
 * @brief Change name field of vertex. 
@@ -88,17 +87,17 @@ void add_edge (Vertex v1, Vertex v2, size_t *avl_ports);
 * @brief Remove edge from graph. 
 * 
 * @param v1, v2 [IN]     - ends of removed edge.
+* @return int - Error code. Possible ERRWRG - edge not found.
 */
-void remove_edge (Vertex v1, Vertex v2);
+int remove_edge (Vertex v1, Vertex v2);
 
 /**
 * @brief Change avl_ports field of edge. 
 * 
-* @param v [IN]     - vertex which name is changed.
+* @param v1, v2 [IN]     - ends of newly created edge. 
 * @param new_avl_ports [IN] - new vector of ports, available for traffic transmission.
-* @return int - Error code. Possible ERRACC - edge ports don't match vertex ports.
 */
-int change_edge_ports (Vertex v, size_t *new_avl_ports);
+void change_edge_ports (Vertex v1, Vertex v2, size_t *new_avl_ports);
 
 
 

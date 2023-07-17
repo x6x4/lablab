@@ -16,7 +16,7 @@ struct dialog_strings {
     const char *exit_msg;
 };
 
-void dialog (Dialog_info info, Graph graph, FILE* file);
+void dialog (Dialog_info info, int (*fptr[]) (Graph, FILE*), Graph graph, FILE* file);
 
 /*||||||||||||||||||||||||| < GENERAL FUNCTIONS > |||||||||||||||||||||||||*/
 
@@ -30,8 +30,13 @@ int DeleteVertex (Graph graph, FILE *file);
 int DeleteEdge (Graph graph, FILE *file);
 
 int Update (Graph graph, FILE *file);
+
 int UpdateVertex (Graph graph, FILE *file);
+int UpdateVertexName (Graph graph, FILE *file);
+int UpdateVertexPort (Graph graph, FILE *file);
+
 int UpdateEdge (Graph graph, FILE *file);
+int UpdateEdgePorts (Graph graph, FILE *file);
 
 int Print (Graph graph, FILE *file);
 
