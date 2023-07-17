@@ -36,7 +36,8 @@ int add_vertex (Graph graph, char *name, size_t port) {
     if (find_vertex_in_graph (graph, name, &num))
         return ERRDUP;
 
-    Vertex v = new_vertex (name, port);
+
+    Vertex v = new_vertex (new_info(name, port));
     insert_to_ll (&(graph->adj_list[graph->csize]), v, NULL);
 
     graph->csize++;
@@ -44,19 +45,22 @@ int add_vertex (Graph graph, char *name, size_t port) {
     return ERRSUC;
 }
 
-Vertex new_vertex (char *name, size_t port) {
+Vertex new_vertex (V_info info) {
 
     Vertex v = calloc (1, sizeof *v);
-
-    v->info = calloc (1, sizeof *(v->info));
-    v->info->name = name;
-    v->info->port = port;
-
+    v->info = info;
     v->next = NULL;
     
     return v;
 }
 
+V_info new_info (char *name, size_t port) {
+    V_info info = calloc (1, sizeof *(info));
+    info->name = name;
+    info->port = port;
+
+    return info;
+}
 
 int remove_vertex (Graph graph, char *name) {
     size_t num = 0;
@@ -126,8 +130,8 @@ int add_edge (Graph graph, char *name1, char *name2, size_t *avl_ports, size_t p
     if (!v2) 
         return ERRWRG;
 
-    v1 = new_vertex (v1->info->name, v1->info->port);
-    v2 = new_vertex (v2->info->name, v2->info->port);
+    v1 = new_vertex (v1->info);
+    v2 = new_vertex (v2->info);
 
     Edge e = new_edge (avl_ports, ports_num);
     v1->weight = e;

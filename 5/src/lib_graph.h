@@ -53,11 +53,19 @@ int add_vertex (Graph graph, char *name, size_t port);
 /**
 * @brief Create new isolated vertex. 
 * 
-* @param name [IN] - UNIQUE computer name. 
-* @param port [IN] - port number on which network service is running.
+* @param info [IN] - vertex info
 * @return Vertex - ptr to vertex created.
 */
-Vertex new_vertex (char *name, size_t port);
+Vertex new_vertex (V_info info);
+
+/**
+* @brief Create new isolated vertex info. 
+* 
+* @param name [IN] - UNIQUE computer name. 
+* @param port [IN] - port number on which network service is running.
+* @return V_info - ptr to info created.
+*/
+V_info new_info (char *name, size_t port);
 
 /**
 * @brief Remove vertex from graph. 

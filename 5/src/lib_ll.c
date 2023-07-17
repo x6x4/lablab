@@ -115,6 +115,8 @@ void free_ll (NodePtr *head) {
             free_nullify ((*node)->weight);
         }
 
+        printf ("%p\n", (*node)->info);
+
         if ((*node)->info) {
             free_nullify ((*node)->info->name);
             free_nullify ((*node)->info);
