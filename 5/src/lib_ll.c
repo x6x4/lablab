@@ -1,6 +1,9 @@
 #include "lib_ll.h"
 #include "generic.h"
 #include <assert.h>
+#include <stdio.h>
+
+
 
 void insert_to_ll (NodePtr *head, NodePtr v, NodePtr prev) {
 
@@ -15,7 +18,6 @@ void insert_to_ll (NodePtr *head, NodePtr v, NodePtr prev) {
     } else {
         //  insert to start (make node a new head)
         node->next = *head;
-
         *head = node;
     }
 
@@ -32,7 +34,7 @@ NodePtr find_in_ll (NodePtr head, char *name, NodePtr *prev) {
     }
 
     NodePtr node = head;
-    while (node && EQ(name, node->info->name)) {
+    while (node && !EQ(name, node->info->name)) {
         if (prev)
             *prev = node;
         node = node->next;
@@ -44,9 +46,23 @@ void print_ll (NodePtr head) {
     NodePtr node = head;
 
     while (node) {
-        printf (YELLOW("(%s, %lu)"), node->info->name, node->info->port);
+        if (node == head)
+            printf (YELLOW("(%s, %lu)"), node->info->name, node->info->port);
+        else 
+            printf (("(%s, %lu)"), node->info->name, node->info->port);
+        
+        if (node->weight) {
+            for (size_t i = 0; i < node->weight->ports_num; i++) {
+                if (i == 0)
+                    printf (" - ");
+                printf (("%lu"), node->weight->avl_ports[i]);
+                if (i != node->weight->ports_num - 1)
+                    printf (", ");
+            }
+        }
+            
         if (node->next)
-            printf ("->");
+            printf (" - ");
         else 
             printf (" ");
         node = node->next;
@@ -71,6 +87,11 @@ int delete_from_ll (NodePtr *head, char *name) {
     else 
         prev->next = node->next;        
 
+    if (node->weight) {
+        free_nullify (node->weight->avl_ports);
+        free_nullify (node->weight);
+    }
+
     free_nullify (node->info->name);
     free_nullify (node->info);
     free_nullify (node);
@@ -88,8 +109,17 @@ void free_ll (NodePtr *head) {
 
     while (*node) {
         next = (*node)->next;
-        free_nullify ((*node)->info->name);
-        free_nullify ((*node)->info);
+
+        if ((*node)->weight) {
+            free_nullify ((*node)->weight->avl_ports);
+            free_nullify ((*node)->weight);
+        }
+
+        if ((*node)->info) {
+            free_nullify ((*node)->info->name);
+            free_nullify ((*node)->info);
+        }
+
         free_nullify (*node);
         *node = next;
     } 

@@ -7,6 +7,7 @@
 
 /*  DIALOG  */
 
+
 typedef struct dialog_strings *Dialog_info;
 
 struct dialog_strings {
@@ -18,8 +19,11 @@ struct dialog_strings {
 
 void dialog (Dialog_info info, int (*fptr[]) (Graph, FILE*), Graph graph, FILE* file);
 
+
+
 /*||||||||||||||||||||||||| < GENERAL FUNCTIONS > |||||||||||||||||||||||||*/
 
+int Import (Graph graph, FILE *file);
 
 int Insert (Graph graph, FILE *file);
 int InsertVertex (Graph graph, FILE *file);
@@ -44,8 +48,8 @@ int Print (Graph graph, FILE *file);
 
 /*||||||||||||||||||||||||| < COMPLEX FUNCTIONS > |||||||||||||||||||||||||*/
 
+
 int Find (Graph graph, FILE *file);
 int Trav (Graph graph, FILE *file);
 
-int import_tree (Graph graph, FILE *file);
 

@@ -11,7 +11,8 @@ enum {
 	ERRWRG,
 	ERRUNK, 
 	ERRDUP,
-	ERRCONT
+	ERRCONT,
+	ERROVF
 };
 
 #define RED(s) "\x1b[31m"s"\x1b[0m"
