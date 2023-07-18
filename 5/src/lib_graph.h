@@ -7,6 +7,7 @@
 typedef struct edge *Edge;
 
 struct edge {
+
     size_t ports_num;
     size_t *avl_ports;
 };
@@ -14,16 +15,28 @@ struct edge {
 typedef struct v_info *V_info;
 
 struct v_info {
+
     char *name;
     size_t port;
+
+    int color_dfs;
 };
 
 typedef struct vertex *Vertex;
 
 struct vertex {
+
     V_info info;
     Vertex next;
     Edge weight;
+
+    
+};
+
+enum {
+    WHITE, 
+    GREY,
+    BLACK
 };
 
 typedef struct graph *Graph;
@@ -59,6 +72,16 @@ int add_vertex (Graph graph, char *name, size_t port);
 Vertex new_vertex (V_info info);
 
 /**
+* @brief Check if both vertex belong to graph. 
+* 
+* @param graph [IN] - graph for check. 
+* @param name1, name2  [IN] - UNIQUE vertex names. 
+* @param num1, num2   [IN/OUT] OPTIONAL - numbers of vertexes in adjacency lists
+* @return int - Error code. Possible ERRWRG - one or two names not found.
+*/
+int check_vertexes (Graph graph, char *name1, char *name2, size_t *num1, size_t *num2);
+
+/**
 * @brief Create new isolated vertex info. 
 * 
 * @param name [IN] - UNIQUE computer name. 
@@ -76,6 +99,13 @@ V_info new_info (char *name, size_t port);
 */
 int remove_vertex (Graph graph, char *name);
 
+/**
+* @brief Remove vertex from adjacency lists (BESIDES its own). 
+* 
+* @param graph [IN] - graph for removal. 
+* @param name  [IN] - UNIQUE computer name. 
+* @return int - Error code. Possible ERRWRG - name not found.
+*/
 void remove_vertex_from_adj_lists (Graph graph, char *name);
 
 /**
@@ -133,18 +163,20 @@ Edge new_edge (size_t *avl_ports, size_t ports_num);
 /**
 * @brief Remove edge from graph. 
 * 
-* @param v1, v2 [IN] - ends of removed edge.
+* @param graph [IN] - graph for removal. 
+* @param name1, name2   [IN] - names of ends of removed edge. 
 * @return int - Error code. Possible ERRWRG - edge not found.
 */
-int remove_edge (Vertex v1, Vertex v2);
+int remove_edge (Graph graph, char *name1, char *name2);
 
 /**
 * @brief Change avl_ports field of edge. 
 * 
-* @param v1, v2 [IN]     - ends of newly created edge. 
+* @param graph [IN] - graph for change. 
+* @param name1, name2   [IN] - names of ends of changed edge. 
 * @param new_avl_ports [IN] - new vector of ports, available for traffic transmission.
 */
-void change_edge_ports (Vertex v1, Vertex v2, size_t *new_avl_ports);
+int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_ports);
 
 
 
@@ -163,3 +195,34 @@ void print_graph (Graph graph);
 * @param graph [IN] - graph to clear.
 */
 void free_graph (Graph graph);
+
+/**
+* @brief Depth-first search.
+* 
+* @param graph [IN] - graph for DFS.
+*/
+void dfs (Graph graph);
+
+/**
+* @brief Init graph before DFS.
+  Set all vertices to white.
+* 
+* @param graph [IN] - graph for DFS.
+*/
+void init_dfs (Graph graph);
+
+/**
+* @brief Handle graph in DFS.
+* 
+* @param graph [IN] - graph for DFS.
+*/
+void handle_dfs (Graph graph);
+
+/**
+* @brief Visit vertex in DFS.
+  Set vertice to grey, traverse its adjacency list 
+  and set it to black. 
+* 
+* @param v[IN] - vertex to visit.
+*/
+void visit_dfs (Vertex v);

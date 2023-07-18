@@ -1,5 +1,6 @@
 #include "lib_ll.h"
 #include "generic.h"
+#include "lib_graph.h"
 #include <assert.h>
 #include <stdio.h>
 
@@ -43,23 +44,13 @@ NodePtr find_in_ll (NodePtr head, char *name, NodePtr *prev) {
 }
 
 void print_ll (NodePtr head) {
+    
     NodePtr node = head;
 
     while (node) {
-        if (node == head)
-            printf (YELLOW("(%s, %lu)"), node->info->name, node->info->port);
-        else 
-            printf (("(%s, %lu)"), node->info->name, node->info->port);
         
-        if (node->weight) {
-            for (size_t i = 0; i < node->weight->ports_num; i++) {
-                if (i == 0)
-                    printf (" - ");
-                printf (("%lu"), node->weight->avl_ports[i]);
-                if (i != node->weight->ports_num - 1)
-                    printf (", ");
-            }
-        }
+        print_node (node, head);
+        print_node_weight (node);
             
         if (node->next)
             printf (" - ");
@@ -67,6 +58,36 @@ void print_ll (NodePtr head) {
             printf (" ");
         node = node->next;
     } 
+}
+
+void print_node (NodePtr node, NodePtr head) {
+
+    if (node == head)
+        printf (YELLOW("(%s, %lu)"), node->info->name, node->info->port);
+    else 
+        printf (("(%s, %lu)"), node->info->name, node->info->port);
+        
+}
+
+void print_node_weight (NodePtr node) {
+
+    if (!node)
+        return;
+
+    if (node->weight) {
+
+        printf ("(");
+
+        for (size_t i = 0; i < node->weight->ports_num; i++) {
+            
+            printf ("%lu", node->weight->avl_ports[i]);
+            if (i != node->weight->ports_num - 1)
+                printf (",");
+        }
+
+        printf (")");
+    }
+    
 }
 
 int delete_from_ll (NodePtr *head, char *name) {
@@ -114,8 +135,6 @@ void free_ll (NodePtr *head) {
             free_nullify ((*node)->weight->avl_ports);
             free_nullify ((*node)->weight);
         }
-
-        printf ("%p\n", (*node)->info);
 
         if ((*node)->info) {
             free_nullify ((*node)->info->name);

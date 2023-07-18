@@ -103,11 +103,12 @@ int InsertEdge (Graph graph, FILE *file) {
         return ERREOF;
     }
 
-    puts ("Enter numbers of ports of edge");
+    puts ("Enter number of edge ports");
     size_t ports_num = 0;
     if (get_sizet_file (file, &ports_num, 255, 0) == ERREOF)
         return ERREOF;
 
+    puts ("Enter edge ports");
     size_t *ports = calloc (ports_num, sizeof (size_t));
     for (size_t i = 0; i < ports_num; i++) {
         if (get_sizet_file (file, ports+i, 255, 0) == ERREOF)
@@ -172,8 +173,6 @@ int DeleteEdge (Graph graph, FILE *file) {
     char *name1 = get_str (file);
     if (!name1)
         return ERREOF;
-    
-    Vertex v1 = find_vertex_in_graph (graph, name1, NULL);
 
     puts ("Enter second computer name");
     char *name2 = get_str (file);
@@ -182,23 +181,10 @@ int DeleteEdge (Graph graph, FILE *file) {
         return ERREOF;
     }
 
-    Vertex v2 = find_vertex_in_graph (graph, name2, NULL);
-
-    if (!v1) {
-        printf ("Vertex %s not found\n", name1);
-        free_nullify (name1);
-        free_nullify (name2);
-        return ERRWRG;
-    } else if (!v2)
-    {
-        printf ("Vertex %s not found\n", name2);
-        free_nullify (name1);
-        free_nullify (name2);
-        return ERRWRG;
-    }
-
-    if (remove_edge (v1, v2) == ERRWRG) {
+    if (remove_edge (graph, name1, name2) == ERRWRG) {
         puts ("Edge not found");
+        free_nullify (name1);
+        free_nullify (name2);
         return ERRWRG;
     }
     else 
@@ -318,7 +304,7 @@ int UpdateEdge (Graph graph, FILE *file) {
     info.msgc = 2;
     info.exit_msg = "quit UpdateEdge submenu";
 
-    dialog (&info, fptr_UV, graph, file);
+    dialog (&info, fptr_UE, graph, file);
         
     return ERRSUC;
 }
@@ -329,8 +315,6 @@ int UpdateEdgePorts (Graph graph, FILE *file) {
     char *name1 = get_str (file);
     if (!name1)
         return ERREOF;
-    
-    Vertex v1 = find_vertex_in_graph (graph, name1, NULL);
 
     puts ("Enter second computer name");
     char *name2 = get_str (file);
@@ -339,33 +323,19 @@ int UpdateEdgePorts (Graph graph, FILE *file) {
         return ERREOF;
     }
 
-    Vertex v2 = find_vertex_in_graph (graph, name2, NULL);
-
-    if (!v1) {
-        printf ("Vertex %s not found\n", name1);
-        free_nullify (name1);
-        free_nullify (name2);
-        return ERRWRG;
-    } else if (!v2)
-    {
-        printf ("Vertex %s not found\n", name2);
-        free_nullify (name1);
-        free_nullify (name2);
-        return ERRWRG;
-    }
-
-    puts ("Enter new numbers of ports of edge");
+    puts ("Enter new number of edge ports");
     size_t ports_num = 0;
     if (get_sizet_file (file, &ports_num, 255, 0) == ERREOF)
         return ERREOF;
 
+    puts ("Enter new edge ports");
     size_t *ports = calloc (ports_num, sizeof (size_t));
     for (size_t i = 0; i < ports_num; i++) {
         if (get_sizet_file (file, ports+i, 255, 0) == ERREOF)
             return ERREOF;
     }
 
-    change_edge_ports (v1, v2, ports);
+    change_edge_ports (graph, name1, name2, ports);
     puts ("Edge ports updated successfully.");
 
     return ERRSUC;
@@ -377,5 +347,15 @@ int UpdateEdgePorts (Graph graph, FILE *file) {
 int Print (Graph graph, FILE *file) {
 
     print_graph (graph);
+    return ERRSUC;
+}
+
+
+/*  DFS  */
+
+int DFS (Graph graph, FILE *file) {
+
+    dfs (graph);
+
     return ERRSUC;
 }
