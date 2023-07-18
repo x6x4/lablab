@@ -62,10 +62,10 @@ void print_ll (NodePtr head) {
 
 void print_node (NodePtr node, NodePtr head) {
 
-    if (node == head)
-        printf (YELLOW("(%s, %lu)"), node->info->name, node->info->port);
-    else 
-        printf (("(%s, %lu)"), node->info->name, node->info->port);
+    if (!node)
+        return;
+
+    printf (("(%s, %lu) "), node->info->name, node->info->port);
         
 }
 
@@ -76,7 +76,7 @@ void print_node_weight (NodePtr node) {
 
     if (node->weight) {
 
-        printf ("(");
+        printf ("[");
 
         for (size_t i = 0; i < node->weight->ports_num; i++) {
             
@@ -85,7 +85,7 @@ void print_node_weight (NodePtr node) {
                 printf (",");
         }
 
-        printf (")");
+        printf ("]");
     }
     
 }

@@ -29,9 +29,19 @@ struct vertex {
     V_info info;
     Vertex next;
     Edge weight;
-
     
 };
+
+typedef struct vertex_head *V_head;
+
+struct vertex_head {
+
+    V_info info;
+    Vertex head;
+    
+};
+
+
 
 enum {
     WHITE, 
@@ -44,7 +54,7 @@ typedef struct graph *Graph;
 #define MAX_VERTEX_NUM 10
 
 struct graph {
-    Vertex adj_list [MAX_VERTEX_NUM];
+    V_head adj_list [MAX_VERTEX_NUM];
     size_t csize;
 };
 
@@ -64,10 +74,18 @@ struct graph {
 int add_vertex (Graph graph, char *name, size_t port);
 
 /**
-* @brief Create new isolated vertex. 
+* @brief Create new isolated vertex - head of adj list. 
 * 
 * @param info [IN] - vertex info
-* @return Vertex - ptr to vertex created.
+* @return V_head - ptr to vertex created.
+*/
+V_head new_vertex_head (V_info info);
+
+/**
+* @brief Create vertex node. 
+* 
+* @param info [IN] - vertex info
+* @return Vertex - ptr to vertex node created.
 */
 Vertex new_vertex (V_info info);
 
@@ -125,15 +143,14 @@ void change_vertex_name (V_info v, char *new_name);
 void change_vertex_port (V_info v, size_t new_port);
 
 /**
-* @brief Find vertex by name. 
+* @brief Find vertex head by name. 
 * 
 * @param graph [IN] - graph for search
 * @param name  [IN] - UNIQUE computer name
 * @param num   [IN/OUT] OPTIONAL - number in adjacency list
-* @return Vertex - head of matching adjacency list. NULL if not found
+* @return V_head - head of matching adjacency list. NULL if not found
 */
-Vertex find_vertex_in_graph (Graph graph, char *name, size_t *num);
-
+V_head find_vertex_in_graph (Graph graph, char *name, size_t *num);
 
 
 /*||||||||||||||||||||||||| < EDGE FUNCTIONS > |||||||||||||||||||||||||*/
@@ -188,6 +205,13 @@ int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_po
 * @param graph [IN] - graph to print.
 */
 void print_graph (Graph graph);
+
+/**
+* @brief Print head of adjacency list.
+* 
+* @param graph [IN] - head to print.
+*/
+void print_vertex_head (V_head v);
 
 /**
 * @brief Clear graph.
