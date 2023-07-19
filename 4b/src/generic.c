@@ -23,6 +23,7 @@ char *get_str (FILE *file) {
 }
 
 FILE *user_file () {
+
     char *errmsg = "";
     FILE *file = NULL;
 
@@ -46,6 +47,7 @@ FILE *user_file () {
 }
 
 int user_choice (const char *s) {
+
     printf ("%s", s);
     int ch = -1;
     
@@ -65,6 +67,7 @@ int user_choice (const char *s) {
 }
 
 int option_choice (const char *msgs[], size_t msgc, FILE *file) {
+
     int option_num = -1;
 
     for (int i = 0; i < (int) msgc; i++) 
@@ -80,6 +83,7 @@ int option_choice (const char *msgs[], size_t msgc, FILE *file) {
 
 
 int get_int_file (FILE *file, int *numptr, int high, int low) {
+    
     const char *errmsg = "";
     int status;
 

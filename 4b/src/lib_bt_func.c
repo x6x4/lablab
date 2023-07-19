@@ -137,11 +137,13 @@ void split_middle (BNodePtr node, BNodePtr *left, BNodePtr *right) {
 /*  Print.  */
 
 void colored_print_bt (BNodePtr root, char *key) {
+
     set_height (root);
     colored_print_bt_lvl (root, 0, key);
 }
 
 void set_height (BNodePtr root) {
+
     if (!root)
         return;
 
@@ -156,6 +158,7 @@ void set_height (BNodePtr root) {
 } 
 
 void colored_print_bt_lvl (BNodePtr root, size_t height, char *key) {
+    
     static size_t no_children = 0;
 
     /*  Print null child if there are brothers.  */
@@ -191,6 +194,7 @@ void colored_print_bt_lvl (BNodePtr root, size_t height, char *key) {
 }
 
 void colored_print_node (BNodePtr root, Key key) {
+
     /*  Color desired key.  */
     for (size_t i = 0; i < root->csize; i++) {
         if (key && EQ(root->info[i]->key, key)) {
@@ -252,6 +256,7 @@ int chld_for_descent (BNodePtr root, Key key) {
 }
 
 BNodePtr find_max_node (BNodePtr root) {
+
     if (root == NULL || root->child[0] == NULL /*leaf*/ )
         return root;
 
@@ -264,6 +269,7 @@ BNodePtr find_max_node (BNodePtr root) {
 }
 
 BNodePtr find_min_node (BNodePtr root) {
+
     if (root == NULL || root->child[0] == NULL /*leaf*/ )
         return root;
 
@@ -276,11 +282,6 @@ BNodePtr find_min_node (BNodePtr root) {
 
 /*  deletion is always performed from the leaf  */
 int delete_bt (BNodePtr *root, Key key, size_t ver) {
-
-    VALIDATE_TREE (*root);
-
-    //printf ("\n\n");
-    //colored_print_bt (*root, key);
 
     /*  Deletion from infolist.  */
 
@@ -324,8 +325,6 @@ int delete_bt (BNodePtr *root, Key key, size_t ver) {
 
     /*  fix bt  */
     fix_after_del (root, victim);
-
-    VALIDATE_TREE (*root);
 
     return ERRSUC;
 }
@@ -385,6 +384,7 @@ void fix_after_del (BNodePtr *root, BNodePtr leaf) {
 
 /*  merge - par of size 1 has two chidren of size 1  */
 BNodePtr merge (BNodePtr *root, BNodePtr leaf) {
+
     BNodePtr par = leaf->par;
     if (!par)
         return NULL;
@@ -420,6 +420,7 @@ BNodePtr merge (BNodePtr *root, BNodePtr leaf) {
 }
 
 void move_par_key_to_nonnull_chld (size_t victim_num, BNodePtr par) {
+    
     switch (victim_num) {
         case 0:
             insert_to_vertex (par->child[1], par->info[0]);
@@ -433,6 +434,7 @@ void move_par_key_to_nonnull_chld (size_t victim_num, BNodePtr par) {
 }
 
 void assign_grandchildren_to_nonnull_chld (size_t victim_num, BNodePtr par, BNodePtr leaf) {
+    
     switch (victim_num) {
         case 0:
             par->child[1]->child[2] = par->child[1]->child[1];
@@ -452,6 +454,7 @@ void assign_grandchildren_to_nonnull_chld (size_t victim_num, BNodePtr par, BNod
 }
 
 void clear_par_and_leaf_ (BNodePtr par, size_t victim_num) {
+
     if (par->info[0])
         shift_infolists_and_change_sz (par, par->info[0]->key);
     // when empty "leaf" was kept non-null because of non-null child
@@ -567,6 +570,7 @@ BNodePtr redistribute (BNodePtr leaf) {
 }
 
 void lshift_par_children (size_t victim_num, BNodePtr par) {
+
     switch (victim_num) {
         case 0:
             par->child[0] = par->child[1];
@@ -583,6 +587,7 @@ void lshift_par_children (size_t victim_num, BNodePtr par) {
 }
 
 void insert_parent_key_to_chld (size_t victim_num, BNodePtr par) {
+
     switch (victim_num) {
         case 0:
         case 1:
@@ -597,6 +602,7 @@ void insert_parent_key_to_chld (size_t victim_num, BNodePtr par) {
 }
 
 void insert_missing_child (size_t victim_num, BNodePtr par, BNodePtr leaf) {
+
     BNodePtr node_to_insert = NULL;
     BNodePtr possible_par = NULL;
 
@@ -632,6 +638,7 @@ void insert_missing_child (size_t victim_num, BNodePtr par, BNodePtr leaf) {
 }
 
 void clear_par_and_leaf (size_t victim_num, BNodePtr par, BNodePtr leaf) {
+
     switch (victim_num) {
         case 0:
         case 1:
@@ -649,14 +656,17 @@ void clear_par_and_leaf (size_t victim_num, BNodePtr par, BNodePtr leaf) {
 }
 
 BNodePtr get_nonnull_child (BNodePtr leaf) {
+
     if (leaf->child[0]) 
         return leaf->child[0];
     if (leaf->child[1]) 
         return leaf->child[1];
+    
     return NULL;
 }
 
 void rotate_right (size_t src, size_t dest, BNodePtr par) {
+
     /*  right shift leaf children  */
     if (par->child[dest]->child[1] == NULL) {
         par->child[dest]->child[1] = par->child[dest]->child[0];
@@ -682,6 +692,7 @@ void rotate_right (size_t src, size_t dest, BNodePtr par) {
 }
 
 void rotate_left (size_t src, size_t dest, BNodePtr par) {
+
     /*  left shift leaf children  */
     if (par->child[dest]->child[0] == NULL) {
         par->child[dest]->child[0] = par->child[dest]->child[1];
@@ -719,6 +730,7 @@ size_t set_leaf_num (BNodePtr par, BNodePtr leaf) {
 
 /*  Traverse  */
 void traverse_bt (BNodePtr root) {
+
     if (!root) 
         return;
 
@@ -732,6 +744,7 @@ void traverse_bt (BNodePtr root) {
  
 /*  DESTRUCTORS  */
 void free_bt (BNodePtr *root) {
+    
     if (!(*root))
         return;
 

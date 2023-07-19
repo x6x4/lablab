@@ -111,6 +111,7 @@ int delete_tree (BNodePtr *root, FILE *file) {
 };
 
 int find_tree (BNodePtr *root, FILE *file) {
+
     BNodePtr node = NULL;
     size_t pos = 0;
 
@@ -136,6 +137,7 @@ int find_tree (BNodePtr *root, FILE *file) {
 };
 
 int findmax_tree (BNodePtr *root, FILE *file) {
+
     BNodePtr node = find_max_node (*root);
 
     if (node) {
@@ -149,6 +151,7 @@ int findmax_tree (BNodePtr *root, FILE *file) {
 };
 
 int traverse_tree (BNodePtr *root, FILE *file) {
+
     const char *s = "Enter key to traverse from or \"a\" to traverse all tree: \n";
 
     printf ("%s", s);
@@ -164,6 +167,7 @@ int traverse_tree (BNodePtr *root, FILE *file) {
 }
 
 int import_tree (BNodePtr *root, FILE *file) {
+
     FILE *import = user_file ();
     if (!import) 
         return ERREOF;
@@ -176,6 +180,7 @@ int import_tree (BNodePtr *root, FILE *file) {
 }
 
 int print_tree (BNodePtr *root, FILE *file) {
+    
     printf ("\nTree:\n");
     if (!(*root) || (*root)->csize == 0) {
         printf ("(void)\n");
