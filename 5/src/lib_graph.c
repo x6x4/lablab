@@ -31,8 +31,11 @@ void print_vertex_head (V_head v) {
 
 void free_graph (Graph graph) {
 
-    for (size_t i = 0; i < graph->csize; i++)
-        free_ll (&(graph->adj_list[i]->head));
+    for (size_t i = 0; i < graph->csize; i++) {
+        V_head *head = &(graph->adj_list[i]);
+        free_ll (&((*head)->head), (*head)->info->name);
+        free_vertex_head (head);
+    }
 }
 
 size_t time;
@@ -53,38 +56,44 @@ void init_dfs (Graph graph) {
 void handle_dfs (Graph graph) {
 
     for (size_t i = 0; i < graph->csize; i++) {
-        if (graph->adj_list[i]->info->color_dfs == WHITE) {
 
-            print_vertex_head (graph->adj_list[i]);
+        int clr_cur_head = graph->adj_list[i]->info->color_dfs;
+
+        if (clr_cur_head != BLACK) {
+
+            if (clr_cur_head == WHITE) {
+                printf ("\n");
+                print_vertex_head (graph->adj_list[i]);
+            }
+
+            graph->adj_list[i]->info->color_dfs = GREY;
+
             visit_dfs (graph->adj_list[i]->head);
         }
     }
 }
 
-void visit_dfs (Vertex v) {
+void visit_dfs (V_node v) {
 
-    if (!v) {
-        printf ("\n");
+    if (!v) 
         return;
-    }
 
-    Vertex node = v;
+    V_node node = v;
 
     while (node) {
 
         if (node->info->color_dfs == WHITE) {
 
             node->info->color_dfs = GREY;
-            print_node (node, v);
-        }
+            print_node (node);
+        } else if (node->info->color_dfs == GREY)
+            node->info->color_dfs = BLACK;
 
         node = node->next;
     }
-
-    v->info->color_dfs = BLACK;
-    
-    printf ("\n");
 }
+
+
 
 int add_vertex (Graph graph, char *name, size_t port) {
     
@@ -111,9 +120,9 @@ V_head new_vertex_head (V_info info) {
     return v;
 }
 
-Vertex new_vertex (V_info info) {
+V_node new_vertex_node (V_info info) {
 
-    Vertex v = calloc (1, sizeof *v);
+    V_node v = calloc (1, sizeof *v);
     v->info = info;
     v->next = NULL;
     v->weight = NULL;
@@ -138,21 +147,30 @@ int remove_vertex (Graph graph, char *name) {
     V_head *dest = graph->adj_list + num;
     V_head *src = graph->adj_list + num + 1;
 
-    free_ll (&(graph->adj_list[num]->head));
+    V_head *head = &(graph->adj_list[num]);
+
+    free_ll (&((*head)->head), (*head)->info->name);
+    free_vertex_head (head);
 
     memcpy (dest, src, (graph->csize - num) * sizeof (V_head));
 
-    remove_vertex_from_adj_lists (graph, name);
- 
     graph->csize--;
+
+    remove_vertex_from_adj_lists (graph, name);
 
     return ERRSUC;
 }
 
+void free_vertex_head (V_head *v) {
+
+    free_nullify ((*v)->info->name);
+    free_nullify ((*v)->info);
+    free_nullify (*v);
+}
+
 void remove_vertex_from_adj_lists (Graph graph, char *name) {
     for (size_t i = 0; i < graph->csize; i++) {
-        if ( !EQ(graph->adj_list[i]->info->name, name) )
-            delete_from_ll (&(graph->adj_list[i]->head), name);
+        delete_from_ll (&(graph->adj_list[i]->head), name);
     }
 }
 
@@ -190,27 +208,33 @@ V_head find_vertex_in_graph (Graph graph, char *name, size_t *num) {
 int add_edge (Graph graph, char *name1, char *name2, size_t *avl_ports, size_t ports_num) {
     
     size_t num1 = 0, num2 = 0;
-    if (check_vertexes (graph, name1, name2, &num1, &num2) == ERRWRG)
+    if (check_vertices (graph, name1, name2, &num1, &num2) == ERRWRG)
         return ERRWRG;
 
     V_head vh1 = graph->adj_list[num1];
-    V_head vh2 = graph->adj_list[num2];
-
-    Vertex v1 = new_vertex (vh1->info);
-    Vertex v2 = new_vertex (vh2->info);
-
+    V_node v1 = new_vertex_node (vh1->info);
+    V_node v2 = NULL;
+        
     Edge e = new_edge (avl_ports, ports_num);
     v1->weight = e;
-    v2->weight = e;
     
-    insert_to_ll (&(vh1->head), v2, NULL);
-    if (!EQ(name1, name2))
+    if (!EQ(name1, name2)) {
+        /*  non-loop edge  */
+
+        V_head vh2 = graph->adj_list[num2];
+        v2 = new_vertex_node (vh2->info);
+        v2->weight = e;
         insert_to_ll (&(vh2->head), v1, NULL);
+    } else {
+        v2 = v1;
+    }
+
+    insert_to_ll (&(vh1->head), v2, NULL);
 
     return ERRSUC;
 }
 
-int check_vertexes (Graph graph, char *name1, char *name2, size_t *num1, size_t *num2) { 
+int check_vertices (Graph graph, char *name1, char *name2, size_t *num1, size_t *num2) { 
     
     V_head v1 = find_vertex_in_graph (graph, name1, num1);
     if (!v1) 
@@ -236,7 +260,7 @@ Edge new_edge (size_t *avl_ports, size_t ports_num) {
 int remove_edge (Graph graph, char *name1, char *name2) {
 
     size_t num1 = 0, num2 = 0;
-    if (check_vertexes (graph, name1, name2, &num1, &num2) == ERRWRG)
+    if (check_vertices (graph, name1, name2, &num1, &num2) == ERRWRG)
         return ERRWRG;
 
     remove_vertex_from_adj_lists (graph, name1);
@@ -248,13 +272,13 @@ int remove_edge (Graph graph, char *name1, char *name2) {
 int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_ports) {
 
     size_t num1 = 0, num2 = 0;
-    if (check_vertexes (graph, name1, name2, &num1, &num2) == ERRWRG)
+    if (check_vertices (graph, name1, name2, &num1, &num2) == ERRWRG)
         return ERRWRG;
 
     V_head vh1 = graph->adj_list[num1];
     V_head vh2 = graph->adj_list[num2];
 
-    Vertex v2 = find_in_ll (vh1->head, name2, NULL);
+    V_node v2 = find_in_ll (vh1->head, name2, NULL);
 
     free_nullify (v2->weight->avl_ports);
     v2->weight->avl_ports = new_avl_ports;

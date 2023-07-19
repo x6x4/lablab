@@ -49,7 +49,7 @@ void print_ll (NodePtr head) {
 
     while (node) {
         
-        print_node (node, head);
+        print_node (node);
         print_node_weight (node);
             
         if (node->next)
@@ -60,7 +60,7 @@ void print_ll (NodePtr head) {
     } 
 }
 
-void print_node (NodePtr node, NodePtr head) {
+void print_node (NodePtr node) {
 
     if (!node)
         return;
@@ -94,6 +94,9 @@ int delete_from_ll (NodePtr *head, char *name) {
 
     assert (head);
 
+    if (!(*head))
+        return ERRWRG;
+
     NodePtr prev = NULL;
     NodePtr node = find_in_ll (*head, name, &prev);
 
@@ -112,15 +115,13 @@ int delete_from_ll (NodePtr *head, char *name) {
         free_nullify (node->weight->avl_ports);
         free_nullify (node->weight);
     }
-
-    free_nullify (node->info->name);
-    free_nullify (node->info);
+    
     free_nullify (node);
 
     return ERRSUC;
 }
 
-void free_ll (NodePtr *head) {
+void free_ll (NodePtr *head, char *head_name) {
 
     if (!(*head))
         return;
@@ -129,16 +130,25 @@ void free_ll (NodePtr *head) {
     NodePtr next = *node;
 
     while (*node) {
+        
         next = (*node)->next;
 
         if ((*node)->weight) {
-            free_nullify ((*node)->weight->avl_ports);
-            free_nullify ((*node)->weight);
-        }
 
-        if ((*node)->info) {
-            free_nullify ((*node)->info->name);
-            free_nullify ((*node)->info);
+            /*  every edge belongs to two vertices,
+                so in first time we clear avl_ports field,
+                in second time we clear edge ptr itself  */
+
+            if ((*node)->weight->avl_ports) {
+                free_nullify ((*node)->weight->avl_ports);
+
+                /*  loop - one vertice edge */
+                if (EQ((*node)->info->name, head_name))
+                    free_nullify ((*node)->weight);
+            }
+            else 
+                free_nullify ((*node)->weight);
+
         }
 
         free_nullify (*node);

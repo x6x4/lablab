@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 
+/*  Contains array of ports and its size.  */
 typedef struct edge *Edge;
 
 struct edge {
@@ -12,6 +13,7 @@ struct edge {
     size_t *avl_ports;
 };
 
+/*  Contains computer name, port and color for dfs.  */
 typedef struct v_info *V_info;
 
 struct v_info {
@@ -22,23 +24,24 @@ struct v_info {
     int color_dfs;
 };
 
-typedef struct vertex *Vertex;
+/*  Contains info, next and edge between it and head.  */
+typedef struct vertex *V_node;
 
 struct vertex {
 
     V_info info;
-    Vertex next;
+    V_node next;
     Edge weight;
     
 };
 
+/*  Contains info and head of its adj list.  */
 typedef struct vertex_head *V_head;
 
 struct vertex_head {
 
     V_info info;
-    Vertex head;
-    
+    V_node head;
 };
 
 
@@ -85,19 +88,19 @@ V_head new_vertex_head (V_info info);
 * @brief Create vertex node. 
 * 
 * @param info [IN] - vertex info
-* @return Vertex - ptr to vertex node created.
+* @return V_head - ptr to vertex node created.
 */
-Vertex new_vertex (V_info info);
+V_node new_vertex_node (V_info info);
 
 /**
-* @brief Check if both vertex belong to graph. 
+* @brief Check if both vertices belong to graph. 
 * 
 * @param graph [IN] - graph for check. 
 * @param name1, name2  [IN] - UNIQUE vertex names. 
-* @param num1, num2   [IN/OUT] OPTIONAL - numbers of vertexes in adjacency lists
+* @param num1, num2   [IN/OUT] OPTIONAL - numbers of vertices in adjacency lists
 * @return int - Error code. Possible ERRWRG - one or two names not found.
 */
-int check_vertexes (Graph graph, char *name1, char *name2, size_t *num1, size_t *num2);
+int check_vertices (Graph graph, char *name1, char *name2, size_t *num1, size_t *num2);
 
 /**
 * @brief Create new isolated vertex info. 
@@ -118,7 +121,14 @@ V_info new_info (char *name, size_t port);
 int remove_vertex (Graph graph, char *name);
 
 /**
-* @brief Remove vertex from adjacency lists (BESIDES its own). 
+* @brief Clean vertex head, its name and info. 
+* 
+* @param v [IN] - vertex head to clean.
+*/
+void free_vertex_head (V_head *v);
+
+/**
+* @brief Remove vertex from adjacency lists by name. 
 * 
 * @param graph [IN] - graph for removal. 
 * @param name  [IN] - UNIQUE computer name. 
@@ -249,4 +259,4 @@ void handle_dfs (Graph graph);
 * 
 * @param v[IN] - vertex to visit.
 */
-void visit_dfs (Vertex v);
+void visit_dfs (V_node v);

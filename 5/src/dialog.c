@@ -1,6 +1,7 @@
 #include "dialog.h"
 #include "generic.h"
 #include "lib_graph.h"
+#include "lib_ll.h"
 #include <complex.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -28,7 +29,13 @@ int Import (Graph graph, FILE *file) {
 
     FILE *data = user_file();
 
-    while (InsertVertex (graph, data) != ERREOF);
+    if (fgetc (data) == '*') {
+        /*  eat trailing newline  */
+        fgetc (data);
+        while (InsertVertex (graph, data) != ERREOF);
+    }
+
+    while (InsertEdge (graph, data) != ERREOF);
 
     fclose (data);
 
@@ -65,6 +72,12 @@ int InsertVertex (Graph graph, FILE *file) {
     char *name = get_str (file);
     if (!name)
         return ERREOF;
+
+    if (EQ(name, "*")) {
+        free_nullify (name);
+        return ERREOF;
+    }
+
 
     puts ("Enter service port:");
     size_t port = 0;
@@ -237,7 +250,7 @@ int UpdateVertexName (Graph graph, FILE *file) {
     if (!old_name)
         return ERREOF;
 
-    Vertex v = find_vertex_in_graph (graph, old_name, NULL);
+    V_head v = find_vertex_in_graph (graph, old_name, NULL);
 
     if (!v) {
         printf ("Vertex %s not found\n", old_name);
@@ -271,7 +284,7 @@ int UpdateVertexPort (Graph graph, FILE *file) {
     if (!name) 
         return ERREOF;
 
-    Vertex v = find_vertex_in_graph (graph, name, NULL);
+    V_head v = find_vertex_in_graph (graph, name, NULL);
 
     if (!v) {
         printf ("Vertex %s not found\n", name);
