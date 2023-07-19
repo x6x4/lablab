@@ -132,7 +132,6 @@ void free_vertex_head (V_head *v);
 * 
 * @param graph [IN] - graph for removal. 
 * @param name  [IN] - UNIQUE computer name. 
-* @return int - Error code. Possible ERRWRG - name not found.
 */
 void remove_vertex_from_adj_lists (Graph graph, char *name);
 

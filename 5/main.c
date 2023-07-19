@@ -16,7 +16,7 @@ int main (void) {
 
     info.greeting = "Network graph UI.";
     info.msgs = "\n0 - quit\n""1 - Insert\n""2 - Delete\n" \
-                 "3 - Update\n""4 - Print\n""5 - Import\n""6 - DFS";
+                 "3 - Update\n""4 - Print\n""5 - Import\n""6 - DFS\n";
     info.msgc = 7;
     info.exit_msg = "quit";
 

@@ -111,16 +111,14 @@ int delete_from_ll (NodePtr *head, char *name) {
     else 
         prev->next = node->next;        
 
-    if (node->weight) {
-        free_nullify (node->weight->avl_ports);
-        free_nullify (node->weight);
-    }
+    free_nullify (node->weight);
     
     free_nullify (node);
 
     return ERRSUC;
 }
 
+/*  clear nodes and their weights  */
 void free_ll (NodePtr *head, char *head_name) {
 
     if (!(*head))

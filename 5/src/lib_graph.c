@@ -16,8 +16,10 @@ void print_graph (Graph graph) {
     for (size_t i = 0; i < graph->csize; i++) {
         V_head head = graph->adj_list[i];
 
-        print_vertex_head (head);
-        print_ll (head->head);
+        if (head) {
+            print_vertex_head (head);
+            print_ll (head->head);
+        }
         printf ("\n");
     }
 
@@ -33,6 +35,7 @@ void free_graph (Graph graph) {
 
     for (size_t i = 0; i < graph->csize; i++) {
         V_head *head = &(graph->adj_list[i]);
+        //printf ("#%lu\n", i);
         free_ll (&((*head)->head), (*head)->info->name);
         free_vertex_head (head);
     }
@@ -149,14 +152,19 @@ int remove_vertex (Graph graph, char *name) {
 
     V_head *head = &(graph->adj_list[num]);
 
+    //  free vertex adj list and edges infos
     free_ll (&((*head)->head), (*head)->info->name);
+
+    //  free matching vertex node in other lists and edges themselves
+    remove_vertex_from_adj_lists (graph, name);
+    
+    //  free name and info
     free_vertex_head (head);
 
+    //  shift to fill freed place
     memcpy (dest, src, (graph->csize - num) * sizeof (V_head));
 
     graph->csize--;
-
-    remove_vertex_from_adj_lists (graph, name);
 
     return ERRSUC;
 }
@@ -218,8 +226,8 @@ int add_edge (Graph graph, char *name1, char *name2, size_t *avl_ports, size_t p
     Edge e = new_edge (avl_ports, ports_num);
     v1->weight = e;
     
+    
     if (!EQ(name1, name2)) {
-        /*  non-loop edge  */
 
         V_head vh2 = graph->adj_list[num2];
         v2 = new_vertex_node (vh2->info);
