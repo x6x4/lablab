@@ -35,7 +35,6 @@ void free_graph (Graph graph) {
 
     for (size_t i = 0; i < graph->csize; i++) {
         V_head *head = &(graph->adj_list[i]);
-        //printf ("#%lu\n", i);
         free_ll (&((*head)->head), (*head)->info->name);
         free_vertex_head (head);
     }
@@ -155,7 +154,7 @@ int remove_vertex (Graph graph, char *name) {
     //  free vertex adj list and edges infos
     free_ll (&((*head)->head), (*head)->info->name);
 
-    //  free matching vertex node in other lists and edges themselves
+    //  free matching vertex node in other lists and all in edges
     remove_vertex_from_adj_lists (graph, name);
     
     //  free name and info
@@ -171,14 +170,20 @@ int remove_vertex (Graph graph, char *name) {
 
 void free_vertex_head (V_head *v) {
 
-    free_nullify ((*v)->info->name);
-    free_nullify ((*v)->info);
+    if (*v) {
+        if ((*v)->info) free_nullify ((*v)->info->name);
+        free_nullify ((*v)->info);
+    }
     free_nullify (*v);
 }
 
 void remove_vertex_from_adj_lists (Graph graph, char *name) {
+
+    Edge e = NULL;
+
     for (size_t i = 0; i < graph->csize; i++) {
-        delete_from_ll (&(graph->adj_list[i]->head), name);
+        delete_from_ll (&(graph->adj_list[i]->head), name, &e);
+        free_edge (&e);
     }
 }
 
@@ -265,31 +270,46 @@ Edge new_edge (size_t *avl_ports, size_t ports_num) {
 }
 
 
+
 int remove_edge (Graph graph, char *name1, char *name2) {
 
     size_t num1 = 0, num2 = 0;
     if (check_vertices (graph, name1, name2, &num1, &num2) == ERRWRG)
         return ERRWRG;
 
-    remove_vertex_from_adj_lists (graph, name1);
-    remove_vertex_from_adj_lists (graph, name2);
+    Edge e = NULL;
+
+    V_head vh1 = graph->adj_list[num1];
+    V_head vh2 = graph->adj_list[num2];
+
+    delete_from_ll (&(vh1->head), name2, &e);
+    delete_from_ll (&(vh2->head), name1, &e);
+
+    free_edge (&e);
 
     return ERRSUC;
 }
 
-int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_ports) {
+void free_edge (Edge *e) {
+
+    if (*e) free_nullify ((*e)->avl_ports);
+    free_nullify ((*e));
+}
+
+int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_ports, size_t new_ports_num) {
 
     size_t num1 = 0, num2 = 0;
     if (check_vertices (graph, name1, name2, &num1, &num2) == ERRWRG)
         return ERRWRG;
 
     V_head vh1 = graph->adj_list[num1];
-    V_head vh2 = graph->adj_list[num2];
 
     V_node v2 = find_in_ll (vh1->head, name2, NULL);
 
     free_nullify (v2->weight->avl_ports);
+
     v2->weight->avl_ports = new_avl_ports;
+    v2->weight->ports_num = new_ports_num;
 
     return ERRSUC;
 }

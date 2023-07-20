@@ -23,6 +23,7 @@ void dialog (Dialog_info info, int (*fptr[]) (Graph, FILE*), Graph graph, FILE* 
 
 /*||||||||||||||||||||||||| < GENERAL FUNCTIONS > |||||||||||||||||||||||||*/
 
+/*  Format of data file: * <vertices> * <edges>  */
 int Import (Graph graph, FILE *file);
 
 int Insert (Graph graph, FILE *file);

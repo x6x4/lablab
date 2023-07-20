@@ -90,7 +90,7 @@ void print_node_weight (NodePtr node) {
     
 }
 
-int delete_from_ll (NodePtr *head, char *name) {
+int delete_from_ll (NodePtr *head, char *name, InfoPtr *info_to_delete) {
 
     assert (head);
 
@@ -111,7 +111,7 @@ int delete_from_ll (NodePtr *head, char *name) {
     else 
         prev->next = node->next;        
 
-    free_nullify (node->weight);
+    *info_to_delete = node->weight;
     
     free_nullify (node);
 

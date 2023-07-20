@@ -25,6 +25,7 @@ void dialog (Dialog_info info, int (*fptr[]) (Graph, FILE*), Graph graph, FILE* 
     puts (info->exit_msg);
 }
 
+/*  Format of data file: * <vertices> * <edges>  */
 int Import (Graph graph, FILE *file) {
 
     FILE *data = user_file();
@@ -191,6 +192,7 @@ int DeleteEdge (Graph graph, FILE *file) {
     char *name2 = get_str (file);
     if (!name2) {
         free_nullify (name1);
+
         return ERREOF;
     }
 
@@ -198,10 +200,14 @@ int DeleteEdge (Graph graph, FILE *file) {
         puts ("Edge not found");
         free_nullify (name1);
         free_nullify (name2);
+
         return ERRWRG;
     }
     else 
-        puts ("Vertex deleted successfully.");
+        puts ("Edge deleted successfully.");
+
+    free_nullify (name1);
+    free_nullify (name2);
 
     return ERRSUC;
 }
@@ -279,7 +285,7 @@ int UpdateVertexName (Graph graph, FILE *file) {
 
 int UpdateVertexPort (Graph graph, FILE *file) {
 
-    puts ("Enter old computer name:");
+    puts ("Enter computer name:");
     char *name = get_str (file);
     if (!name) 
         return ERREOF;
@@ -348,8 +354,11 @@ int UpdateEdgePorts (Graph graph, FILE *file) {
             return ERREOF;
     }
 
-    change_edge_ports (graph, name1, name2, ports);
+    change_edge_ports (graph, name1, name2, ports, ports_num);
     puts ("Edge ports updated successfully.");
+
+    free_nullify (name1);
+    free_nullify (name2);
 
     return ERRSUC;
 }
@@ -360,6 +369,7 @@ int UpdateEdgePorts (Graph graph, FILE *file) {
 int Print (Graph graph, FILE *file) {
 
     print_graph (graph);
+
     return ERRSUC;
 }
 

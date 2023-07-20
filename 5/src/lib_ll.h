@@ -6,6 +6,7 @@
 #define EQ(s1,s2) ((strcmp (s1, s2)) == 0)
 
 typedef V_node NodePtr;
+typedef Edge InfoPtr;
 
 /*||||||||||||||||||||||||| < LIST > |||||||||||||||||||||||||*/
 
@@ -17,5 +18,5 @@ NodePtr find_in_ll (NodePtr head, char *name, NodePtr *prev);
 void print_ll (NodePtr head);
 void print_node (NodePtr node);
 void print_node_weight (NodePtr node);
-int delete_from_ll (NodePtr *head, char *name);
+int delete_from_ll (NodePtr *head, char *name, InfoPtr *info_to_delete);
 void free_ll (NodePtr *head, char *head_name);

@@ -196,13 +196,22 @@ Edge new_edge (size_t *avl_ports, size_t ports_num);
 int remove_edge (Graph graph, char *name1, char *name2);
 
 /**
+* @brief Clean edge and its info. 
+* 
+* @param v [IN] - edge to clean.
+*/
+void free_edge (Edge *e);
+
+/**
 * @brief Change avl_ports field of edge. 
 * 
 * @param graph [IN] - graph for change. 
 * @param name1, name2   [IN] - names of ends of changed edge. 
 * @param new_avl_ports [IN] - new vector of ports, available for traffic transmission.
+  @param new_ports_num [IN] - number of ports.
+* @return int - Error code. Possible ERRWRG - edge not found.
 */
-int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_ports);
+int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_ports, size_t new_ports_num);
 
 
 
