@@ -54,7 +54,7 @@ enum {
 
 typedef struct graph *Graph;
 
-#define MAX_VERTEX_NUM 10
+#define MAX_VERTEX_NUM 20
 
 struct graph {
     V_head adj_list [MAX_VERTEX_NUM];
@@ -225,7 +225,7 @@ int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_po
 void print_graph (Graph graph);
 
 /**
-* @brief Print head of adjacency list.
+* @brief Print head of adjacency list in color.
 * 
 * @param graph [IN] - head to print.
 */
@@ -239,32 +239,48 @@ void print_vertex_head (V_head v);
 void free_graph (Graph graph);
 
 /**
-* @brief Depth-first search.
+* @brief Print colourful graph components (each has its color). 
 * 
-* @param graph [IN] - graph for DFS.
+* @param g [IN] - graph.
 */
-void dfs (Graph graph);
+void print_components (Graph g);
 
 /**
-* @brief Init graph before DFS.
+* @brief Init graph colors before split on components.
   Set all vertices to white.
 * 
 * @param graph [IN] - graph for DFS.
 */
-void init_dfs (Graph graph);
+void init_colors (Graph graph);
 
 /**
-* @brief Handle graph in DFS.
+* @brief Handle graph in split on components.
 * 
 * @param graph [IN] - graph for DFS.
 */
-void handle_dfs (Graph graph);
+void handle_components (Graph graph);
 
 /**
-* @brief Visit vertex in DFS.
-  Set vertice to grey, traverse its adjacency list 
-  and set it to black. 
+* @brief Visit vertex in split on components.
+  Set every new vertice to grey, 
+  traverse vertices from its adj list and their lists until possible.
 * 
+* @param graph [IN] - graph for DFS.
 * @param v[IN] - vertex to visit.
 */
-void visit_dfs (V_node v);
+void visit_vertex_comps (Graph g, V_head v);
+
+/**
+* @brief Finds adj list head by name in node. 
+* 
+* @param graph [IN] - graph for search.
+* @param v[IN] - node to take name from.
+*/
+V_head take_head_from_node (Graph g, V_node v);
+
+/**
+* @brief Print head of adjacency list in no color and without arrows.
+* 
+* @param graph [IN] - head to print.
+*/
+void print_vertex_head_comps (V_head v);

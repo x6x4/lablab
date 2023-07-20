@@ -119,14 +119,21 @@ int InsertEdge (Graph graph, FILE *file) {
 
     puts ("Enter number of edge ports");
     size_t ports_num = 0;
-    if (get_sizet_file (file, &ports_num, 255, 0) == ERREOF)
+    if (get_sizet_file (file, &ports_num, 255, 0) == ERREOF) {
+        free_nullify (name1);
+        free_nullify (name2);
         return ERREOF;
+    }
 
     puts ("Enter edge ports");
     size_t *ports = calloc (ports_num, sizeof (size_t));
     for (size_t i = 0; i < ports_num; i++) {
-        if (get_sizet_file (file, ports+i, 255, 0) == ERREOF)
+        if (get_sizet_file (file, ports+i, 255, 0) == ERREOF) {
+            free_nullify (name1);
+            free_nullify (name2);
+            free_nullify (ports);
             return ERREOF;
+        }
     }
 
     if (add_edge (graph, name1, name2, ports, ports_num) == ERRWRG) {
@@ -378,7 +385,7 @@ int Print (Graph graph, FILE *file) {
 
 int DFS (Graph graph, FILE *file) {
 
-    dfs (graph);
+    print_components (graph);
 
     return ERRSUC;
 }

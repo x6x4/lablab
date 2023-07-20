@@ -31,6 +31,12 @@ void print_vertex_head (V_head v) {
         printf (YELLOW("(%s, %lu) -> "), v->info->name, v->info->port);
 }
 
+void print_vertex_head_comps (V_head v) {
+
+    if (v)
+        printf ("(%s, %lu) ", v->info->name, v->info->port);
+}
+
 void free_graph (Graph graph) {
 
     for (size_t i = 0; i < graph->csize; i++) {
@@ -40,59 +46,80 @@ void free_graph (Graph graph) {
     }
 }
 
+
 size_t time;
 
-void dfs (Graph graph) {
+void print_components (Graph g) {
 
-    init_dfs (graph);
+    if (!g) return;
 
-    handle_dfs (graph);
+    init_colors (g);
+
+    handle_components (g);
 }
 
-void init_dfs (Graph graph) {
+void init_colors (Graph graph) {
 
     for (size_t i = 0; i < graph->csize; i++) 
+        //  this covers all infos
         graph->adj_list[i]->info->color_dfs = WHITE;
 }
 
-void handle_dfs (Graph graph) {
+void handle_components (Graph g) {
 
-    for (size_t i = 0; i < graph->csize; i++) {
+    size_t clr = 1;
 
-        int clr_cur_head = graph->adj_list[i]->info->color_dfs;
-
-        if (clr_cur_head != BLACK) {
-
-            if (clr_cur_head == WHITE) {
-                printf ("\n");
-                print_vertex_head (graph->adj_list[i]);
-            }
-
-            graph->adj_list[i]->info->color_dfs = GREY;
-
-            visit_dfs (graph->adj_list[i]->head);
+    for (size_t i = 0; i < g->csize; i++) {
+        
+        if (g->adj_list[i]->info->color_dfs == WHITE) {
+            printf ("\x1b[3%lum", clr);
+            visit_vertex_comps (g, g->adj_list[i]);
+            printf ("\n");
+            clr++;
         }
     }
+
+    printf ("\x1b[0m");
 }
 
-void visit_dfs (V_node v) {
+void visit_vertex_comps (Graph g, V_head v) {
 
-    if (!v) 
-        return;
+    if (!v) return;
 
-    V_node node = v;
+    /*  mark vertex  */
+    if (v->info->color_dfs == WHITE) {
+
+        print_vertex_head_comps (v);
+        v->info->color_dfs = GREY;
+    }
+    
+    /*  go to next unmarked vertex  */
+    V_node node = v->head;
 
     while (node) {
+    
+        V_head head = take_head_from_node (g, node);
 
-        if (node->info->color_dfs == WHITE) {
+        if (!head) return;
+        
+        /*  it is white  */
+        if (head->info->color_dfs == WHITE) 
+            visit_vertex_comps (g, head);
 
-            node->info->color_dfs = GREY;
-            print_node (node);
-        } else if (node->info->color_dfs == GREY)
-            node->info->color_dfs = BLACK;
-
+        /*  otherwise keep looking  */
         node = node->next;
     }
+
+    return;
+}
+
+V_head take_head_from_node (Graph g, V_node v) {
+
+    if (!v) return NULL;
+
+    V_head head = find_vertex_in_graph (g, v->info->name, NULL);
+
+    return head;
 }
 
 
@@ -136,6 +163,7 @@ V_info new_info (char *name, size_t port) {
     V_info info = calloc (1, sizeof *(info));
     info->name = name;
     info->port = port;
+    info->color_dfs = WHITE;
 
     return info;
 }
