@@ -1,5 +1,6 @@
 #pragma once
 
+#include "generic.h"
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -102,6 +103,16 @@ V_node new_vertex_node (V_info info);
 * @return int - Error code. Possible ERRWRG - one or two names not found.
 */
 int check_vertices (Graph graph, char *name1, char *name2, size_t *num1, size_t *num2);
+
+/**
+* @brief Check if edge belong to graph. 
+* 
+* @param graph        [IN] - graph for check. 
+* @param name1, name2 [IN] - UNIQUE names of edge ends. 
+* @return int - Error code. Possible ERRWRG - edge not found.
+*/
+int check_edge (Graph graph, char *name1, char *name2);
+
 
 /**
 * @brief Create new isolated vertex info. 
@@ -239,6 +250,7 @@ void print_vertex_head (const V_head v);
 */
 void free_graph (Graph graph);
 
+
 /**
 * @brief Create graph components (each has its color). 
 * 
@@ -299,7 +311,6 @@ void print_components (Graph comps, size_t comp_num);
 */
 V_head take_head_from_node (Graph g, V_node v);
 
-
 /**
 * @brief Print graph as adjacency lists in no color.
 * 
@@ -312,4 +323,33 @@ void print_graph_comps (const Graph graph);
 * 
 * @param graph [IN] - head to print.
 */
-void print_vertex_head_comps (const V_head v);
+void print_vertex_head_no_color (const V_head v);
+
+/**
+* @brief Traverse graph from vertex by port in depth.
+* 
+* @param graph [IN] - graph to traverse.
+* @param v  [IN] - vertex to start from. 
+* @param port  [IN] - port to traverse by.
+*/
+void dfs (Graph g, V_head v, size_t port);
+
+/**
+* @brief Print dfs forest.
+* 
+* @param start [IN] - global start point. 
+* @param graph [IN] - graph to traverse.
+* @param v     [IN] - vertex to start from. 
+* @param port  [IN] - port to traverse by.
+*/
+void print_dfs_forest (V_head start, Graph g, V_head v, size_t port);
+
+/**
+* @brief Check if ports array has port.
+* 
+* @param ports        [IN] - vector of ports, available for traffic transmission.
+* @param ports_num    [IN] - number of ports.
+* @param ports        [IN] - port to check
+* @return Bool - Error code. Possible ERRWRG - port not found.
+*/
+Bool is_port_avail (size_t *ports, size_t ports_num, size_t port);

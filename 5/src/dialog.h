@@ -45,13 +45,14 @@ int UpdateEdgePorts (Graph graph, FILE *file);
 
 int Print (Graph graph, FILE *file);
 
-int CreateComponents (Graph g, FILE *file);
 
 
 /*||||||||||||||||||||||||| < COMPLEX FUNCTIONS > |||||||||||||||||||||||||*/
 
 
-int Find (Graph graph, FILE *file);
-int Trav (Graph graph, FILE *file);
+int CreateComponents (Graph g, FILE *file);
+int DFS (Graph g, FILE *file);
+int Djkstra (Graph graph, FILE *file);
+
 
 

@@ -381,11 +381,43 @@ int Print (Graph graph, FILE *file) {
 }
 
 
-
+/*  COMPLEX FUNCTIONS  */
 
 int CreateComponents (Graph g, FILE *file) {
 
     create_components (g);
+
+    return ERRSUC;
+}
+
+int DFS (Graph g, FILE *file) {
+
+    puts ("Enter computer name to search from");
+    char *name = get_str (file);
+    if (!name)
+        return ERREOF;
+
+    V_head v = find_vertex_in_graph (g, name, NULL);
+    if (!v) {
+
+        printf ("No such computer\n");
+        free_nullify (name);
+        
+        return ERRWRG;
+    }
+
+    puts ("Enter number of service port:");
+    size_t port = 0;
+    if (get_sizet_file (file, &port, 255, 0) == ERREOF) {
+
+        free_nullify (name);
+
+        return ERREOF;
+    }
+
+    dfs (g, v, port);
+
+    free_nullify (name);
 
     return ERRSUC;
 }

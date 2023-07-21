@@ -34,7 +34,7 @@ void print_graph_comps (const Graph graph) {
         V_head head = graph->adj_list[i];
 
         if (head) {
-            print_vertex_head_comps (head);
+            print_vertex_head_no_color (head);
             print_ll (head->head);
         }
         printf ("\n");
@@ -47,7 +47,7 @@ void print_vertex_head (const V_head v) {
         printf (YELLOW("(%s, %lu) -> "), v->info->name, v->info->port);
 }
 
-void print_vertex_head_comps (const V_head v) {
+void print_vertex_head_no_color (const V_head v) {
 
     if (v)
         printf ("(%s, %lu) -> ", v->info->name, v->info->port);
@@ -63,7 +63,6 @@ void free_graph (Graph graph) {
 }
 
 
-size_t time;
 
 void create_components (Graph g) {
 
@@ -72,9 +71,11 @@ void create_components (Graph g) {
     init_colors (g);
 
     size_t comp_num = handle_components (g);
+
     Graph comps = split_graph (g, comp_num);
 
     print_components (comps, comp_num);
+
     free_nullify (comps);
 }
 
@@ -156,7 +157,7 @@ void print_components (Graph comps, size_t comp_num) {
 
     for (size_t i = 0; i < comp_num; i++) {
 
-        printf ("\x1b[3%lum", i+1);
+        printf ("\x1b[3%lum", (i+1)%10);
 
         print_graph_comps (comps+i);
         printf ("\n");
@@ -174,6 +175,91 @@ V_head take_head_from_node (Graph g, V_node v) {
     return head;
 }
 
+size_t clr = 1;
+
+void dfs (Graph g, V_head v, size_t port) {
+
+    if (!v) return;
+
+    init_colors (g);
+    
+    clr = 1;
+
+    print_dfs_forest (v, g, v, 1);
+
+    printf ("\x1b[0m");
+}
+
+void print_dfs_forest (V_head start, Graph g, V_head v, size_t port) {
+
+    if (!v) return;
+
+    /*  mark vertex  */
+    if (v->info->color_dfs == WHITE) {
+
+        //print_vertex_head_no_color (v);
+        v->info->color_dfs = GREY;
+    } else 
+        //  looks like it's dead branch
+        //  vertex already visited and it wasn't catched early.
+        return;
+    
+    
+    /*  go to next unmarked vertex  */
+    V_node node = v->head;
+
+    while (node) {
+
+        V_head head = take_head_from_node (g, node);
+
+        if (!head) return;
+
+        int has_edge_port = is_port_avail (node->weight->avail_ports, 
+                            node->weight->ports_num, port);
+    
+        /*  it is white  */
+        if (head->info->color_dfs == WHITE) {
+            print_dfs_forest (start, g, head, clr);
+            
+        } else 
+            node = node->next;
+            
+
+        /*  keep looking  */
+        
+        
+        
+        //  in return to global start and not the final end 
+        if (node && v == start) {
+
+            //  the end of current branch
+            print_vertex_head_no_color (start);
+
+            //  start new branch
+            printf ("\n");
+            clr++;
+            
+        }
+    }
+
+    //if (v->info->port == port) {
+    //if (v != start) {
+    printf ("\x1b[3%lum", clr%10);
+    print_vertex_head_no_color (v);
+    //}
+    //}
+
+    //  end of list - the only way is to go back
+    return;
+}   
+
+Bool is_port_avail (size_t *ports, size_t ports_num, size_t port) {
+
+    for (size_t i = 0; i < ports_num; i++) 
+        if (ports[i] == port) return 1;
+
+    return 0;
+}
 
 
 int add_vertex (Graph graph, char *name, size_t port) {
@@ -340,6 +426,17 @@ int check_vertices (Graph graph, char *name1, char *name2, size_t *num1, size_t 
     return ERRSUC;
 }
 
+int check_edge (Graph graph, char *name1, char *name2) {
+    
+    V_head v1 = find_vertex_in_graph (graph, name1, NULL);
+    if (!v1) 
+        return ERRWRG;
+
+    if (find_in_ll (v1->head, name2, NULL))
+        return ERRSUC;
+    else
+        return ERRWRG;
+}
 
 Edge new_edge (size_t *avail_ports, size_t ports_num) {
     Edge e = calloc (1, sizeof *e);
@@ -353,14 +450,13 @@ Edge new_edge (size_t *avail_ports, size_t ports_num) {
 
 int remove_edge (Graph graph, char *name1, char *name2) {
 
-    size_t num1 = 0, num2 = 0;
-    if (check_vertices (graph, name1, name2, &num1, &num2) == ERRWRG)
+    if (check_edge (graph, name1, name2) == ERRWRG)
         return ERRWRG;
 
     Edge e = NULL;
 
-    V_head vh1 = graph->adj_list[num1];
-    V_head vh2 = graph->adj_list[num2];
+    V_head vh1 = find_vertex_in_graph (graph, name1, NULL);
+    V_head vh2 = find_vertex_in_graph (graph, name2, NULL);
 
     delete_from_ll (&(vh1->head), name2, &e);
     delete_from_ll (&(vh2->head), name1, &e);

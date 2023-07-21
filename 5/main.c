@@ -5,7 +5,7 @@
 
 /*  GLOBAL VARIABLES  */
 
-int (*fptr[]) (Graph, FILE*)  = {NULL, Insert, Delete, Update, Print, Import, CreateComponents};
+int (*fptr[]) (Graph, FILE*)  = {NULL, Insert, Delete, Update, Print, Import, CreateComponents, DFS};
 
 
 int main (void) {
@@ -16,8 +16,9 @@ int main (void) {
 
     info.greeting = "Network graph UI.";
     info.msgs = "\n0 - quit\n""1 - Insert\n""2 - Delete\n" \
-                 "3 - Update\n""4 - Print\n""5 - Import\n""6 - DFS\n";
-    info.msgc = 7;
+                 "3 - Update\n""4 - Print\n""5 - Import\n" \
+                 "6 - Split on components\n""7 - DFS\n";
+    info.msgc = 8;
     info.exit_msg = "quit";
 
     dialog (&info, fptr, &G, file);

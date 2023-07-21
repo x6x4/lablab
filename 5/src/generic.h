@@ -5,6 +5,8 @@
 
 #define free_nullify(ptr) { free (ptr); ptr = NULL; }
 
+typedef short Bool;
+
 enum {
 	ERREOF = -1,
 	ERRSUC,
