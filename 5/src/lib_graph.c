@@ -8,7 +8,7 @@
 
 
 
-void print_graph (Graph graph) {
+void print_graph (const Graph graph) {
 
     if (graph->csize == 0)
         printf ("(void)\n");
@@ -25,16 +25,32 @@ void print_graph (Graph graph) {
 
 }
 
-void print_vertex_head (V_head v) {
+void print_graph_comps (const Graph graph) {
+    
+    if (graph->csize == 0)
+        printf ("(void)\n");
+    
+    for (size_t i = 0; i < graph->csize; i++) {
+        V_head head = graph->adj_list[i];
+
+        if (head) {
+            print_vertex_head_comps (head);
+            print_ll (head->head);
+        }
+        printf ("\n");
+    }
+}
+
+void print_vertex_head (const V_head v) {
 
     if (v)
         printf (YELLOW("(%s, %lu) -> "), v->info->name, v->info->port);
 }
 
-void print_vertex_head_comps (V_head v) {
+void print_vertex_head_comps (const V_head v) {
 
     if (v)
-        printf ("(%s, %lu) ", v->info->name, v->info->port);
+        printf ("(%s, %lu) -> ", v->info->name, v->info->port);
 }
 
 void free_graph (Graph graph) {
@@ -49,13 +65,17 @@ void free_graph (Graph graph) {
 
 size_t time;
 
-void print_components (Graph g) {
+void create_components (Graph g) {
 
     if (!g) return;
 
     init_colors (g);
 
-    handle_components (g);
+    size_t comp_num = handle_components (g);
+    Graph comps = split_graph (g, comp_num);
+
+    print_components (comps, comp_num);
+    free_nullify (comps);
 }
 
 void init_colors (Graph graph) {
@@ -65,32 +85,34 @@ void init_colors (Graph graph) {
         graph->adj_list[i]->info->color_dfs = WHITE;
 }
 
-void handle_components (Graph g) {
+size_t handle_components (Graph g) {
 
-    size_t clr = 1;
+    size_t comp_num = 0;
 
     for (size_t i = 0; i < g->csize; i++) {
         
         if (g->adj_list[i]->info->color_dfs == WHITE) {
-            printf ("\x1b[3%lum", clr);
-            visit_vertex_comps (g, g->adj_list[i]);
-            printf ("\n");
-            clr++;
+
+            visit_vertex_comps (g, g->adj_list[i], comp_num);
+            comp_num++;
         }
     }
 
     printf ("\x1b[0m");
+
+    return comp_num;
 }
 
-void visit_vertex_comps (Graph g, V_head v) {
+void visit_vertex_comps (Graph g, V_head v, size_t comp_num) {
 
     if (!v) return;
 
     /*  mark vertex  */
     if (v->info->color_dfs == WHITE) {
 
-        print_vertex_head_comps (v);
+        //print_vertex_head_comps (v);
         v->info->color_dfs = GREY;
+        v->comp_num = comp_num;
     }
     
     /*  go to next unmarked vertex  */
@@ -104,13 +126,43 @@ void visit_vertex_comps (Graph g, V_head v) {
         
         /*  it is white  */
         if (head->info->color_dfs == WHITE) 
-            visit_vertex_comps (g, head);
+            visit_vertex_comps (g, head, comp_num);
 
         /*  otherwise keep looking  */
         node = node->next;
     }
 
     return;
+}
+
+Graph split_graph (Graph g, size_t comp_num) {
+
+    Graph comps = calloc (comp_num, sizeof *comps);
+    
+    for (size_t i = 0; i < g->csize; i++) {
+
+        size_t num = g->adj_list[i]->comp_num;
+        Graph cur_comp = comps+num;
+        
+        cur_comp->adj_list[cur_comp->csize] = g->adj_list[i];
+        cur_comp->csize++;
+    }
+
+    return comps;
+
+}
+
+void print_components (Graph comps, size_t comp_num) {
+
+    for (size_t i = 0; i < comp_num; i++) {
+
+        printf ("\x1b[3%lum", i+1);
+
+        print_graph_comps (comps+i);
+        printf ("\n");
+    }
+
+    printf ("\x1b[0m");
 }
 
 V_head take_head_from_node (Graph g, V_node v) {
@@ -246,7 +298,7 @@ V_head find_vertex_in_graph (Graph graph, char *name, size_t *num) {
 
 
 
-int add_edge (Graph graph, char *name1, char *name2, size_t *avl_ports, size_t ports_num) {
+int add_edge (Graph graph, char *name1, char *name2, size_t *avail_ports, size_t ports_num) {
     
     size_t num1 = 0, num2 = 0;
     if (check_vertices (graph, name1, name2, &num1, &num2) == ERRWRG)
@@ -256,7 +308,7 @@ int add_edge (Graph graph, char *name1, char *name2, size_t *avl_ports, size_t p
     V_node v1 = new_vertex_node (vh1->info);
     V_node v2 = NULL;
         
-    Edge e = new_edge (avl_ports, ports_num);
+    Edge e = new_edge (avail_ports, ports_num);
     v1->weight = e;
     
     
@@ -289,9 +341,9 @@ int check_vertices (Graph graph, char *name1, char *name2, size_t *num1, size_t 
 }
 
 
-Edge new_edge (size_t *avl_ports, size_t ports_num) {
+Edge new_edge (size_t *avail_ports, size_t ports_num) {
     Edge e = calloc (1, sizeof *e);
-    e->avl_ports = avl_ports;
+    e->avail_ports = avail_ports;
     e->ports_num = ports_num;
 
     return e;
@@ -320,11 +372,11 @@ int remove_edge (Graph graph, char *name1, char *name2) {
 
 void free_edge (Edge *e) {
 
-    if (*e) free_nullify ((*e)->avl_ports);
+    if (*e) free_nullify ((*e)->avail_ports);
     free_nullify ((*e));
 }
 
-int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_ports, size_t new_ports_num) {
+int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avail_ports, size_t new_ports_num) {
 
     size_t num1 = 0, num2 = 0;
     if (check_vertices (graph, name1, name2, &num1, &num2) == ERRWRG)
@@ -334,9 +386,9 @@ int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_po
 
     V_node v2 = find_in_ll (vh1->head, name2, NULL);
 
-    free_nullify (v2->weight->avl_ports);
+    free_nullify (v2->weight->avail_ports);
 
-    v2->weight->avl_ports = new_avl_ports;
+    v2->weight->avail_ports = new_avail_ports;
     v2->weight->ports_num = new_ports_num;
 
     return ERRSUC;

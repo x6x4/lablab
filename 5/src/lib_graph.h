@@ -10,7 +10,7 @@ typedef struct edge *Edge;
 struct edge {
 
     size_t ports_num;
-    size_t *avl_ports;
+    size_t *avail_ports;
 };
 
 /*  Contains computer name, port and color for dfs.  */
@@ -42,6 +42,7 @@ struct vertex_head {
 
     V_info info;
     V_node head;
+    size_t comp_num;
 };
 
 
@@ -95,8 +96,8 @@ V_node new_vertex_node (V_info info);
 /**
 * @brief Check if both vertices belong to graph. 
 * 
-* @param graph [IN] - graph for check. 
-* @param name1, name2  [IN] - UNIQUE vertex names. 
+* @param graph        [IN] - graph for check. 
+* @param name1, name2 [IN] - UNIQUE vertex names. 
 * @param num1, num2   [IN/OUT] OPTIONAL - numbers of vertices in adjacency lists
 * @return int - Error code. Possible ERRWRG - one or two names not found.
 */
@@ -169,10 +170,10 @@ V_head find_vertex_in_graph (Graph graph, char *name, size_t *num);
 /**
 * @brief Add edge to graph. 
 * 
-* @param graph [IN] - graph for addition. 
-* @param name1, name2   [IN] - names of ends of newly created edge. 
-* @param avl_ports [IN] - vector of ports, available for traffic transmission.
-* @param ports_num [IN] - number of ports.
+* @param graph        [IN] - graph for addition. 
+* @param name1, name2 [IN] - names of ends of newly created edge. 
+* @param avl_ports    [IN] - vector of ports, available for traffic transmission.
+* @param ports_num    [IN] - number of ports.
 * @return int - Error code. Possible ERRWRG - vertex not found.
 */
 int add_edge (Graph graph, char *name1, char *name2, size_t *avl_ports, size_t ports_num);
@@ -189,7 +190,7 @@ Edge new_edge (size_t *avl_ports, size_t ports_num);
 /**
 * @brief Remove edge from graph. 
 * 
-* @param graph [IN] - graph for removal. 
+* @param graph          [IN] - graph for removal. 
 * @param name1, name2   [IN] - names of ends of removed edge. 
 * @return int - Error code. Possible ERRWRG - edge not found.
 */
@@ -205,8 +206,8 @@ void free_edge (Edge *e);
 /**
 * @brief Change avl_ports field of edge. 
 * 
-* @param graph [IN] - graph for change. 
-* @param name1, name2   [IN] - names of ends of changed edge. 
+* @param graph         [IN] - graph for change. 
+* @param name1, name2  [IN] - names of ends of changed edge. 
 * @param new_avl_ports [IN] - new vector of ports, available for traffic transmission.
   @param new_ports_num [IN] - number of ports.
 * @return int - Error code. Possible ERRWRG - edge not found.
@@ -218,18 +219,18 @@ int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_po
 /*||||||||||||||||||||||||| < GRAPH FUNCTIONS > |||||||||||||||||||||||||*/
 
 /**
-* @brief Print graph as adjacency lists.
+* @brief Print graph as colored adjacency lists.
 * 
 * @param graph [IN] - graph to print.
 */
-void print_graph (Graph graph);
+void print_graph (const Graph graph);
 
 /**
 * @brief Print head of adjacency list in color.
 * 
 * @param graph [IN] - head to print.
 */
-void print_vertex_head (V_head v);
+void print_vertex_head (const V_head v);
 
 /**
 * @brief Clear graph.
@@ -239,11 +240,11 @@ void print_vertex_head (V_head v);
 void free_graph (Graph graph);
 
 /**
-* @brief Print colourful graph components (each has its color). 
+* @brief Create graph components (each has its color). 
 * 
 * @param g [IN] - graph.
 */
-void print_components (Graph g);
+void create_components (Graph g);
 
 /**
 * @brief Init graph colors before split on components.
@@ -254,33 +255,61 @@ void print_components (Graph g);
 void init_colors (Graph graph);
 
 /**
-* @brief Handle graph in split on components.
+* @brief Handle graph in split on components
+  and set component number for each vertex.
 * 
 * @param graph [IN] - graph for DFS.
+* @return size_t - number of components in graph.
 */
-void handle_components (Graph graph);
+size_t handle_components (Graph graph);
 
 /**
 * @brief Visit vertex in split on components.
   Set every new vertice to grey, 
   traverse vertices from its adj list and their lists until possible.
 * 
-* @param graph [IN] - graph for DFS.
-* @param v[IN] - vertex to visit.
+* @param graph    [IN] - graph for DFS.
+* @param v        [IN] - vertex to visit.
+* @param comp_num [IN] - number of vertex component.
 */
-void visit_vertex_comps (Graph g, V_head v);
+void visit_vertex_comps (Graph g, V_head v, size_t comp_num);
+
+/**
+* @brief Split graph on components. 
+* 
+* @param g        [IN] - graph for split.
+* @param comp_num [IN] - number of components.
+* @return Graph - array of graph components.
+*/
+Graph split_graph (Graph g, size_t comp_num);
+
+/**
+* @brief Print components. 
+* 
+* @param comps    [IN] - components array to print.
+* @param comp_num [IN] - number of components.
+*/
+void print_components (Graph comps, size_t comp_num);
 
 /**
 * @brief Finds adj list head by name in node. 
 * 
 * @param graph [IN] - graph for search.
-* @param v[IN] - node to take name from.
+* @param v     [IN] - node to take name from.
 */
 V_head take_head_from_node (Graph g, V_node v);
 
+
 /**
-* @brief Print head of adjacency list in no color and without arrows.
+* @brief Print graph as adjacency lists in no color.
+* 
+* @param graph [IN] - graph to print.
+*/
+void print_graph_comps (const Graph graph);
+
+/**
+* @brief Print head of adjacency list in no color.
 * 
 * @param graph [IN] - head to print.
 */
-void print_vertex_head_comps (V_head v);
+void print_vertex_head_comps (const V_head v);

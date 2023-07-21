@@ -45,7 +45,7 @@ int UpdateEdgePorts (Graph graph, FILE *file);
 
 int Print (Graph graph, FILE *file);
 
-int DFS (Graph graph, FILE *file);
+int CreateComponents (Graph g, FILE *file);
 
 
 /*||||||||||||||||||||||||| < COMPLEX FUNCTIONS > |||||||||||||||||||||||||*/

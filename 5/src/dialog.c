@@ -381,11 +381,11 @@ int Print (Graph graph, FILE *file) {
 }
 
 
-/*  DFS  */
 
-int DFS (Graph graph, FILE *file) {
 
-    print_components (graph);
+int CreateComponents (Graph g, FILE *file) {
+
+    create_components (g);
 
     return ERRSUC;
 }

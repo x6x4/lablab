@@ -5,7 +5,7 @@
 
 /*  GLOBAL VARIABLES  */
 
-int (*fptr[]) (Graph, FILE*)  = {NULL, Insert, Delete, Update, Print, Import, DFS};
+int (*fptr[]) (Graph, FILE*)  = {NULL, Insert, Delete, Update, Print, Import, CreateComponents};
 
 
 int main (void) {
