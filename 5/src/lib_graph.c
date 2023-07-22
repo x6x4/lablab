@@ -195,11 +195,10 @@ void print_dfs_forest (V_head start, Graph g, V_head v, size_t port) {
     if (!v) return;
 
     /*  mark vertex  */
-    if (v->info->color_dfs == WHITE) {
-
-        //print_vertex_head_no_color (v);
+    if (v->info->color_dfs == WHITE) 
         v->info->color_dfs = GREY;
-    } else 
+
+    else 
         //  looks like it's dead branch
         //  vertex already visited and it wasn't catched early.
         return;
@@ -208,48 +207,50 @@ void print_dfs_forest (V_head start, Graph g, V_head v, size_t port) {
     /*  go to next unmarked vertex  */
     V_node node = v->head;
 
+    /*  isolated vertex, no edges  */
+    if (!node) {
+
+        printf ("\x1b[3%lum", clr%10);
+        print_vertex_head_no_color (v);
+        printf ("\n");
+
+        return;
+    }
+
     while (node) {
 
         V_head head = take_head_from_node (g, node);
 
         if (!head) return;
 
-        int has_edge_port = is_port_avail (node->weight->avail_ports, 
-                            node->weight->ports_num, port);
+        //int has_edge_port = is_port_avail (node->weight->avail_ports, 
+        //                    node->weight->ports_num, port);
     
-        /*  it is white  */
         if (head->info->color_dfs == WHITE) {
+
             print_dfs_forest (start, g, head, clr);
             
+            //  branch start reached
+            if (v == start) {
+
+                print_vertex_head_no_color (start);
+
+                //  start new branch with new color
+                printf ("\n");
+                clr++;
+            }
+            
         } else 
-            node = node->next;
-            
-
-        /*  keep looking  */
-        
-        
-        
-        //  in return to global start and not the final end 
-        if (node && v == start) {
-
-            //  the end of current branch
-            print_vertex_head_no_color (start);
-
-            //  start new branch
-            printf ("\n");
-            clr++;
-            
-        }
+            /*  keep looking  */
+            node = node->next;            
     }
 
-    //if (v->info->port == port) {
-    //if (v != start) {
-    printf ("\x1b[3%lum", clr%10);
-    print_vertex_head_no_color (v);
-    //}
-    //}
+    //  print nodes from the branch end 
+    if (v != start) {
+        printf ("\x1b[3%lum", clr%10);
+        print_vertex_head_no_color (v);
+    }
 
-    //  end of list - the only way is to go back
     return;
 }   
 
