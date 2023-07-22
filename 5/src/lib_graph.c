@@ -157,7 +157,9 @@ void print_components (Graph comps, size_t comp_num) {
 
     for (size_t i = 0; i < comp_num; i++) {
 
-        printf ("\x1b[3%lum", (i+1)%10);
+        size_t color = (i+1)%7;
+
+        printf ("\x1b[3%lum", color);
 
         print_graph_comps (comps+i);
         printf ("\n");
@@ -185,12 +187,17 @@ void dfs (Graph g, V_head v, size_t port) {
     
     clr = 1;
 
-    print_dfs_forest (v, g, v, 1);
+    print_dfs_forest (v, g, v, port);
 
+    //  restore color
     printf ("\x1b[0m");
 }
 
+int branch_end_reached = 0;
+
 void print_dfs_forest (V_head start, Graph g, V_head v, size_t port) {
+
+    branch_end_reached = 0;
 
     if (!v) return;
 
@@ -210,9 +217,12 @@ void print_dfs_forest (V_head start, Graph g, V_head v, size_t port) {
     /*  isolated vertex, no edges  */
     if (!node) {
 
-        printf ("\x1b[3%lum", clr%10);
-        print_vertex_head_no_color (v);
-        printf ("\n");
+        if (v->info->port == port) {
+        
+            printf ("\x1b[3%lum", clr%7);
+            print_vertex_head_no_color (v);
+            printf ("\n");
+        }
 
         return;
     }
@@ -223,15 +233,15 @@ void print_dfs_forest (V_head start, Graph g, V_head v, size_t port) {
 
         if (!head) return;
 
-        //int has_edge_port = is_port_avail (node->weight->avail_ports, 
-        //                    node->weight->ports_num, port);
+        int is_connection_avail = is_port_avail (node->weight->avail_ports, 
+                            node->weight->ports_num, port);
     
-        if (head->info->color_dfs == WHITE) {
+        if (head->info->color_dfs == WHITE && is_connection_avail) {
 
-            print_dfs_forest (start, g, head, clr);
+            print_dfs_forest (start, g, head, port);
             
             //  branch start reached
-            if (v == start) {
+            if (branch_end_reached && v == start) {
 
                 print_vertex_head_no_color (start);
 
@@ -247,8 +257,23 @@ void print_dfs_forest (V_head start, Graph g, V_head v, size_t port) {
 
     //  print nodes from the branch end 
     if (v != start) {
-        printf ("\x1b[3%lum", clr%10);
-        print_vertex_head_no_color (v);
+
+        //  valid branch end
+        if (!branch_end_reached && v->info->port == port) {
+
+            branch_end_reached = 1;
+            printf ("\x1b[3%lum", clr%7);
+            print_vertex_head_no_color (v);
+            
+            return;
+        } 
+
+        //  intermediate node
+        else if (branch_end_reached) {
+
+            printf ("\x1b[3%lum", clr%7);
+            print_vertex_head_no_color (v);
+        }
     }
 
     return;

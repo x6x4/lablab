@@ -335,7 +335,7 @@ void print_vertex_head_no_color (const V_head v);
 void dfs (Graph g, V_head v, size_t port);
 
 /**
-* @brief Print dfs forest.
+* @brief Recursively print dfs forest.
 * 
 * @param start [IN] - global start point. 
 * @param graph [IN] - graph to traverse.
