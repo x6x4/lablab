@@ -3,6 +3,7 @@ BUILDDIR = build
 SRCDIR = src
 LIB_MINOR = $(BUILDDIR)/lib_ll.o
 LIB_MAJOR = $(BUILDDIR)/lib_graph.o
+LIB_HEAP = $(BUILDDIR)/binheap.o
 GEN = $(BUILDDIR)/generic.o
 DIAL = $(BUILDDIR)/dialog.o
 
@@ -22,25 +23,25 @@ builddir:
 	mkdir -p build
 
 
-graph.bin: $(LIB_MINOR) $(LIB_MAJOR) $(GEN) $(DIAL) $(BUILDDIR)/main.o
+graph.bin: $(LIB_MINOR) $(LIB_MAJOR) $(GEN) $(DIAL) $(LIB_HEAP) $(BUILDDIR)/main.o
 #  	pretty-print
 	@echo + ld $^
 
-	$(CC) $^ -o $@
+	@$(CC) $^ -o $@
 
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(SRCDIR)/%.h
 #  	pretty-print
 	@echo + CC $^
 
-	$(CC) -c $< -o $@
+	@$(CC) -c $< -o $@
 
 
 $(BUILDDIR)/main.o: main.c
 #  	pretty-print
 	@echo + CC $^
 
-	$(CC) -c $< -o $@
+	@$(CC) -c $< -o $@
 
 clean:
 	rm -r ./$(BUILDDIR)

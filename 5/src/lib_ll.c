@@ -80,7 +80,7 @@ void print_node_weight (NodePtr node) {
 
         for (size_t i = 0; i < node->weight->ports_num; i++) {
             
-            printf ("%lu", node->weight->avl_ports[i]);
+            printf ("%lu", node->weight->avail_ports[i]);
             if (i != node->weight->ports_num - 1)
                 printf (",");
         }
@@ -134,11 +134,11 @@ void free_ll (NodePtr *head, char *head_name) {
         if ((*node)->weight) {
 
             /*  every edge belongs to two vertices,
-                so in first time we clear avl_ports field,
+                so in first time we clear avail_ports field,
                 in second time we clear edge ptr itself  */
 
-            if ((*node)->weight->avl_ports) {
-                free_nullify ((*node)->weight->avl_ports);
+            if ((*node)->weight->avail_ports) {
+                free_nullify ((*node)->weight->avail_ports);
 
                 /*  loop - one vertice edge */
                 if (EQ((*node)->info->name, head_name))

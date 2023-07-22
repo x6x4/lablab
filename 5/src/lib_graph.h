@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#define VERT_UNREACHABLE __SIZE_MAX__
 
 /*  Contains array of ports and its size.  */
 typedef struct edge *Edge;
@@ -44,6 +45,7 @@ struct vertex_head {
     V_info info;
     V_node head;
     size_t comp_num;
+    size_t g_idx;
 };
 
 
@@ -183,20 +185,20 @@ V_head find_vertex_in_graph (Graph graph, char *name, size_t *num);
 * 
 * @param graph        [IN] - graph for addition. 
 * @param name1, name2 [IN] - names of ends of newly created edge. 
-* @param avl_ports    [IN] - vector of ports, available for traffic transmission.
+* @param avail_ports    [IN] - vector of ports, available for traffic transmission.
 * @param ports_num    [IN] - number of ports.
 * @return int - Error code. Possible ERRWRG - vertex not found.
 */
-int add_edge (Graph graph, char *name1, char *name2, size_t *avl_ports, size_t ports_num);
+int add_edge (Graph graph, char *name1, char *name2, size_t *avail_ports, size_t ports_num);
 
 /**
 * @brief Create new isolated edge. 
 * 
-* @param avl_ports [IN] - vector of ports, available for traffic transmission.
+* @param avail_ports [IN] - vector of ports, available for traffic transmission.
 * @param ports_num [IN] - number of ports.
 * @return Edge - ptr to edge created.
 */
-Edge new_edge (size_t *avl_ports, size_t ports_num);
+Edge new_edge (size_t *avail_ports, size_t ports_num);
 
 /**
 * @brief Remove edge from graph. 
@@ -215,15 +217,15 @@ int remove_edge (Graph graph, char *name1, char *name2);
 void free_edge (Edge *e);
 
 /**
-* @brief Change avl_ports field of edge. 
+* @brief Change avail_ports field of edge. 
 * 
 * @param graph         [IN] - graph for change. 
 * @param name1, name2  [IN] - names of ends of changed edge. 
-* @param new_avl_ports [IN] - new vector of ports, available for traffic transmission.
+* @param new_avail_ports [IN] - new vector of ports, available for traffic transmission.
   @param new_ports_num [IN] - number of ports.
 * @return int - Error code. Possible ERRWRG - edge not found.
 */
-int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_ports, size_t new_ports_num);
+int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avail_ports, size_t new_ports_num);
 
 
 
@@ -353,3 +355,15 @@ void print_dfs_forest (V_head start, Graph g, V_head v, size_t port);
 * @return Bool - Error code. Possible ERRWRG - port not found.
 */
 Bool is_port_avail (size_t *ports, size_t ports_num, size_t port);
+
+
+/**
+ * @brief 
+ * 
+ * @param g 
+ * @param start 
+ * @param fin 
+ * @param port 
+ * @return size_t shortest distance between start and fin or VERT_UNREACHABLE 
+ */
+size_t dijktra(const Graph g, V_head start, V_head fin, size_t port);

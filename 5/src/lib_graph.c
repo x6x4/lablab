@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "binheap.h"
 
 
 void print_graph (const Graph graph) {
@@ -516,3 +516,58 @@ int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avail_
     return ERRSUC;
 }
 
+size_t dijktra(const Graph g, V_head start, V_head fin, size_t port) {
+    size_t* dist = calloc(g->csize, sizeof(size_t));
+    Bool* used = calloc(g->csize, sizeof(Bool));
+    assert(dist);
+    for(size_t i = 0; i < g->csize; ++i) {
+        dist[i] = VERT_UNREACHABLE;
+        g->adj_list[i]->g_idx = i;
+    }
+
+    size_t vert = start->g_idx;
+
+    dist[vert] = 0;
+    used[vert] = 1;
+
+    heap_elem_t pair = {0, vert};
+    BinHeap heap = {};
+    heap_insert(&heap, &pair);
+
+    while(heap.size != 0) {
+        heap_extract_top(&heap, &pair);
+        if(used[pair.vert]) {
+            continue;
+        }
+        used[pair.vert] = 1;
+        if(pair.vert == fin->g_idx)
+            break; // We done.
+        
+        pair.dist++; // For next verts.
+
+        V_node node = g->adj_list[vert]->head;
+        while (node) {
+
+            V_head head = take_head_from_node (g, node);
+
+            if (!head) break;
+
+            int is_connection_avail = is_port_avail (node->weight->avail_ports, 
+                                node->weight->ports_num, port);
+        
+            if (is_connection_avail && (size_t)pair.dist < dist[head->g_idx]) {
+                dist[head->g_idx] = (size_t)pair.dist;
+                pair.vert = head->g_idx;
+                heap_insert(&heap, &pair);
+            }
+            /*  keep looking  */
+            node = node->next;            
+        }
+    }
+
+    size_t ans = dist[fin->g_idx];
+    free_heap(&heap);
+    free_nullify(used);
+    free_nullify(dist);
+    return ans;
+}
