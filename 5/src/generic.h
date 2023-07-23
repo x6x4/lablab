@@ -2,8 +2,11 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <limits.h>
 
 #define free_nullify(ptr) { free (ptr); ptr = NULL; }
+
+#define INF __SIZE_MAX__
 
 typedef short Bool;
 
@@ -14,7 +17,8 @@ enum {
 	ERRUNK, 
 	ERRDUP,
 	ERRCONT,
-	ERROVF
+	ERROVF,
+	ERRUNF
 };
 
 #define RED(s) "\x1b[31m"s"\x1b[0m"

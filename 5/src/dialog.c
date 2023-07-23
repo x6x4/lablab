@@ -421,3 +421,45 @@ int DFS (Graph g, FILE *file) {
 
     return ERRSUC;
 }
+
+int Djkstra (Graph graph, FILE *file) {
+
+    puts ("Enter first computer name");
+    char *name1 = get_str (file);
+    if (!name1)
+        return ERREOF;
+
+    puts ("Enter second computer name");
+    char *name2 = get_str (file);
+    if (!name2) {
+        free_nullify (name1);
+
+        return ERREOF;
+    }
+
+    puts ("Enter number of service port:");
+    size_t port = 0;
+    if (get_sizet_file (file, &port, 255, 0) == ERREOF) {
+
+        free_nullify (name1);
+        free_nullify (name2);
+
+        return ERREOF;
+    }
+
+    if (djkstra (graph, name1, name2, port) == ERRWRG) {
+        
+        puts ("One or two vertices not found");
+        free_nullify (name1);
+        free_nullify (name2);
+
+        return ERRWRG;
+    }
+
+    free_nullify (name1);
+    free_nullify (name2);
+
+    return ERRSUC;
+
+}
+

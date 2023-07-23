@@ -60,7 +60,7 @@ typedef struct graph *Graph;
 
 struct graph {
     V_head adj_list [MAX_VERTEX_NUM];
-    size_t csize;
+    size_t sz;
 };
 
 
@@ -183,20 +183,20 @@ V_head find_vertex_in_graph (Graph graph, char *name, size_t *num);
 * 
 * @param graph        [IN] - graph for addition. 
 * @param name1, name2 [IN] - names of ends of newly created edge. 
-* @param avl_ports    [IN] - vector of ports, available for traffic transmission.
+* @param avail_ports  [IN] - vector of ports, available for traffic transmission.
 * @param ports_num    [IN] - number of ports.
 * @return int - Error code. Possible ERRWRG - vertex not found.
 */
-int add_edge (Graph graph, char *name1, char *name2, size_t *avl_ports, size_t ports_num);
+int add_edge (Graph graph, char *name1, char *name2, size_t *avail_ports, size_t ports_num);
 
 /**
 * @brief Create new isolated edge. 
 * 
-* @param avl_ports [IN] - vector of ports, available for traffic transmission.
+* @param avail_ports [IN] - vector of ports, available for traffic transmission.
 * @param ports_num [IN] - number of ports.
 * @return Edge - ptr to edge created.
 */
-Edge new_edge (size_t *avl_ports, size_t ports_num);
+Edge new_edge (size_t *avail_ports, size_t ports_num);
 
 /**
 * @brief Remove edge from graph. 
@@ -215,15 +215,15 @@ int remove_edge (Graph graph, char *name1, char *name2);
 void free_edge (Edge *e);
 
 /**
-* @brief Change avl_ports field of edge. 
+* @brief Change avail_ports field of edge. 
 * 
 * @param graph         [IN] - graph for change. 
 * @param name1, name2  [IN] - names of ends of changed edge. 
-* @param new_avl_ports [IN] - new vector of ports, available for traffic transmission.
+* @param new_avail_ports [IN] - new vector of ports, available for traffic transmission.
   @param new_ports_num [IN] - number of ports.
 * @return int - Error code. Possible ERRWRG - edge not found.
 */
-int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avl_ports, size_t new_ports_num);
+int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avail_ports, size_t new_ports_num);
 
 
 
@@ -325,6 +325,7 @@ void print_graph_comps (const Graph graph);
 */
 void print_vertex_head_no_color (const V_head v);
 
+
 /**
 * @brief Traverse graph from vertex by port in depth.
 * 
@@ -353,3 +354,28 @@ void print_dfs_forest (V_head start, Graph g, V_head v, size_t port);
 * @return Bool - Error code. Possible ERRWRG - port not found.
 */
 Bool is_port_avail (size_t *ports, size_t ports_num, size_t port);
+
+/**
+* @brief Check vertices existence and print shortest path in success.
+* 
+* @param g     [IN] - graph to traverse.
+* @param name1 [IN] - unique name of first vertex.
+* @param name2 [IN] - unique name of second vertex.
+* @param port  [IN] - port to traverse by.
+* @return int - Error code. Possible ERRWRG - vertex not found.
+*/
+int djkstra (Graph g, char *name1, char *name2, size_t port);
+
+
+/**
+* @brief Compute shortest path between two vertices.
+* 
+* @param g     [IN]  - graph to traverse.
+* @param start [IN]  - first vertex.
+* @param end   [IN]  - second vertex.
+* @param path  [OUT] - shortest path.
+* @return size_t shortest distance between start and end
+  or INF if end is unreachable from start
+*/
+size_t short_path (Graph g, V_head start, V_head end, 
+                    size_t port, size_t **path);

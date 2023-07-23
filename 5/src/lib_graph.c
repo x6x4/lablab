@@ -1,5 +1,6 @@
 #include "lib_graph.h"
 #include "generic.h"
+#include "lib_bin_heap.h"
 #include "lib_ll.h"
 #include <assert.h>
 #include <stddef.h>
@@ -10,10 +11,10 @@
 
 void print_graph (const Graph graph) {
 
-    if (graph->csize == 0)
+    if (graph->sz == 0)
         printf ("(void)\n");
     
-    for (size_t i = 0; i < graph->csize; i++) {
+    for (size_t i = 0; i < graph->sz; i++) {
         V_head head = graph->adj_list[i];
 
         if (head) {
@@ -27,10 +28,10 @@ void print_graph (const Graph graph) {
 
 void print_graph_comps (const Graph graph) {
     
-    if (graph->csize == 0)
+    if (graph->sz == 0)
         printf ("(void)\n");
     
-    for (size_t i = 0; i < graph->csize; i++) {
+    for (size_t i = 0; i < graph->sz; i++) {
         V_head head = graph->adj_list[i];
 
         if (head) {
@@ -55,7 +56,7 @@ void print_vertex_head_no_color (const V_head v) {
 
 void free_graph (Graph graph) {
 
-    for (size_t i = 0; i < graph->csize; i++) {
+    for (size_t i = 0; i < graph->sz; i++) {
         V_head *head = &(graph->adj_list[i]);
         free_ll (&((*head)->head), (*head)->info->name);
         free_vertex_head (head);
@@ -81,7 +82,7 @@ void create_components (Graph g) {
 
 void init_colors (Graph graph) {
 
-    for (size_t i = 0; i < graph->csize; i++) 
+    for (size_t i = 0; i < graph->sz; i++) 
         //  this covers all infos
         graph->adj_list[i]->info->color_dfs = WHITE;
 }
@@ -90,7 +91,7 @@ size_t handle_components (Graph g) {
 
     size_t comp_num = 0;
 
-    for (size_t i = 0; i < g->csize; i++) {
+    for (size_t i = 0; i < g->sz; i++) {
         
         if (g->adj_list[i]->info->color_dfs == WHITE) {
 
@@ -140,13 +141,13 @@ Graph split_graph (Graph g, size_t comp_num) {
 
     Graph comps = calloc (comp_num, sizeof *comps);
     
-    for (size_t i = 0; i < g->csize; i++) {
+    for (size_t i = 0; i < g->sz; i++) {
 
         size_t num = g->adj_list[i]->comp_num;
         Graph cur_comp = comps+num;
         
-        cur_comp->adj_list[cur_comp->csize] = g->adj_list[i];
-        cur_comp->csize++;
+        cur_comp->adj_list[cur_comp->sz] = g->adj_list[i];
+        cur_comp->sz++;
     }
 
     return comps;
@@ -176,6 +177,8 @@ V_head take_head_from_node (Graph g, V_node v) {
 
     return head;
 }
+
+
 
 size_t clr = 1;
 
@@ -288,9 +291,38 @@ Bool is_port_avail (size_t *ports, size_t ports_num, size_t port) {
 }
 
 
+
+int djkstra (Graph g, char *name1, char *name2, size_t port) {
+
+    size_t num1 = 0, num2 = 0;
+    if (check_vertices (g, name1, name2, &num1, &num2) == ERRWRG)
+        return ERRWRG;
+
+    V_head vh1 = g->adj_list[num1];
+    V_head vh2 = g->adj_list[num2];
+
+    size_t *path = NULL;
+
+    short_path (g, vh1, vh2, port, &path);
+
+    return ERRSUC;
+}
+
+size_t short_path (Graph g, V_head start, V_head end, size_t port, size_t **path) {
+
+    size_t *dist = calloc (g->sz, sizeof *dist);
+    assert (dist);
+
+    Bool *used = calloc (g->sz, sizeof *used);
+
+    return INF;
+}
+
+
+
 int add_vertex (Graph graph, char *name, size_t port) {
     
-    if (graph->csize == MAX_VERTEX_NUM)
+    if (graph->sz == MAX_VERTEX_NUM)
         return ERROVF;
 
     size_t num = 0;
@@ -299,7 +331,7 @@ int add_vertex (Graph graph, char *name, size_t port) {
 
 
     V_head v = new_vertex_head (new_info(name, port));
-    graph->adj_list[graph->csize++] = v;
+    graph->adj_list[graph->sz++] = v;
 
     return ERRSUC;
 }
@@ -353,9 +385,9 @@ int remove_vertex (Graph graph, char *name) {
     free_vertex_head (head);
 
     //  shift to fill freed place
-    memcpy (dest, src, (graph->csize - num) * sizeof (V_head));
+    memcpy (dest, src, (graph->sz - num) * sizeof (V_head));
 
-    graph->csize--;
+    graph->sz--;
 
     return ERRSUC;
 }
@@ -373,7 +405,7 @@ void remove_vertex_from_adj_lists (Graph graph, char *name) {
 
     Edge e = NULL;
 
-    for (size_t i = 0; i < graph->csize; i++) {
+    for (size_t i = 0; i < graph->sz; i++) {
         delete_from_ll (&(graph->adj_list[i]->head), name, &e);
         free_edge (&e);
     }
@@ -392,10 +424,10 @@ void change_vertex_port (V_info v, size_t new_port) {
 
 V_head find_vertex_in_graph (Graph graph, char *name, size_t *num) {
 
-    if (graph->csize == 0)
+    if (graph->sz == 0)
         return NULL;
 
-    for (size_t i = 0; i < graph->csize; i++) {
+    for (size_t i = 0; i < graph->sz; i++) {
 
         if (EQ(graph->adj_list[i]->info->name, name)) {
 
