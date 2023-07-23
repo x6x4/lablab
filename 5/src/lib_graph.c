@@ -579,7 +579,7 @@ size_t dijktra(const Graph g, V_head start, V_head fin, size_t port, size_t** pa
     if(path && ans != VERT_UNREACHABLE) {
         *path = calloc(ans, sizeof(*path[0]));
         size_t backtrack_vert = fin->g_idx;
-        for(size_t i = ans-1; backtrack_vert != 0; i--, backtrack_vert = prev[backtrack_vert]) {
+        for(size_t i = ans-1; backtrack_vert != VERT_UNREACHABLE; i--, backtrack_vert = prev[backtrack_vert]) {
             (*path)[i] = backtrack_vert;
         }
     }
