@@ -50,7 +50,7 @@ sift_down(BinHeap* heap, size_t cur) {
  */
 static void
 sift_up(BinHeap* heap, size_t cur) {
-    while(CMP(heap->data[cur], heap->data[(cur-1) / 2]) < 0) {
+    while(cur && CMP(heap->data[cur], heap->data[(cur-1) / 2]) < 0) {
         heap_swap(heap, cur, (cur-1) / 2);
         cur = (cur-1) / 2;
     }
