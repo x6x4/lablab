@@ -2,6 +2,7 @@
 #include "generic.h"
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 
@@ -40,8 +41,9 @@ void heap_insert (BHeap heap, const HEntry entry) {
     if (heap->sz == heap->capacity) {
 
         size_t new_cap = heap->capacity ? heap->capacity *=2 : HEAP_START_CAP;
+        heap->capacity = new_cap;
 
-        heap->data = reallocarray (heap->data, new_cap, sizeof *(heap->data));
+        heap->data = reallocarray (heap->data, heap->capacity, sizeof *(heap->data));
     
         assert (heap->data);
     }
@@ -102,7 +104,6 @@ size_t least_end (BHeap heap, const size_t mid) {
     return end;
 }
 
-
 void heap_swap (BHeap heap, size_t lhs, size_t rhs) {
 
     assert (heap);
@@ -120,4 +121,12 @@ void heap_free (BHeap heap) {
 
     heap->sz = 0;
     heap->capacity = 0;
+}
+
+void heap_print (const struct binary_heap heap) {
+
+    for (size_t i = 0; i < heap.sz; i++) 
+        printf ("%ld ", heap.data[i].dist);
+
+    printf ("\n");
 }

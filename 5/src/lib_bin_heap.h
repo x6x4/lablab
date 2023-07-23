@@ -8,7 +8,7 @@
 #define GT(v1, v2)  ( ((v1).dist - (v2).dist) > 0 )
 
 
-#define HEAP_START_CAP 0x10
+#define HEAP_START_CAP 0x1
 
 
 typedef struct heap_entry *HEntry;
@@ -35,6 +35,8 @@ int heap_extract_top (BHeap heap, HEntry top);
 void heap_insert (BHeap heap, const HEntry entry);
 
 void heap_free (BHeap heap);
+
+void heap_print (const struct binary_heap heap);
 
 
 /*  Little functions.  */

@@ -1,7 +1,6 @@
 #include "src/dialog.h"
 #include "src/lib_graph.h"
 #include <stdlib.h>
-#include <string.h>
 
 /*  GLOBAL VARIABLES  */
 
