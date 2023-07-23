@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 
-#define IS_CHILD(x) ((2 * (x) + 1) < heap->size)
+#define HAS_CHILD(x) ((2 * (x) + 1) < heap->size)
 const size_t HEAP_START_CAP = 16;
 
 /**
@@ -29,7 +29,7 @@ heap_swap(BinHeap* heap, size_t lhs, size_t rhs) {
  */
 static void
 sift_down(BinHeap* heap, size_t cur) {
-    while(!IS_CHILD(cur)) {
+    while(HAS_CHILD(cur)) {
         size_t left  = 2*cur + 1;
         size_t right = 2*cur + 1;
 
