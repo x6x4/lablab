@@ -516,12 +516,19 @@ int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avail_
     return ERRSUC;
 }
 
-size_t dijktra(const Graph g, V_head start, V_head fin, size_t port) {
+size_t dijktra(const Graph g, V_head start, V_head fin, size_t port, size_t** path) {
     size_t* dist = calloc(g->csize, sizeof(size_t));
-    Bool* used = calloc(g->csize, sizeof(Bool));
     assert(dist);
+    
+    Bool* used = calloc(g->csize, sizeof(Bool));
+    assert(used);
+
+    size_t* prev = calloc(g->csize, sizeof(size_t));
+    assert(prev);
+
     for(size_t i = 0; i < g->csize; ++i) {
         dist[i] = VERT_UNREACHABLE;
+        prev[i] = VERT_UNREACHABLE;
         g->adj_list[i]->g_idx = i;
     }
 
@@ -539,13 +546,14 @@ size_t dijktra(const Graph g, V_head start, V_head fin, size_t port) {
         if(used[pair.vert]) {
             continue;
         }
-        used[pair.vert] = 1;
-        if(pair.vert == fin->g_idx)
+        size_t current = pair.vert;
+        used[current] = 1;
+        if(current == fin->g_idx)
             break; // We done.
         
         pair.dist++; // For next verts.
 
-        V_node node = g->adj_list[vert]->head;
+        V_node node = g->adj_list[current]->head;
         while (node) {
 
             V_head head = take_head_from_node (g, node);
@@ -558,16 +566,26 @@ size_t dijktra(const Graph g, V_head start, V_head fin, size_t port) {
             if (is_connection_avail && (size_t)pair.dist < dist[head->g_idx]) {
                 dist[head->g_idx] = (size_t)pair.dist;
                 pair.vert = head->g_idx;
+                prev[pair.vert] = current;
                 heap_insert(&heap, &pair);
             }
             /*  keep looking  */
-            node = node->next;            
+            node = node->next;
         }
     }
 
     size_t ans = dist[fin->g_idx];
+
+    if(path && ans != VERT_UNREACHABLE) {
+        *path = calloc(ans, sizeof(*path[0]));
+        size_t backtrack_vert = fin->g_idx;
+        for(size_t i = ans-1; backtrack_vert != 0; i--, backtrack_vert = prev[backtrack_vert]) {
+            (*path)[i] = backtrack_vert;
+        }
+    }
     free_heap(&heap);
     free_nullify(used);
     free_nullify(dist);
+    free_nullify(prev);
     return ans;
 }

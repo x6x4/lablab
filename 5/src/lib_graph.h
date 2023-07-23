@@ -366,4 +366,4 @@ Bool is_port_avail (size_t *ports, size_t ports_num, size_t port);
  * @param port 
  * @return size_t shortest distance between start and fin or VERT_UNREACHABLE 
  */
-size_t dijktra(const Graph g, V_head start, V_head fin, size_t port);
+size_t dijktra(const Graph g, V_head start, V_head fin, size_t port, size_t** path);
