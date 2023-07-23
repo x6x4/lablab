@@ -31,7 +31,7 @@ static void
 sift_down(BinHeap* heap, size_t cur) {
     while(HAS_CHILD(cur)) {
         size_t left  = 2*cur + 1;
-        size_t right = 2*cur + 1;
+        size_t right = 2*cur + 2;
 
         size_t to_sift = right < heap->size && CMP(heap->data[right], heap->data[left]) < 0 ? right : left;
 
