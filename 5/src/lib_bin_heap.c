@@ -126,7 +126,7 @@ void heap_free (BHeap *heap) {
 void heap_print (const BHeap heap) {
 
     for (size_t i = 0; i < heap.sz; i++) 
-        printf ("%ld ", heap.data[i].dist);
+        printf ("%lu ", heap.data[i].dist);
 
     printf ("\n");
 }

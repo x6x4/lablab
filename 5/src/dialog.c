@@ -263,7 +263,7 @@ int UpdateVertexName (Graph graph, FILE *file) {
     if (!old_name)
         return ERREOF;
 
-    V_head v = find_vertex_in_graph (graph, old_name, NULL);
+    V_header v = find_vertex_in_graph (graph, old_name);
 
     if (!v) {
         printf ("Vertex %s not found\n", old_name);
@@ -278,7 +278,7 @@ int UpdateVertexName (Graph graph, FILE *file) {
     if (!new_name)
         return ERREOF;
 
-    if (find_vertex_in_graph (graph, new_name, NULL)) {
+    if (find_vertex_in_graph (graph, new_name)) {
         puts ("This name already exists");
         free_nullify (new_name);
         return ERRDUP;
@@ -297,7 +297,7 @@ int UpdateVertexPort (Graph graph, FILE *file) {
     if (!name) 
         return ERREOF;
 
-    V_head v = find_vertex_in_graph (graph, name, NULL);
+    V_header v = find_vertex_in_graph (graph, name);
 
     if (!v) {
         printf ("Vertex %s not found\n", name);
@@ -397,7 +397,7 @@ int DFS (Graph g, FILE *file) {
     if (!name)
         return ERREOF;
 
-    V_head v = find_vertex_in_graph (g, name, NULL);
+    V_header v = find_vertex_in_graph (g, name);
     if (!v) {
 
         printf ("No such computer\n");

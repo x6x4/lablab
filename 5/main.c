@@ -11,7 +11,7 @@ CreateComponents, DFS, Djkstra};
 
 int main (void) {
 
-    struct graph G = {{NULL}, 0};
+    struct graph G = {{}, 0};
     FILE *file = stdin;
     struct dialog_strings info = {NULL, NULL, 0, NULL};
 

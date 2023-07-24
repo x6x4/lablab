@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#define take_num(v) ( (v - g->adj_list)/(sizeof v) )
+#define num(v) ( (size_t) ((v) - g->adj_list) ) 
 
 /*  Contains array of ports and its size.  */
 typedef struct edge *Edge;
@@ -38,14 +38,13 @@ struct vertex {
 };
 
 /*  Contains info and head of its adj list.  */
-typedef struct vertex_head *V_head;
+typedef struct vertex_header *V_header;
 
-struct vertex_head {
+struct vertex_header {
 
     V_info info;
     V_node head;
     size_t comp_num;
-    size_t num_g;
 };
 
 
@@ -61,7 +60,7 @@ typedef struct graph *Graph;
 #define MAX_VERTEX_NUM 20
 
 struct graph {
-    V_head adj_list [MAX_VERTEX_NUM];
+    struct vertex_header adj_list [MAX_VERTEX_NUM];
     size_t sz;
 };
 
@@ -80,31 +79,16 @@ struct graph {
 */
 int add_vertex (Graph graph, char *name, size_t port);
 
-/**
-* @brief Create new isolated vertex - head of adj list. 
-* 
-* @param info [IN] - vertex info
-* @return V_head - ptr to vertex created.
-*/
-V_head new_vertex_head (V_info info);
-
-/**
-* @brief Create vertex node. 
-* 
-* @param info [IN] - vertex info
-* @return V_head - ptr to vertex node created.
-*/
-V_node new_vertex_node (V_info info);
 
 /**
 * @brief Check if both vertices belong to graph. 
 * 
 * @param graph        [IN] - graph for check. 
 * @param name1, name2 [IN] - UNIQUE vertex names. 
-* @param num1, num2   [IN/OUT] OPTIONAL - numbers of vertices in adjacency lists
-* @return int - Error code. Possible ERRWRG - one or two names not found.
+* @return V_head - ptr to first vertex node found. 
+  NULL if ine or two names not found.
 */
-int check_vertices (Graph graph, char *name1, char *name2, size_t *num1, size_t *num2);
+V_header check_vertices (Graph graph, char *name1, char *name2);
 
 /**
 * @brief Check if edge belong to graph. 
@@ -126,6 +110,14 @@ int check_edge (Graph graph, char *name1, char *name2);
 V_info new_info (char *name, size_t port);
 
 /**
+* @brief Create new isolated vertex node. 
+* 
+* @param info [IN] - node info. 
+* @return V_info - ptr to info created.
+*/
+V_node new_vertex_node (V_info info);
+
+/**
 * @brief Remove vertex from graph. 
 * 
 * @param graph [IN] - graph for removal. 
@@ -135,11 +127,11 @@ V_info new_info (char *name, size_t port);
 int remove_vertex (Graph graph, char *name);
 
 /**
-* @brief Clean vertex head, its name and info. 
+* @brief Clean vertex header, its name and info. 
 * 
 * @param v [IN] - vertex head to clean.
 */
-void free_vertex_head (V_head *v);
+void free_vertex_header (V_header v);
 
 /**
 * @brief Remove vertex from adjacency lists by name. 
@@ -172,7 +164,7 @@ void change_vertex_port (V_info v, size_t new_port);
 * @param name  [IN] - UNIQUE computer name
 * @return V_head - head of matching adjacency list. NULL if not found
 */
-V_head find_vertex_in_graph (Graph graph, char *name);
+V_header find_vertex_in_graph (Graph graph, char *name);
 
 
 /*||||||||||||||||||||||||| < EDGE FUNCTIONS > |||||||||||||||||||||||||*/
@@ -194,7 +186,7 @@ int add_edge (Graph graph, char *name1, char *name2, size_t *avail_ports, size_t
 * @brief Create new isolated edge. 
 * 
 * @param avail_ports [IN] - vector of ports, available for traffic transmission.
-* @param ports_num [IN] - number of ports.
+* @param ports_num   [IN] - number of ports.
 * @return Edge - ptr to edge created.
 */
 Edge new_edge (size_t *avail_ports, size_t ports_num);
@@ -238,11 +230,11 @@ int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avail_
 void print_graph (const Graph graph);
 
 /**
-* @brief Print head of adjacency list in color.
+* @brief Print header of adjacency list in color.
 * 
 * @param graph [IN] - head to print.
 */
-void print_vertex_head (const V_head v);
+void print_vertex_header (const V_header v);
 
 /**
 * @brief Clear graph.
@@ -285,7 +277,7 @@ size_t handle_components (Graph graph);
 * @param v        [IN] - vertex to visit.
 * @param comp_num [IN] - number of vertex component.
 */
-void visit_vertex_comps (Graph g, V_head v, size_t comp_num);
+void visit_vertex_comps (Graph g, V_header v, size_t comp_num);
 
 /**
 * @brief Split graph on components. 
@@ -305,12 +297,12 @@ Graph split_graph (Graph g, size_t comp_num);
 void print_components (Graph comps, size_t comp_num);
 
 /**
-* @brief Finds adj list head by name in node. 
+* @brief Finds adj list header by name in node. 
 * 
 * @param graph [IN] - graph for search.
 * @param v     [IN] - node to take name from.
 */
-V_head take_head_from_node (Graph g, V_node v);
+V_header take_header_from_node (Graph g, V_node v);
 
 /**
 * @brief Print graph as adjacency lists in no color.
@@ -320,11 +312,11 @@ V_head take_head_from_node (Graph g, V_node v);
 void print_graph_comps (const Graph graph);
 
 /**
-* @brief Print head of adjacency list in no color.
+* @brief Print header of adjacency list in no color.
 * 
 * @param graph [IN] - head to print.
 */
-void print_vertex_head_no_color (const V_head v);
+void print_vertex_header_no_color (const V_header v);
 
 
 /**
@@ -334,7 +326,7 @@ void print_vertex_head_no_color (const V_head v);
 * @param v  [IN] - vertex to start from. 
 * @param port  [IN] - port to traverse by.
 */
-void dfs (Graph g, V_head v, size_t port);
+void dfs (Graph g, V_header v, size_t port);
 
 /**
 * @brief Recursively print dfs forest.
@@ -344,7 +336,7 @@ void dfs (Graph g, V_head v, size_t port);
 * @param v     [IN] - vertex to start from. 
 * @param port  [IN] - port to traverse by.
 */
-void print_dfs_forest (V_head start, Graph g, V_head v, size_t port);
+void print_dfs_forest (V_header start, Graph g, V_header v, size_t port);
 
 /**
 * @brief Check if ports array has port.
@@ -374,9 +366,9 @@ int djkstra (Graph g, char *name1, char *name2, size_t port);
 * @param g     [IN]  - graph to traverse.
 * @param start [IN]  - first vertex.
 * @param end   [IN]  - second vertex.
-* @param path  [OUT] - shortest path.
+* @param path  [IN/OUT] OPTIONAL - shortest path.
 * @return size_t shortest distance between start and end
   or INF if end is unreachable from start
 */
-size_t short_path (Graph g, V_head start, V_head end, 
+size_t short_path (Graph g, V_header start, V_header end, 
                     size_t port, size_t **path);

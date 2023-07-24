@@ -21,8 +21,8 @@ struct binary_heap {
 };
 
 struct heap_entry {
-    ssize_t dist;
-    size_t vertex;
+    size_t dist;
+    size_t v;
 };
 
 
