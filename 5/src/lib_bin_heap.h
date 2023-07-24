@@ -11,11 +11,11 @@
 #define HEAP_START_CAP 0x1
 
 
-typedef struct heap_entry *HEntry;
-typedef struct binary_heap *BHeap;
+typedef struct heap_entry HEntry;
+typedef struct binary_heap BHeap;
 
 struct binary_heap {
-    HEntry data;
+    HEntry *data;
     size_t sz;
     size_t capacity;
 };
@@ -28,15 +28,15 @@ struct heap_entry {
 
 /*  Standard heap functions.  */
 
-HEntry heap_get_top (const BHeap heap);
+const HEntry *heap_get_top (const BHeap *heap);
 
-int heap_extract_top (BHeap heap, HEntry top);
+int heap_extract_top (BHeap *heap, HEntry *top);
 
-void heap_insert (BHeap heap, const HEntry entry);
+void heap_insert (BHeap *heap, const HEntry *entry);
 
-void heap_free (BHeap heap);
+void heap_free (BHeap *heap);
 
-void heap_print (const struct binary_heap heap);
+void heap_print (const BHeap heap);
 
 
 /*  Little functions.  */
@@ -46,14 +46,14 @@ void heap_print (const struct binary_heap heap);
  * 
  * @param heap [IN] - heap.
  */
-void fix_end (BHeap heap);
+void fix_end (BHeap *heap);
 
 /**
  * @brief Fix binheap after deletion.
  * 
  * @param heap [IN] - heap.
  */
-void fix_mid (BHeap heap);
+void fix_mid (BHeap *heap);
 
 /**
  * @brief Take least end of two corresponding to middle.
@@ -61,7 +61,7 @@ void fix_mid (BHeap heap);
  * 
  * @param heap [IN] - heap.
  */
-size_t least_end (BHeap heap, const size_t mid);
+size_t least_end (BHeap *heap, const size_t mid);
 
 /**
  * @brief Swap two entries in heap.
@@ -70,5 +70,5 @@ size_t least_end (BHeap heap, const size_t mid);
  * @param lhs  [IN] - first entry to swap
  * @param rhs  [IN] - second entry to swap
  */
-void heap_swap (BHeap heap, size_t lhs, size_t rhs);
+void heap_swap (BHeap *heap, size_t lhs, size_t rhs);
 

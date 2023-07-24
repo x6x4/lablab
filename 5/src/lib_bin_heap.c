@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 
-HEntry heap_get_top (const BHeap heap) {
+const HEntry *heap_get_top (const BHeap *heap) {
 
     assert (heap);
 
@@ -18,7 +18,7 @@ HEntry heap_get_top (const BHeap heap) {
     return heap->data;
 }
 
-int heap_extract_top (BHeap heap, HEntry top) {
+int heap_extract_top (BHeap *heap, HEntry *top) {
 
     assert (heap);
 
@@ -35,7 +35,7 @@ int heap_extract_top (BHeap heap, HEntry top) {
     return ERRSUC;
 }
 
-void heap_insert (BHeap heap, const HEntry entry) {
+void heap_insert (BHeap *heap, const HEntry *entry) {
 
     //  handle overflow
     if (heap->sz == heap->capacity) {
@@ -56,7 +56,7 @@ void heap_insert (BHeap heap, const HEntry entry) {
     return;
 }
 
-void fix_end (BHeap heap) {
+void fix_end (BHeap *heap) {
 
     size_t cur_end = heap->sz - 1;
 
@@ -70,7 +70,7 @@ void fix_end (BHeap heap) {
     }
 }
 
-void fix_mid (BHeap heap) {
+void fix_mid (BHeap *heap) {
 
     size_t cur_mid = 0;
 
@@ -92,7 +92,7 @@ void fix_mid (BHeap heap) {
     }
 }
 
-size_t least_end (BHeap heap, const size_t mid) {
+size_t least_end (BHeap *heap, const size_t mid) {
 
     size_t end = END1(mid);
     size_t end2 = end + 1; 
@@ -104,7 +104,7 @@ size_t least_end (BHeap heap, const size_t mid) {
     return end;
 }
 
-void heap_swap (BHeap heap, size_t lhs, size_t rhs) {
+void heap_swap (BHeap *heap, size_t lhs, size_t rhs) {
 
     assert (heap);
 
@@ -113,7 +113,7 @@ void heap_swap (BHeap heap, size_t lhs, size_t rhs) {
     heap->data[lhs] = tmp;
 }
 
-void heap_free (BHeap heap) {
+void heap_free (BHeap *heap) {
 
     if (!heap) return;
 
@@ -123,7 +123,7 @@ void heap_free (BHeap heap) {
     heap->capacity = 0;
 }
 
-void heap_print (const struct binary_heap heap) {
+void heap_print (const BHeap heap) {
 
     for (size_t i = 0; i < heap.sz; i++) 
         printf ("%ld ", heap.data[i].dist);

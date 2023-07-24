@@ -173,7 +173,7 @@ V_head take_head_from_node (Graph g, V_node v) {
 
     if (!v) return NULL;
 
-    V_head head = find_vertex_in_graph (g, v->info->name, NULL);
+    V_head head = find_vertex_in_graph (g, v->info->name);
 
     return head;
 }
@@ -313,7 +313,25 @@ size_t short_path (Graph g, V_head start, V_head end, size_t port, size_t **path
     size_t *dist = calloc (g->sz, sizeof *dist);
     assert (dist);
 
-    Bool *used = calloc (g->sz, sizeof *used);
+    Bool *visited = calloc (g->sz, sizeof *visited);
+    assert (visited);
+
+    size_t *prev = calloc (g->sz, sizeof *prev);
+    assert (dist);
+
+    //  init
+    for (size_t i = 0; i < g->sz; i++) 
+        dist[i] = prev[i] = INF;
+
+    size_t v = start->num_g;
+    dist[v] = 0;
+    visited[v] = 1;
+
+    BHeap h = {};
+    HEntry v_dist = {0, v};
+    heap_insert (&h, &v_dist);
+
+
 
     return INF;
 }
@@ -326,7 +344,7 @@ int add_vertex (Graph graph, char *name, size_t port) {
         return ERROVF;
 
     size_t num = 0;
-    if (find_vertex_in_graph (graph, name, &num))
+    if (find_vertex_in_graph (graph, name))
         return ERRDUP;
 
 
@@ -364,30 +382,32 @@ V_info new_info (char *name, size_t port) {
     return info;
 }
 
-int remove_vertex (Graph graph, char *name) {
+int remove_vertex (Graph g, char *name) {
     size_t num = 0;
-    V_head v = find_vertex_in_graph (graph, name, &num);
+    V_head v = find_vertex_in_graph (g, name, &num);
     if (!v)
         return ERRWRG;
 
-    V_head *dest = graph->adj_list + num;
-    V_head *src = graph->adj_list + num + 1;
+    size_t num = take_num(v);
 
-    V_head *head = &(graph->adj_list[num]);
+    V_head *dest = g->adj_list + num;
+    V_head *src = g->adj_list + num + 1;
+
+    V_head *head = &(g->adj_list[num]);
 
     //  free vertex adj list and edges infos
     free_ll (&((*head)->head), (*head)->info->name);
 
     //  free matching vertex node in other lists and all in edges
-    remove_vertex_from_adj_lists (graph, name);
+    remove_vertex_from_adj_lists (g, name);
     
     //  free name and info
     free_vertex_head (head);
 
     //  shift to fill freed place
-    memcpy (dest, src, (graph->sz - num) * sizeof (V_head));
+    memcpy (dest, src, (g->sz - num) * sizeof (V_head));
 
-    graph->sz--;
+    g->sz--;
 
     return ERRSUC;
 }
@@ -422,19 +442,15 @@ void change_vertex_port (V_info v, size_t new_port) {
 }
 
 
-V_head find_vertex_in_graph (Graph graph, char *name, size_t *num) {
+V_head find_vertex_in_graph (Graph graph, char *name) {
 
     if (graph->sz == 0)
         return NULL;
 
     for (size_t i = 0; i < graph->sz; i++) {
 
-        if (EQ(graph->adj_list[i]->info->name, name)) {
-
-            if (num) *num = i;
-
+        if (EQ(graph->adj_list[i]->info->name, name)) 
             return graph->adj_list[i];
-        }
     }
 
     return NULL;

@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#define take_num(v) ( (v - g->adj_list)/(sizeof v) )
 
 /*  Contains array of ports and its size.  */
 typedef struct edge *Edge;
@@ -44,6 +45,7 @@ struct vertex_head {
     V_info info;
     V_node head;
     size_t comp_num;
+    size_t num_g;
 };
 
 
@@ -168,10 +170,9 @@ void change_vertex_port (V_info v, size_t new_port);
 * 
 * @param graph [IN] - graph for search
 * @param name  [IN] - UNIQUE computer name
-* @param num   [IN/OUT] OPTIONAL - number in adjacency list
 * @return V_head - head of matching adjacency list. NULL if not found
 */
-V_head find_vertex_in_graph (Graph graph, char *name, size_t *num);
+V_head find_vertex_in_graph (Graph graph, char *name);
 
 
 /*||||||||||||||||||||||||| < EDGE FUNCTIONS > |||||||||||||||||||||||||*/
