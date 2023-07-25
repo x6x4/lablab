@@ -54,6 +54,12 @@ void print_vertex_header_no_color (const V_header v) {
         printf ("(%s, %lu) -> ", v->info->name, v->info->port);
 }
 
+void print_vertex_header_no_color_rev (const V_header v) {
+
+    if (v)
+        printf ("(%s, %lu) <- ", v->info->name, v->info->port);
+}
+
 void free_graph (Graph graph) {
 
     for (size_t i = 0; i < graph->sz; i++) {
@@ -182,6 +188,8 @@ V_header take_header_from_node (Graph g, V_node v) {
 
 size_t clr = 1;
 
+Bool branch_end_reached = 0;
+
 void dfs (Graph g, V_header v, size_t port) {
 
     if (!v) return;
@@ -192,11 +200,13 @@ void dfs (Graph g, V_header v, size_t port) {
 
     print_dfs_forest (v, g, v, port);
 
+    if (!branch_end_reached)
+        puts ("No way");
+
     //  restore color
     printf ("\x1b[0m");
 }
 
-int branch_end_reached = 0;
 
 void print_dfs_forest (V_header start, Graph g, V_header v, size_t port) {
 
@@ -223,7 +233,7 @@ void print_dfs_forest (V_header start, Graph g, V_header v, size_t port) {
         if (v->info->port == port) {
         
             printf ("\x1b[3%lum", clr%7);
-            print_vertex_header_no_color (v);
+            print_vertex_header_no_color_rev (v);
             printf ("\n");
         }
 
@@ -232,28 +242,34 @@ void print_dfs_forest (V_header start, Graph g, V_header v, size_t port) {
 
     while (node) {
 
-        V_header header = take_header_from_node (g, node);
+        V_header node_h = take_header_from_node (g, node);
 
-        if (!header) return;
+        if (!node_h) return;
 
         int is_connection_avail = is_port_avail (node->weight->avail_ports, 
                             node->weight->ports_num, port);
     
-        if (header->info->color_dfs == WHITE && is_connection_avail) {
+        if (node_h->info->color_dfs == WHITE && is_connection_avail) {
 
-            print_dfs_forest (start, g, header, port);
+            print_dfs_forest (start, g, node_h, port);
             
             //  branch start reached
-            if (branch_end_reached && v == start) {
-
-                print_vertex_header_no_color (start);
-
-                //  start new branch with new color
-                printf ("\n");
-                clr++;
-            }
+            if (branch_end_reached) {
             
-        } else 
+                if (v == start) {
+
+                    print_vertex_header_no_color_rev (start);
+
+                    //  start new branch with new color
+                    printf ("\n");
+                    clr++;
+                } 
+                else 
+                    break;
+            } 
+            
+        } 
+        else 
             /*  keep looking  */
             node = node->next;            
     }
@@ -266,7 +282,7 @@ void print_dfs_forest (V_header start, Graph g, V_header v, size_t port) {
 
             branch_end_reached = 1;
             printf ("\x1b[3%lum", clr%7);
-            print_vertex_header_no_color (v);
+            print_vertex_header_no_color_rev (v);
             
             return;
         } 
@@ -275,7 +291,7 @@ void print_dfs_forest (V_header start, Graph g, V_header v, size_t port) {
         else if (branch_end_reached) {
 
             printf ("\x1b[3%lum", clr%7);
-            print_vertex_header_no_color (v);
+            print_vertex_header_no_color_rev (v);
         }
     }
 
@@ -296,24 +312,31 @@ int djkstra (Graph g, char *name1, char *name2, size_t port) {
 
     V_header vh1 = check_vertices (g, name1, name2);
 
-    if (vh1)    
+    if (!vh1)    
         return ERRWRG;
 
     V_header vh2 = find_vertex_in_graph (g, name2);
+
+    if (vh2->info->port != port) {
+
+        printf ("\nNo path\n");
+
+        return ERRSUC;
+    }
 
     size_t *path = NULL;
 
     size_t path_len = short_path (g, vh1, vh2, port, &path);
 
     if (path_len != INF) {
-        printf ("Path length: %lu\n", path_len);
+        printf ("\nPath length: %lu\n", path_len);
         
-        for (size_t i = 0; i < path_len; i++)
+        for (size_t i = 0; i < path_len + 1; i++)
             printf ("%s ",  g->adj_list[path[i]].info->name);
-        printf ("n");
+        printf ("\n");
     }
     else 
-        printf ("No path\n");
+        printf ("\nNo path\n");
 
     free_nullify (path);
 
@@ -339,13 +362,14 @@ size_t short_path (Graph g, V_header start, V_header end, size_t port, size_t **
 
     size_t start_num = num(start);
     dist[start_num] = 0;
-    visited[start_num] = 1;
+    visited[start_num] = 0;
 
     BHeap scan_heap = {};
     HEntry cur_pair = {0, start_num};
     heap_insert (&scan_heap, &cur_pair);
 
-    //  main loop
+    //  main loop: traverse adj lists 
+    //  of increasing depth from start vertex
 
     while (scan_heap.sz) {
 
@@ -355,45 +379,45 @@ size_t short_path (Graph g, V_header start, V_header end, size_t port, size_t **
             continue;
 
         //  visit this vertex
-        size_t cur = cur_pair.v;
-        visited[cur] = 1;
+        size_t cur_v = cur_pair.v;
+        visited[cur_v] = 1;
 
         //  path end reached
-        if (cur == num(end))
+        if (cur_v == num(end))
             break;
 
         //  add to path
         cur_pair.dist++;
 
-        V_node cur_node = g->adj_list[cur].head;
+        V_node node = g->adj_list[cur_v].head;
 
         //  add adj list of current vertex to heap
-        while (cur_node) {
+        while (node) {
 
-            V_header header = take_header_from_node (g, cur_node);
-            if (!header) break;
+            V_header node_h = take_header_from_node (g, node);
+            if (!node_h) break;
 
-            int is_connection_avail = is_port_avail (cur_node->weight->avail_ports, 
-                            cur_node->weight->ports_num, port);
+            int is_connection_avail = is_port_avail (node->weight->avail_ports, 
+                            node->weight->ports_num, port);
 
-            //  add if available and relaxing  
-            if (is_connection_avail && cur_pair.dist < dist[num(header)]) {
+            //  insert if available and relaxing  
+            if (is_connection_avail && cur_pair.dist < dist[num(node_h)]) {
 
-                //  update dist for vertex
-                dist[num(header)] = cur_pair.dist;
+                //  update dist for vertex 
+                dist[num(node_h)] = cur_pair.dist;
 
                 //  update cur_pair for insertion to heap
-                cur_pair.v = num(header);
+                cur_pair.v = num(node_h);
                 
                 //  set prev for vertex
-                prev[cur_pair.v] = cur;
+                prev[cur_pair.v] = cur_v;
                 
                 //  put vertex to heap
                 heap_insert (&scan_heap, &cur_pair);
             }
 
             /*  scan further  */
-            cur_node = cur_node->next;
+            node = node->next;
         }
     }
 
@@ -403,10 +427,10 @@ size_t short_path (Graph g, V_header start, V_header end, size_t port, size_t **
 
     if (path && path_len != INF) {
 
-        *path = calloc (path_len, sizeof *path);
+        *path = calloc (path_len + 1, sizeof *path);
         size_t prev_v = num(end);
 
-        for (size_t i = path_len - 1; prev_v != INF; i--) {
+        for (size_t i = path_len; prev_v != INF; i--) {
             (*path)[i] = prev_v;
             prev_v = prev[prev_v];
         }
@@ -469,19 +493,19 @@ int remove_vertex (Graph g, char *name) {
     V_header dest = g->adj_list + num;
     V_header src = g->adj_list + num + 1;
 
-    V_header head = &(g->adj_list[num]);
+    V_header header = &(g->adj_list[num]);
 
     //  free vertex adj list and edges infos
-    free_ll (&(head->head), head->info->name);
+    free_ll (&(header->head), header->info->name);
 
     //  free matching vertex node in other lists and all in edges
     remove_vertex_from_adj_lists (g, name);
     
     //  free name and info
-    free_vertex_header (head);
+    free_vertex_header (header);
 
     //  shift to fill freed place
-    memcpy (dest, src, (g->sz - num) * sizeof (V_header));
+    memcpy (dest, src, (g->sz - num) * sizeof (*dest));
 
     g->sz--;
 

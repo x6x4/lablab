@@ -318,6 +318,12 @@ void print_graph_comps (const Graph graph);
 */
 void print_vertex_header_no_color (const V_header v);
 
+/**
+* @brief Print header of adjacency list in no color with backward arrows.
+* 
+* @param graph [IN] - head to print.
+*/
+void print_vertex_header_no_color_rev (const V_header v);
 
 /**
 * @brief Traverse graph from vertex by port in depth.
