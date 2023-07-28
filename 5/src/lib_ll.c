@@ -50,7 +50,7 @@ void print_ll (NodePtr head) {
     while (node) {
         
         print_node (node);
-        print_node_weight (node);
+        print_node_edge (node);
             
         if (node->next)
             printf (" - ");
@@ -69,19 +69,19 @@ void print_node (NodePtr node) {
         
 }
 
-void print_node_weight (NodePtr node) {
+void print_node_edge (NodePtr node) {
 
     if (!node)
         return;
 
-    if (node->weight) {
+    if (node->edge_info) {
 
         printf ("[");
 
-        for (size_t i = 0; i < node->weight->ports_num; i++) {
+        for (size_t i = 0; i < node->edge_info->ports_num; i++) {
             
-            printf ("%lu", node->weight->avail_ports[i]);
-            if (i != node->weight->ports_num - 1)
+            printf ("%lu", node->edge_info->avail_ports[i]);
+            if (i != node->edge_info->ports_num - 1)
                 printf (",");
         }
 
@@ -111,14 +111,14 @@ int delete_from_ll (NodePtr *head, char *name, InfoPtr *info_to_delete) {
     else 
         prev->next = node->next;        
 
-    *info_to_delete = node->weight;
+    *info_to_delete = node->edge_info;
     
     free_nullify (node);
 
     return ERRSUC;
 }
 
-/*  clear nodes and their weights  */
+/*  clear nodes and their edges  */
 void free_ll (NodePtr *head, char *head_name) {
 
     if (!(*head))
@@ -131,21 +131,21 @@ void free_ll (NodePtr *head, char *head_name) {
         
         next = (*node)->next;
 
-        if ((*node)->weight) {
+        if ((*node)->edge_info) {
 
             /*  every edge belongs to two vertices,
                 so in first time we clear avail_ports field,
                 in second time we clear edge ptr itself  */
 
-            if ((*node)->weight->avail_ports) {
-                free_nullify ((*node)->weight->avail_ports);
+            if ((*node)->edge_info->avail_ports) {
+                free_nullify ((*node)->edge_info->avail_ports);
 
                 /*  loop - one vertice edge */
                 if (EQ((*node)->info->name, head_name))
-                    free_nullify ((*node)->weight);
+                    free_nullify ((*node)->edge_info);
             }
             else 
-                free_nullify ((*node)->weight);
+                free_nullify ((*node)->edge_info);
 
         }
 

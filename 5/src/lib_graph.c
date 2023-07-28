@@ -184,9 +184,9 @@ V_header take_header_from_node (Graph g, V_node v) {
     return header;
 }
 
+#define INIT_CLR 1
 
-
-size_t clr = 1;
+size_t clr = INIT_CLR;
 
 Bool branch_end_reached = 0;
 
@@ -196,11 +196,11 @@ void dfs (Graph g, V_header v, size_t port) {
 
     init_colors (g);
     
-    clr = 1;
+    clr = INIT_CLR;
 
-    print_dfs_forest (v, g, v, port);
+    print_dfs_paths (v, g, v, port);
 
-    if (!branch_end_reached)
+    if (clr == INIT_CLR)
         puts ("No way");
 
     //  restore color
@@ -208,7 +208,7 @@ void dfs (Graph g, V_header v, size_t port) {
 }
 
 
-void print_dfs_forest (V_header start, Graph g, V_header v, size_t port) {
+void print_dfs_paths (V_header start, Graph g, V_header v, size_t port) {
 
     branch_end_reached = 0;
 
@@ -235,6 +235,8 @@ void print_dfs_forest (V_header start, Graph g, V_header v, size_t port) {
             printf ("\x1b[3%lum", clr%7);
             print_vertex_header_no_color_rev (v);
             printf ("\n");
+
+            clr++;
         }
 
         return;
@@ -246,12 +248,12 @@ void print_dfs_forest (V_header start, Graph g, V_header v, size_t port) {
 
         if (!node_h) return;
 
-        int is_connected = is_port_avail (node->weight->avail_ports, 
-                            node->weight->ports_num, port);
+        int is_connected = is_port_avail (node->edge_info->avail_ports, 
+                            node->edge_info->ports_num, port);
     
         if (node_h->info->color_dfs == WHITE && is_connected) {
 
-            print_dfs_forest (start, g, node_h, port);
+            print_dfs_paths (start, g, node_h, port);
             
             //  branch start reached
             if (branch_end_reached) {
@@ -293,7 +295,7 @@ void print_dfs_forest (V_header start, Graph g, V_header v, size_t port) {
             printf ("\x1b[3%lum", clr%7);
             print_vertex_header_no_color_rev (v);
         }
-    }
+    } 
 
     return;
 }   
@@ -395,8 +397,8 @@ size_t short_path (Graph g, V_header start, V_header end, size_t port, size_t **
             size_t neigh_v = num(neigh_to_scan);
             if (!neigh_to_scan) break;
 
-            int is_connected = is_port_avail (node_to_scan->weight->avail_ports, 
-                            node_to_scan->weight->ports_num, port);
+            int is_connected = is_port_avail (node_to_scan->edge_info->avail_ports, 
+                            node_to_scan->edge_info->ports_num, port);
             size_t edge_weight = 1;
             size_t new_path_weight = pair.dist + edge_weight;
 
@@ -470,7 +472,7 @@ V_node new_vertex_node (V_info info) {
     V_node v = calloc (1, sizeof *v);
     v->info = info;
     v->next = NULL;
-    v->weight = NULL;
+    v->edge_info = NULL;
     
     return v;
 }
@@ -573,14 +575,14 @@ int add_edge (Graph g, char *name1, char *name2, size_t *avail_ports, size_t por
     V_node v2 = NULL;
         
     Edge e = new_edge (avail_ports, ports_num);
-    v1->weight = e;
+    v1->edge_info = e;
     
     
     if (!EQ(name1, name2)) {
 
         V_header vh2 = find_vertex_in_graph (g, name2);
         v2 = new_vertex_node (vh2->info);
-        v2->weight = e;
+        v2->edge_info = e;
         insert_to_ll (&(vh2->head), v1, NULL);
 
     } else {
@@ -661,10 +663,10 @@ int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avail_
 
     V_node v2 = find_in_ll (vh1->head, name2, NULL);
 
-    free_nullify (v2->weight->avail_ports);
+    free_nullify (v2->edge_info->avail_ports);
 
-    v2->weight->avail_ports = new_avail_ports;
-    v2->weight->ports_num = new_ports_num;
+    v2->edge_info->avail_ports = new_avail_ports;
+    v2->edge_info->ports_num = new_ports_num;
 
     return ERRSUC;
 }

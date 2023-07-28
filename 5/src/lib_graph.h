@@ -33,7 +33,7 @@ struct vertex {
 
     V_info info;
     V_node next;
-    Edge weight;
+    Edge edge_info;
     
 };
 
@@ -210,10 +210,10 @@ void free_edge (Edge *e);
 /**
 * @brief Change avail_ports field of edge. 
 * 
-* @param graph         [IN] - graph for change. 
-* @param name1, name2  [IN] - names of ends of changed edge. 
+* @param graph           [IN] - graph for change. 
+* @param name1, name2    [IN] - names of ends of changed edge. 
 * @param new_avail_ports [IN] - new vector of ports, available for traffic transmission.
-  @param new_ports_num [IN] - number of ports.
+  @param new_ports_num   [IN] - number of ports.
 * @return int - Error code. Possible ERRWRG - edge not found.
 */
 int change_edge_ports (Graph graph, char *name1, char *name2, size_t *new_avail_ports, size_t new_ports_num);
@@ -336,14 +336,14 @@ void print_vertex_header_no_color_rev (const V_header v);
 void dfs (Graph g, V_header v, size_t port);
 
 /**
-* @brief Recursively print dfs forest.
+* @brief Recursively print dfs paths.
 * 
 * @param start [IN] - global start point. 
 * @param graph [IN] - graph to traverse.
 * @param v     [IN] - vertex to start from. 
 * @param port  [IN] - port to traverse by.
 */
-void print_dfs_forest (V_header start, Graph g, V_header v, size_t port);
+void print_dfs_paths (V_header start, Graph g, V_header v, size_t port);
 
 /**
 * @brief Check if ports array has port.
