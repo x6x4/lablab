@@ -246,10 +246,10 @@ void print_dfs_forest (V_header start, Graph g, V_header v, size_t port) {
 
         if (!node_h) return;
 
-        int is_connection_avail = is_port_avail (node->weight->avail_ports, 
+        int is_connected = is_port_avail (node->weight->avail_ports, 
                             node->weight->ports_num, port);
     
-        if (node_h->info->color_dfs == WHITE && is_connection_avail) {
+        if (node_h->info->color_dfs == WHITE && is_connected) {
 
             print_dfs_forest (start, g, node_h, port);
             
@@ -347,100 +347,103 @@ size_t short_path (Graph g, V_header start, V_header end, size_t port, size_t **
 
     //  init
     
-    size_t *dist = calloc (g->sz, sizeof *dist);
-    assert (dist);
+    size_t *dist_from_start = calloc (g->sz, sizeof *dist_from_start);
+    assert (dist_from_start);
 
     Bool *visited = calloc (g->sz, sizeof *visited);
     assert (visited);
 
     size_t *prev = calloc (g->sz, sizeof *prev);
-    assert (dist);
+    assert (dist_from_start);
 
 
     for (size_t i = 0; i < g->sz; i++) 
-        dist[i] = prev[i] = INF;
+        dist_from_start[i] = prev[i] = INF;
 
-    size_t start_num = num(start);
-    dist[start_num] = 0;
-    visited[start_num] = 0;
+    size_t start_v = num(start);
+    size_t end_v = num(end);
+    dist_from_start[start_v] = 0;
+    visited[start_v] = 0;
 
-    BHeap scan_heap = {};
-    HEntry cur_pair = {0, start_num};
-    heap_insert (&scan_heap, &cur_pair);
+    BHeap scanned = {};
+    HEntry pair = {0, start_v};
+    heap_insert (&scanned, &pair);
 
-    //  main loop: traverse adj lists 
-    //  of increasing depth from start vertex
 
-    while (scan_heap.sz) {
+    //  main loop: reduce path length on every BFS step and go forth
+    while (scanned.sz) {
 
-        //  take the least unvisited vertex from scanned
-        heap_extract_top (&scan_heap, &cur_pair);
-        if (visited[cur_pair.v])
+        //  init
+
+        heap_extract_top (&scanned, &pair);
+        if (visited[pair.v])
             continue;
 
-        //  visit this vertex
-        size_t cur_v = cur_pair.v;
-        visited[cur_v] = 1;
+        size_t v_to_visit = pair.v;
+        visited[v_to_visit] = 1;
 
-        //  path end reached
-        if (cur_v == num(end))
+        if (v_to_visit == end_v)
             break;
 
-        //  add to path
-        cur_pair.dist++;
+        V_node node_to_scan = g->adj_list[v_to_visit].head;
 
-        V_node node = g->adj_list[cur_v].head;
+        //  scan adj list of current vertex
+        while (node_to_scan) {
 
-        //  add adj list of current vertex to heap
-        while (node) {
+            //  init
+            V_header neigh_to_scan = take_header_from_node (g, node_to_scan);
+            size_t neigh_v = num(neigh_to_scan);
+            if (!neigh_to_scan) break;
 
-            V_header node_h = take_header_from_node (g, node);
-            if (!node_h) break;
+            int is_connected = is_port_avail (node_to_scan->weight->avail_ports, 
+                            node_to_scan->weight->ports_num, port);
+            size_t edge_weight = 1;
+            size_t new_path_weight = pair.dist + edge_weight;
 
-            int is_connection_avail = is_port_avail (node->weight->avail_ports, 
-                            node->weight->ports_num, port);
+            //  neighbour relaxation
+            {
+                if (is_connected && new_path_weight < dist_from_start[neigh_v]) {
 
-            //  insert if available and relaxing  
-            if (is_connection_avail && cur_pair.dist < dist[num(node_h)]) {
+                    //  set neighbour dist  
+                    dist_from_start[neigh_v] = new_path_weight;
 
-                //  update dist for vertex 
-                dist[num(node_h)] = cur_pair.dist;
-
-                //  update cur_pair for insertion to heap
-                cur_pair.v = num(node_h);
-                
-                //  set prev for vertex
-                prev[cur_pair.v] = cur_v;
-                
-                //  put vertex to heap
-                heap_insert (&scan_heap, &cur_pair);
+                    //  set neighbour vertex
+                    pair.v = neigh_v;
+                    
+                    //  set prev for neighbour (to cur vertex)
+                    prev[pair.v] = v_to_visit;
+                    
+                    //  put neighbour to scanned
+                    heap_insert (&scanned, &pair);
+                }
             }
 
             /*  scan further  */
-            node = node->next;
+            node_to_scan = node_to_scan->next;
         }
     }
 
 
     //  fill path
-    size_t path_len = dist[num(end)];
+    size_t path_len = dist_from_start[end_v];
+    {
+        if (path && path_len != INF) {
 
-    if (path && path_len != INF) {
+            *path = calloc (path_len + 1, sizeof *path);
+            size_t prev_v = num(end);
 
-        *path = calloc (path_len + 1, sizeof *path);
-        size_t prev_v = num(end);
-
-        for (size_t i = path_len; prev_v != INF; i--) {
-            (*path)[i] = prev_v;
-            prev_v = prev[prev_v];
+            for (size_t i = path_len; prev_v != INF; i--) {
+                (*path)[i] = prev_v;
+                prev_v = prev[prev_v];
+            }
         }
     }
 
     //  finit
     {
-        heap_free (&scan_heap);
+        heap_free (&scanned);
         free_nullify (visited);
-        free_nullify (dist);
+        free_nullify (dist_from_start);
         free_nullify (prev);
     }
 

@@ -162,7 +162,7 @@ void change_vertex_port (V_info v, size_t new_port);
 * 
 * @param graph [IN] - graph for search
 * @param name  [IN] - UNIQUE computer name
-* @return V_head - head of matching adjacency list. NULL if not found
+* @return V_header - header of matching adjacency list. NULL if not found
 */
 V_header find_vertex_in_graph (Graph graph, char *name);
 
@@ -301,6 +301,7 @@ void print_components (Graph comps, size_t comp_num);
 * 
 * @param graph [IN] - graph for search.
 * @param v     [IN] - node to take name from.
+* @return V_header - found header, NULL if not found
 */
 V_header take_header_from_node (Graph g, V_node v);
 
