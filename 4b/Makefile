@@ -11,7 +11,7 @@ CC = gcc $(CFLAGS)
 
 .PHONY: all init builddir timing clean 
 
-all: time tree
+all: qsearch
 
 time: timing 
 	scripts/timing.sh  
@@ -19,6 +19,8 @@ time: timing
 tree: init tree.bin 
 
 timing: init timing.bin
+
+qsearch: init qsearch.bin
 
 init: builddir 
 
@@ -37,6 +39,12 @@ timing.bin: $(LIB1_T) $(LIB2) $(GEN) $(BUILDDIR)/timing.o
 
 	$(CC) $^ -o $@
 
+qsearch.bin: $(LIB1) $(LIB2) $(GEN) $(BUILDDIR)/qsearch.o
+#  	pretty-print
+	@echo + ld $^
+
+	$(CC) $^ -o $@
+
 $(LIB1_T): $(SRCDIR)/lib_bt.c $(SRCDIR)/lib_bt.h
 #  	pretty-print
 	@echo + CC $^
@@ -49,7 +57,13 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(SRCDIR)/%.h
 
 	$(CC) -c $< -o $@
 
-$(BUILDDIR)/%.o: timing.c timing.h
+$(BUILDDIR)/qsearch.o: qsearch.c
+#  	pretty-print
+	@echo + CC $^
+
+	$(CC) -c $< -o $@
+
+$(BUILDDIR)/timing.o: timing.c timing.h
 #  	pretty-print
 	@echo + CC $^
 

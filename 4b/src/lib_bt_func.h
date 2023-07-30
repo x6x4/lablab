@@ -7,7 +7,7 @@
 #include <string.h>
 
 
-#define NODES_TO_FIND 0x10
+//#define NODES_TO_FIND 0x10
 #define NO_KEY __SIZE_MAX__
 
 /*  TREE  */
@@ -46,7 +46,6 @@ BNodePtr find_min_node (BNodePtr root);
 int chld_for_descent (BNodePtr root, Key key);
 
 /*  Print  */
-void print_bt (BNodePtr root);
 void set_height (BNodePtr root);
 void print_bt_lvl (BNodePtr root, size_t height);
 void colored_print_bt (BNodePtr root, Key key);

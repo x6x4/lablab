@@ -1,0 +1,6 @@
+The DOT language assumes at least the ASCII character set. 
+Quoted strings, both ordinary and HTML-like, may contain non-ASCII characters. 
+In most cases, these strings are uninterpreted: they simply serve as unique identifiers or 
+values passed through untouched. Labels, however, 
+are meant to be displayed, which requires that the software be able to compute the size of 
+the text and determine the appropriate glyphs. For this, it needs to know what character encoding is used.

@@ -1,4 +1,5 @@
 #include "generic.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,9 +8,10 @@ char *get_str (FILE *file) {
 
     char *str_val = NULL;
     char *str = NULL;
-	size_t len = 0;
+    size_t len = 0;
 
     if (getline (&str_val, &len, file) != EOF) {
+        
         str = strdup (str_val);
 
 		/*  getline appends extra \n to to the end of the line  */

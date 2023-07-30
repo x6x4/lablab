@@ -144,7 +144,7 @@ do {                                \
  * @param info  [IN] - infolist to check.
  * @return char* - text of error. NULL if ok;
  */
-static const char* is_valid_info (const InfoListPtr info);
+//static const char* is_valid_info (const InfoListPtr info);
 
 /**
  * @brief Check validity of tree.

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
 #define NO_3VERTEX CHILD_NUM - 1
 
@@ -472,9 +473,9 @@ size_t get_v3_num_left (BNodePtr par) {
 
 size_t get_v3_num_right (BNodePtr par) {
 
-    for (ssize_t i = par->csize; i >= 0; i--) {
+    for (ssize_t i = (ssize_t) par->csize; i >= 0; i--) {
         if (par->child[i]->csize == 2)
-            return i;
+            return (size_t) i;
     }
     return NO_3VERTEX;
 }

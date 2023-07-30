@@ -55,7 +55,7 @@ void timing_tree ()
             timing_search (test_root, test_keys, bunch_num);
             timing_insertion (&test_root, test_keys, bunch_num);
             timing_deletion (&test_root, test_keys, bunch_num);
-            //timing_traversal (test_root, test_keys, bunch_num); 
+            //timing_traversal (test_root, bunch_num); 
 
             free_bt (&test_root);   
         }

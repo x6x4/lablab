@@ -77,6 +77,7 @@ InfoPtr find_in_ll_by_ver (InfoPtr head, size_t ver, InfoPtr *prev) {
 }
 
 void print_ll (InfoPtr head) {
+    
     InfoPtr node = head;
 
     while (node) {
