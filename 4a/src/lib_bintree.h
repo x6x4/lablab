@@ -1,11 +1,11 @@
+#pragma once
+
 #include <stdlib.h>
 #include <limits.h>
 
 typedef struct BstNode BstNode;
 typedef struct BstNode *BstNodePtr;
 typedef struct Info_t *Info;
-
-#define free_nullify(ptr) free (ptr); ptr = NULL;
 
 struct BstNode {
     size_t height;
@@ -47,3 +47,6 @@ int delete_bst (BstNodePtr *rooot, size_t key);
 
 /*  Destructors.  */
 void free_bst (BstNodePtr *root);
+
+/*  Other.  */
+size_t is_leaf (BstNodePtr root);

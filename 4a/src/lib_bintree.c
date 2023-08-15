@@ -1,5 +1,6 @@
 #include "lib_bintree.h"
 #include "generic.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -139,7 +140,7 @@ void print_bst (BstNodePtr rooot, size_t height) {
 
     if (!rooot) {
         if (!two_void_leaves)
-            printf ("\n%*s└── ", 4*(height+1) - 4, ""); 
+            printf ("\n%*s└── ", (int) (4*(height+1) - 4), ""); 
         return;
     }
 
@@ -149,7 +150,7 @@ void print_bst (BstNodePtr rooot, size_t height) {
     }
 
     if (height)
-        printf ("%*s└── ", 4*height - 4, ""); 
+        printf ("%*s└── ", (int) (4*height - 4), ""); 
     printf ("(%lu, %lu)", rooot->info->key, rooot->info->val);
 
     if ( (!(rooot->left)) && (!(rooot->right)) ) 
@@ -178,10 +179,11 @@ void traverse_bst (BstNodePtr root, size_t key) {
 
     if (key == NO_KEY) {
         while (buf) {
-            //printf ("(%lu, %lu) ", buf->info->key, buf->info->val);
+            printf ("%lu: %lu\n", buf->info->key, buf->info->val);
             buf = buf->prev;    
         }
-    } else {
+    } 
+    else {
         if (!(buf && buf->info->key > key)) {
             //printf ("(no greater keys)");
             return;
@@ -244,5 +246,9 @@ void free_bst (BstNodePtr *root) {
         free_nullify ((*root)->info);
         free_nullify (*root);
     }
+}
+
+size_t is_leaf (BstNodePtr root) {
+    return !(root->left) && !(root->right);
 }
 
