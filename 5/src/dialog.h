@@ -7,7 +7,6 @@
 
 /*  DIALOG  */
 
-
 typedef struct dialog_strings *Dialog_info;
 
 struct dialog_strings {
@@ -26,24 +25,28 @@ void dialog (Dialog_info info, int (*fptr[]) (Graph, FILE*), Graph graph, FILE* 
 /*  Format of data file: * <vertices> * <edges>  */
 int Import (Graph graph, FILE *file);
 
-int Insert (Graph graph, FILE *file);
+int Dump           (Graph graph, FILE *file);
+void dump_graph    (Graph G, FILE *file);
+void dump_adj_list (Graph G, V_header v, FILE *file);
+
+int Insert       (Graph graph, FILE *file);
 int InsertVertex (Graph graph, FILE *file);
-int InsertEdge (Graph graph, FILE *file);
+int InsertEdge   (Graph graph, FILE *file);
 
-int Delete (Graph graph, FILE *file);
+int Delete       (Graph graph, FILE *file);
 int DeleteVertex (Graph graph, FILE *file);
-int DeleteEdge (Graph graph, FILE *file);
+int DeleteEdge   (Graph graph, FILE *file);
 
-int Update (Graph graph, FILE *file);
+int Print        (Graph graph, FILE *file);
 
-int UpdateVertex (Graph graph, FILE *file);
+int Update           (Graph graph, FILE *file);
+
+int UpdateVertex     (Graph graph, FILE *file);
 int UpdateVertexName (Graph graph, FILE *file);
 int UpdateVertexPort (Graph graph, FILE *file);
 
-int UpdateEdge (Graph graph, FILE *file);
-int UpdateEdgePorts (Graph graph, FILE *file);
-
-int Print (Graph graph, FILE *file);
+int UpdateEdge       (Graph graph, FILE *file);
+int UpdateEdgePorts  (Graph graph, FILE *file);
 
 
 
