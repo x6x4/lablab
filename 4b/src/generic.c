@@ -24,7 +24,7 @@ char *get_str (FILE *file) {
     return str;
 }
 
-FILE *user_file () {
+FILE *user_file (char *mode) {
 
     char *errmsg = "";
     FILE *file = NULL;
@@ -37,7 +37,7 @@ FILE *user_file () {
         if (!filename) 
             return NULL;
 
-        file = fopen (filename, "r");
+        file = fopen (filename, mode);
 
         free_nullify (filename);
 		

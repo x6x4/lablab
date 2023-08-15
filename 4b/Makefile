@@ -8,10 +8,11 @@ GEN = $(BUILDDIR)/generic.o
 
 CFLAGS =-O2 -ggdb3 -Wall -Wextra -Werror=return-type -Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts -Wempty-body -Wfloat-equal -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat=2 -Winline -Wlogical-op -Wopenmp-simd -Wpacked -Wpointer-arith -Winit-self -Wredundant-decls -Wshadow -Wsign-conversion -Wstrict-overflow=2 -Wsuggest-attribute=noreturn -Wswitch-default -Wswitch-enum -Wsync-nand -Wundef -Wunreachable-code -Wunused -Wvariadic-macros -Wno-missing-field-initializers -Wno-narrowing -Wno-varargs -Wstack-protector -pie -fPIE 
 CC = gcc $(CFLAGS)
+CFLAGS+=-Wno-unused-parameter
 
 .PHONY: all init builddir timing clean 
 
-all: qsearch
+all: tree
 
 time: timing 
 	scripts/timing.sh  
@@ -78,3 +79,4 @@ $(BUILDDIR)/main.o: main.c
 clean:
 	rm -r ./$(BUILDDIR)
 	rm *.bin
+	rm -r ./dumps

@@ -26,7 +26,6 @@ void print_ll_qsearch (InfoPtr head);
 
 
 
-
 int main (int argc, char **argv) {
 
     BNodePtr root = NULL;

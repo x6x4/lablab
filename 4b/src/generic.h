@@ -20,7 +20,7 @@ enum {
 /*  Get string of arbitrary length.  */
 char *get_str (FILE *file);
 /*  Open file with entered filename for reading.  */
-FILE *user_file ();
+FILE *user_file (char *mode);
 /*  Ask if user want to do something  */
 int user_choice (const char *s);
 /*  Return entered option number.  */
