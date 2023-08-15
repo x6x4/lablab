@@ -6,7 +6,7 @@
 
 int (*fptr[]) (Graph, FILE*) = 
 {NULL, Insert, Delete, Update, Print, Import, 
-CreateComponents, DFS, Djkstra, Dump};
+CreateComponents, DFS, Djkstra};
 
 
 int main (void) {
@@ -19,9 +19,9 @@ int main (void) {
     info.msgs = "\n0 - quit\n""1 - Insert\n""2 - Delete\n" \
                  "3 - Update\n""4 - Print\n""5 - Import\n" \
                  "6 - Split on components\n"               \
-                 "7 - DFS\n""8 - Shortest path\n""9 - Dump\n";
+                 "7 - DFS\n""8 - Shortest path\n";
 
-    info.msgc = 10;
+    info.msgc = 9;
     info.exit_msg = "quit";
 
     dialog (&info, fptr, &G, file);
