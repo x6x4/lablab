@@ -1,10 +1,10 @@
 strict graph {
 node [shape=record];
-node_0x56503e2c6df0 [label="n|t"];
-node_0x56503e2c6f50 [label="i|l"];
-node_0x56503e2c6df0 -- node_0x56503e2c6f50
-node_0x56503e2c7150 [label="o|r"];
-node_0x56503e2c6df0 -- node_0x56503e2c7150
-node_0x56503e2c71b0 [label="w"];
-node_0x56503e2c6df0 -- node_0x56503e2c71b0
+node_0x55d04206ade0 [label="l|r"];
+node_0x55d04206bf50 [label="f|i"];
+node_0x55d04206ade0 -- node_0x55d04206bf50
+node_0x55d04206c110 [label="n|o"];
+node_0x55d04206ade0 -- node_0x55d04206c110
+node_0x55d04206c170 [label="t|w"];
+node_0x55d04206ade0 -- node_0x55d04206c170
 }

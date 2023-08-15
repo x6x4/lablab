@@ -1,24 +1,17 @@
 strict graph {
-node [shape=record];
-node_0x5653f489aca0 [label="2"];
-node_0x5653f489aca0_null [label="NULL"];
-node_0x5653f489aca0 -- node_0x5653f489aca0_null
-node_0x5653f489bdb0 [label="6"];
-node_0x5653f489be10 [label="5"];
-node_0x5653f489bed0 [label="3"];
-node_0x5653f489be10 -- node_0x5653f489bed0
-node_0x5653f489be10_null [label="NULL"];
-node_0x5653f489be10 -- node_0x5653f489be10_null
-node_0x5653f489bdb0 -- node_0x5653f489be10
-node_0x5653f489be70 [label="8"];
-node_0x5653f489bf90 [label="7"];
-node_0x5653f489be70 -- node_0x5653f489bf90
-node_0x5653f489bff0 [label="9"];
-node_0x5653f489bff0_null [label="NULL"];
-node_0x5653f489bff0 -- node_0x5653f489bff0_null
-node_0x5653f489ada0 [label="11"];
-node_0x5653f489bff0 -- node_0x5653f489ada0
-node_0x5653f489be70 -- node_0x5653f489bff0
-node_0x5653f489bdb0 -- node_0x5653f489be70
-node_0x5653f489aca0 -- node_0x5653f489bdb0
+nodesep=1;
+ranksep=1
+null2;
+2 -- null2
+null3;
+3 -- null3
+3 -- 5
+6 -- 3
+8 -- 7
+null9;
+9 -- null9
+9 -- 11
+8 -- 9
+6 -- 8
+2 -- 6
 }
