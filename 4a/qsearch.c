@@ -10,8 +10,6 @@ int main () {
     FILE *data = user_binfile ();
 
     size_t key = 0;
-    size_t num = 0;
-    char *buf = NULL;
 
     //  data is a HEX file 
     while (fread (&key, sizeof (size_t), 1, data)) {
@@ -24,8 +22,6 @@ int main () {
 
         insert_bst (&root, key, val);
     }
-
-    char err[100] = {};
 
     fclose (data);
 
