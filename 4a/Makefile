@@ -7,7 +7,7 @@ CFLAGS = -ggdb3 -Wall -Wextra -Werror=return-type -Wmissing-declarations -Wcast-
 CFLAGS += -Wno-unused-parameter
 CC = cc -g $(CFLAGS)
 
-.PHONY: all init builddir clean 
+.PHONY: all qsearch init builddir clean 
 
 all: qsearch
 
@@ -54,5 +54,6 @@ $(BUILDDIR)/main.o: main.c
 #  Auxiliary targets.
 
 clean:
-	rm -r ./$(BUILDDIR)
-	rm *.bin
+	rm -rf ./$(BUILDDIR)
+	rm -f *.bin
+	rm -rf ./dumps

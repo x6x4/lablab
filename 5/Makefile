@@ -11,7 +11,7 @@ CFLAGS =-ggdb3 -Wall -Wextra -Werror=return-type -Wmissing-declarations -Wcast-a
 CFLAGS +=-Wno-unused-parameter
 CC = gcc $(CFLAGS)
 
-.PHONY: all init builddir clean 
+.PHONY: all graph init builddir clean 
 
 all: graph
 
@@ -44,5 +44,6 @@ $(BUILDDIR)/main.o: main.c
 	@$(CC) -c $< -o $@
 
 clean:
-	rm -r ./$(BUILDDIR)
-	rm *.bin
+	rm -rf ./$(BUILDDIR)
+	rm -f *.bin
+	rm -rf ./dumps

@@ -10,7 +10,7 @@ CFLAGS =-O2 -ggdb3 -Wall -Wextra -Werror=return-type -Wmissing-declarations -Wca
 CC = gcc $(CFLAGS)
 CFLAGS+=-Wno-unused-parameter
 
-.PHONY: all init builddir timing clean 
+.PHONY: all qsearch init builddir timing clean 
 
 all: tree
 
@@ -32,51 +32,51 @@ tree.bin: $(LIB1) $(LIB2) $(GEN) $(BUILDDIR)/main.o
 #  	pretty-print
 	@echo + ld $^
 
-	$(CC) $^ -o $@
+	@$(CC) $^ -o $@
 
 timing.bin: $(LIB1_T) $(LIB2) $(GEN) $(BUILDDIR)/timing.o
 #  	pretty-print
 	@echo + ld $^
 
-	$(CC) $^ -o $@
+	@$(CC) $^ -o $@
 
 qsearch.bin: $(LIB1) $(LIB2) $(GEN) $(BUILDDIR)/qsearch.o
 #  	pretty-print
 	@echo + ld $^
 
-	$(CC) $^ -o $@
+	@$(CC) $^ -o $@
 
 $(LIB1_T): $(SRCDIR)/lib_bt.c $(SRCDIR)/lib_bt.h
 #  	pretty-print
 	@echo + CC $^
 
-	$(CC) -c -DTIMING $< -o $@
+	@$(CC) -c -DTIMING $< -o $@
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(SRCDIR)/%.h
 #  	pretty-print
 	@echo + CC $^
 
-	$(CC) -c $< -o $@
+	@$(CC) -c $< -o $@
 
 $(BUILDDIR)/qsearch.o: qsearch.c
 #  	pretty-print
 	@echo + CC $^
 
-	$(CC) -c $< -o $@
+	@$(CC) -c $< -o $@
 
 $(BUILDDIR)/timing.o: timing.c timing.h
 #  	pretty-print
 	@echo + CC $^
 
-	$(CC) -c $< -o $@
+	@$(CC) -c $< -o $@
 
 $(BUILDDIR)/main.o: main.c
 #  	pretty-print
 	@echo + CC $^
 
-	$(CC) -c $< -o $@
+	@$(CC) -c $< -o $@
 
 clean:
-	rm -r ./$(BUILDDIR)
-	rm *.bin
-	rm -r ./dumps
+	rm -rf ./$(BUILDDIR)
+	rm -f *.bin
+	rm -rf ./dumps
