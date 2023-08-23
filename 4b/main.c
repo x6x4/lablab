@@ -52,7 +52,10 @@ static size_t dump_num = 0;
 int dump_tree (BNodePtr *root, FILE *file) {
 
     char error_string[255] = {};
-    char *dump_name = "tree_dump.dot";
+    char dump_name[127] = {};
+    system ("mkdir -p dumps");
+
+    sprintf (dump_name, "dumps/tree_dump_%lu.dot",dump_num);
 
     FILE *dump_file = fopen (dump_name, "w");
     if (!dump_file) perror (error_string);
@@ -64,7 +67,6 @@ int dump_tree (BNodePtr *root, FILE *file) {
     fclose (dump_file);
 
     char cmd[255] = {};
-    system ("mkdir -p dumps");
     sprintf (cmd, "dot %s -T png -o dumps/dump_%lu.png", dump_name, dump_num++);
     system(cmd);
 

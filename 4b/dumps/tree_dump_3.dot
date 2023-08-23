@@ -1,0 +1,8 @@
+strict graph {
+node [shape=record];
+node_0x564ce6e43de0 [label="r"];
+node_0x564ce6e43f40 [label="a"];
+node_0x564ce6e43de0 -- node_0x564ce6e43f40
+node_0x564ce6e43fa0 [label="w"];
+node_0x564ce6e43de0 -- node_0x564ce6e43fa0
+}

@@ -1,0 +1,18 @@
+strict graph {
+node [shape=record];
+node_0x564ce6e43de0 [label="r"];
+node_0x564ce6e45550 [label="g|l"];
+node_0x564ce6e45690 [label="a"];
+node_0x564ce6e45550 -- node_0x564ce6e45690
+node_0x564ce6e456f0 [label="i"];
+node_0x564ce6e45550 -- node_0x564ce6e456f0
+node_0x564ce6e451b0 [label="n|o"];
+node_0x564ce6e45550 -- node_0x564ce6e451b0
+node_0x564ce6e43de0 -- node_0x564ce6e45550
+node_0x564ce6e455b0 [label="u"];
+node_0x564ce6e45490 [label="t"];
+node_0x564ce6e455b0 -- node_0x564ce6e45490
+node_0x564ce6e454f0 [label="w"];
+node_0x564ce6e455b0 -- node_0x564ce6e454f0
+node_0x564ce6e43de0 -- node_0x564ce6e455b0
+}
