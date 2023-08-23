@@ -52,7 +52,7 @@ int dump_tree (BstNodePtr *root, FILE *file) {
 
     fprintf (dump_file, "strict graph {\n");
     fprintf (dump_file, "nodesep=1;\nranksep=1\n");
-    dump_node (*root, dump_file);
+    dump_node (*root, *root, dump_file);
     fprintf (dump_file, "}\n");
 
     fclose (dump_file);
@@ -65,7 +65,7 @@ int dump_tree (BstNodePtr *root, FILE *file) {
     return ERRSUC;
 }
 
-void dump_node (BstNodePtr node, FILE *file) {
+void dump_node (BstNodePtr root, BstNodePtr node, FILE *file) {
 
     if (!node) {
         fprintf (file, "NULL\n");
@@ -74,25 +74,33 @@ void dump_node (BstNodePtr node, FILE *file) {
 
     size_t child_num = 0;
 
-    if (is_leaf (node))
+    if (is_leaf (node)) {
+
+        if (node == root) {
+            fprintf (file, "node_%p [label=\"", node);
+            fprintf (file, "%zu", node->info->key);
+            fprintf (file, "\"];\n");
+        }
         return;
+    }
+    
 
     if (node->left) {
-        dump_node (node->left, file);
+        dump_node (root, node->left, file);
         fprintf (file, "%zu -- %zu\n", node->info->key, node->left->info->key);
     }
     else {
-        fprintf (file, "null%zu;\n", node->info->key);
+        fprintf (file, "null%zu [label=\"NULL\"];\n", node->info->key);
         fprintf (file, "%zu -- null%zu\n", node->info->key, node->info->key);
     }
 
     if (node->right) {
-        dump_node (node->right, file);
+        dump_node (root, node->right, file);
         fprintf (file, "%zu -- %zu\n", node->info->key, node->right->info->key);
         child_num++;
     } 
     else {
-        fprintf (file, "null%zu;\n", node->info->key);
+        fprintf (file, "null%zu [label=\"NULL\"];\n", node->info->key);
         fprintf (file, "%zu -- null%zu\n", node->info->key, node->info->key);
     }
 }

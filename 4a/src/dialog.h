@@ -30,7 +30,7 @@ int traverse_tree (BstNodePtr *root, FILE *file);
 int print_tree (BstNodePtr *root, FILE *file);
 int timing_tree (BstNodePtr *root, FILE *file);
 int dump_tree (BstNodePtr *root, FILE *file);
-void dump_node (BstNodePtr root, FILE *file);
+void dump_node (BstNodePtr root, BstNodePtr node, FILE *file);
 
 void timing_search (BstNodePtr test_root, int *test_keys, int bunch_num);
 void timing_insertion (BstNodePtr *test_root, int *test_keys, int bunch_num);
