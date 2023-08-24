@@ -1,4 +1,0 @@
-strict graph {
-node [shape=record];
-node_0x564ce6e43de0 [label="r|w"];
-}

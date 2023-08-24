@@ -52,7 +52,7 @@ FILE *user_binfile () {
     char *errmsg = "";
     FILE *file = NULL;
 
-	puts ("Enter filename of file to read from. Enter \"/proc/self/fd/0\" to read from stdin.");
+	puts ("Enter filename of binary file to read from. Enter \"/proc/self/fd/0\" to read from stdin.");
 
     while (!file) {
         char *filename = get_str (stdin);

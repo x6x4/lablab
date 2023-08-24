@@ -1,4 +1,0 @@
-strict graph {
-node [shape=record];
-NULL
-}
